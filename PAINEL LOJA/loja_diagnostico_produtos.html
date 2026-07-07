@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merit Magazine</title>
+    <style>
+        :root {
+            --roxo:#820AD1;
+            --roxo-hover:#6a0ab0;
+            --fundo:#f5f5f8;
+            --verde:#16c784;
+            --laranja:#ff9800;
+            --azul:#2541b2;
+            --texto:#2f2f35;
+            --muted:#666;
+            --card:#ffffff;
+            --borda:#e9e9ef;
+            --vermelho:#dc3545;
+        }
+
+        * { box-sizing:border-box; }
+
+        body {
+            margin:0;
+            font-family:'Segoe UI', Roboto, Arial, sans-serif;
+            background:var(--fundo);
+            color:var(--texto);
+        }
+
+        header {
+            background:linear-gradient(135deg, var(--roxo), #a855f7);
+            color:white;
+            padding:26px 18px;
+            box-shadow:0 8px 20px rgba(130,10,209,.22);
+        }
+
+        .topo {
+            max-width:1180px;
+            margin:0 auto;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:16px;
+            flex-wrap:wrap;
+        }
+
+        .logo h1 {
+            margin:0;
+            font-size:30px;
+            letter-spacing:.3px;
+        }
+
+        .logo p {
+            margin:6px 0 0;
+            opacity:.9;
+        }
+
+        .saldo-box {
+            background:rgba(255,255,255,.16);
+            border:1px solid rgba(255,255,255,.25);
+            border-radius:18px;
+            padding:14px 18px;
+            min-width:210px;
+            text-align:right;
+        }
+
+        .saldo-box small { opacity:.9; }
+        .saldo-box strong { display:block; font-size:24px; margin-top:4px; }
+
+        main {
+            max-width:1180px;
+            margin:22px auto;
+            padding:0 18px 40px;
+        }
+
+        .hero {
+            background:white;
+            border-radius:24px;
+            padding:24px;
+            display:grid;
+            grid-template-columns:1.3fr .7fr;
+            gap:18px;
+            box-shadow:0 8px 22px rgba(0,0,0,.06);
+            margin-bottom:18px;
+        }
+
+        .hero h2 {
+            margin:0 0 8px;
+            color:var(--roxo);
+            font-size:28px;
+        }
+
+        .hero p { color:var(--muted); line-height:1.5; }
+
+        .hero-card {
+            background:linear-gradient(135deg,#fff7e6,#fff);
+            border:1px solid #ffe0a3;
+            border-radius:20px;
+            padding:18px;
+        }
+
+        .hero-card strong {
+            color:#9a5b00;
+            font-size:18px;
+        }
+
+        .filtros {
+            display:grid;
+            grid-template-columns:2fr 1fr 1fr;
+            gap:12px;
+            margin-bottom:18px;
+        }
+
+        input, select {
+            width:100%;
+            padding:13px;
+            border:1px solid var(--borda);
+            border-radius:14px;
+            background:white;
+            font-size:15px;
+        }
+
+        .categorias {
+            display:flex;
+            flex-wrap:wrap;
+            gap:10px;
+            margin:16px 0 22px;
+        }
+
+        .chip {
+            border:none;
+            background:white;
+            color:var(--roxo);
+            border-radius:999px;
+            padding:10px 14px;
+            font-weight:700;
+            cursor:pointer;
+            box-shadow:0 4px 12px rgba(0,0,0,.06);
+            transition:.2s;
+        }
+
+        .chip:hover, .chip.ativo {
+            background:var(--roxo);
+            color:white;
+            transform:translateY(-1px);
+        }
+
+        .status-box {
+            background:white;
+            border:1px solid var(--borda);
+            color:var(--muted);
+            border-radius:18px;
+            padding:16px;
+            margin-bottom:18px;
+            box-shadow:0 4px 12px rgba(0,0,0,.04);
+        }
+
+        .status-box.erro {
+            border-color:#f5c6cb;
+            background:#f8d7da;
+            color:#721c24;
+        }
+
+        .grid-produtos {
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+            gap:18px;
+        }
+
+        .produto {
+            background:var(--card);
+            border:1px solid var(--borda);
+            border-radius:22px;
+            overflow:hidden;
+            box-shadow:0 6px 16px rgba(0,0,0,.06);
+            display:flex;
+            flex-direction:column;
+        }
+
+        .imagem-produto {
+            height:165px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:58px;
+            background:linear-gradient(135deg,#f4e8ff,#ffffff);
+            border-bottom:1px solid var(--borda);
+            overflow:hidden;
+        }
+
+        .imagem-produto img {
+            width:100%;
+            height:100%;
+            object-fit:cover;
+            display:block;
+        }
+
+        .produto-conteudo {
+            padding:16px;
+            flex:1;
+            display:flex;
+            flex-direction:column;
+        }
+
+        .produto h3 {
+            margin:0 0 6px;
+            color:var(--texto);
+            font-size:18px;
+        }
+
+        .produto p {
+            margin:0 0 12px;
+            color:var(--muted);
+            font-size:13px;
+            line-height:1.4;
+            flex:1;
+        }
+
+        .badges { margin-bottom:10px; }
+
+        .badge {
+            display:inline-block;
+            background:#f0f8ff;
+            color:var(--roxo);
+            padding:4px 8px;
+            border-radius:999px;
+            font-size:12px;
+            font-weight:700;
+            margin:2px;
+        }
+
+        .badge.estoque-baixo {
+            background:#fff3cd;
+            color:#856404;
+        }
+
+        .preco {
+            font-size:22px;
+            font-weight:800;
+            color:var(--verde);
+            margin:8px 0;
+        }
+
+        .preco-antigo {
+            color:#999;
+            text-decoration:line-through;
+            font-size:13px;
+            margin-left:5px;
+        }
+
+        button.comprar {
+            width:100%;
+            border:none;
+            background:linear-gradient(135deg,var(--verde),#20e39b);
+            color:white;
+            border-radius:14px;
+            padding:12px;
+            font-weight:800;
+            cursor:pointer;
+            transition:.2s;
+            margin-top:auto;
+        }
+
+        button.comprar:hover {
+            transform:scale(1.02);
+            filter:brightness(.98);
+        }
+
+        button.comprar:disabled {
+            background:#bbb;
+            cursor:not-allowed;
+            transform:none;
+        }
+
+        .rodape-info {
+            margin-top:24px;
+            background:white;
+            border-radius:20px;
+            padding:18px;
+            color:var(--muted);
+            border:1px solid var(--borda);
+        }
+
+        @media (max-width:760px) {
+            .hero { grid-template-columns:1fr; }
+            .filtros { grid-template-columns:1fr; }
+            .saldo-box { text-align:left; width:100%; }
+        }
+        .debug-box { background:#fff; border:2px dashed #ff9800; border-radius:16px; padding:14px; margin:16px 0; color:#333; }
+        .debug-box h3 { margin-top:0; color:#820AD1; }
+        .debug-produto { border-top:1px solid #eee; padding:8px 0; font-size:13px; }
+        .debug-ok { color:#155724; font-weight:700; }
+        .debug-alerta { color:#856404; font-weight:700; }
+        .debug-erro { color:#721c24; font-weight:700; }
+
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topo">
+            <div class="logo">
+                <h1>🛍 Merit Magazine</h1>
+                <p>A loja oficial para montar a casa dos sonhos na Vila Merit.</p>
+            </div>
+            <div class="saldo-box">
+                <small>Saldo disponível</small>
+                <strong id="saldoAluno">M$ 0,00</strong>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div>
+                <h2>Compre itens para sua futura casa</h2>
+                <p>Use seus Merit$ conquistados em atividades, missões e recompensas para planejar, economizar e montar uma casa completa dentro da Vila Merit.</p>
+                <p><strong>Agora a loja lê automaticamente os produtos cadastrados no Painel Administrativo.</strong></p>
+            </div>
+            <div class="hero-card">
+                <strong>🏠 Casa dos sonhos</strong>
+                <p>Em breve, os itens comprados aqui irão automaticamente para os cômodos da casa: sala, quarto, cozinha, banheiro, jardim e muito mais.</p>
+            </div>
+        </section>
+
+        <section class="filtros">
+            <input type="text" id="busca" placeholder="🔎 Buscar produto..." onkeyup="filtrarProdutos()">
+            <select id="filtroCategoria" onchange="filtrarProdutos()">
+                <option value="">Todas as categorias</option>
+                <option value="Sala">Sala</option>
+                <option value="Quarto">Quarto</option>
+                <option value="Cozinha">Cozinha</option>
+                <option value="Eletrônicos">Eletrônicos</option>
+                <option value="Jardim">Jardim</option>
+                <option value="Pets">Pets</option>
+                <option value="Decoração">Decoração</option>
+            </select>
+            <select id="filtroOrdenacao" onchange="filtrarProdutos()">
+                <option value="nome">Ordenar por nome</option>
+                <option value="menorPreco">Menor preço</option>
+                <option value="maiorPreco">Maior preço</option>
+                <option value="estoque">Maior estoque</option>
+            </select>
+        </section>
+
+        <div class="categorias" id="chipsCategorias">
+            <button class="chip ativo" onclick="selecionarCategoria('')">Tudo</button>
+            <button class="chip" onclick="selecionarCategoria('Sala')">🛋 Sala</button>
+            <button class="chip" onclick="selecionarCategoria('Quarto')">🛏 Quarto</button>
+            <button class="chip" onclick="selecionarCategoria('Cozinha')">🍳 Cozinha</button>
+            <button class="chip" onclick="selecionarCategoria('Eletrônicos')">📺 Eletrônicos</button>
+            <button class="chip" onclick="selecionarCategoria('Jardim')">🌳 Jardim</button>
+            <button class="chip" onclick="selecionarCategoria('Pets')">🐶 Pets</button>
+        </div>
+
+        <div id="statusLoja" class="status-box">🔐 Preparando acesso seguro à Merit Magazine...</div>
+        <div id="diagnosticoProdutos" class="debug-box" style="display:none;"></div>
+        <section class="grid-produtos" id="listaProdutos"></section>
+
+        <div class="rodape-info">
+            <strong>Próxima etapa:</strong> ativar o botão <b>Comprar</b>, descontando Merit$ do estudante, registrando a compra em <b>compras</b>, baixando o estoque e enviando o item para a casa na Vila Merit.
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey:"AIzaSyCG_jh9lDlTj8mAKKm6sYhI9XNSP_OLjFY",
+            authDomain:"banco-sandra.firebaseapp.com",
+            projectId:"banco-sandra",
+            storageBucket:"banco-sandra.firebasestorage.app",
+            messagingSenderId:"506761695598",
+            appId:"1:506761695598:web:783a6bfa6d5ff0b143317f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let produtos = [];
+        let autenticado = false;
+
+        function dinheiro(valor) {
+            return `M$ ${Number(valor || 0).toFixed(2).replace('.', ',')}`;
+        }
+
+        function normalizar(valor) {
+            return String(valor || '').trim().toLowerCase();
+        }
+
+        function mostrarStatus(msg, erro=false) {
+            const status = document.getElementById('statusLoja');
+            status.innerHTML = msg;
+            status.className = erro ? 'status-box erro' : 'status-box';
+            status.style.display = 'block';
+        }
+
+        function esconderStatus() {
+            document.getElementById('statusLoja').style.display = 'none';
+        }
+
+        function emojiPorCategoria(categoria) {
+            const c = normalizar(categoria);
+            if (c.includes('sala')) return '🛋';
+            if (c.includes('quarto')) return '🛏';
+            if (c.includes('cozinha')) return '🍳';
+            if (c.includes('banheiro')) return '🚿';
+            if (c.includes('lavanderia')) return '🧺';
+            if (c.includes('eletr')) return '📺';
+            if (c.includes('jardim') || c.includes('externa')) return '🌳';
+            if (c.includes('lazer')) return '🎮';
+            if (c.includes('pet')) return '🐶';
+            if (c.includes('decora')) return '✨';
+            return '🏠';
+        }
+
+        function produtoAtivo(p) {
+            // Compatível com o Painel Administrativo: se o status vier vazio, consideramos ativo.
+            // Só escondemos quando estiver explicitamente Inativo/Inativa.
+            const status = normalizar(p.status || 'Ativo');
+            return !['inativo', 'inativa', 'oculto', 'oculta'].includes(status);
+        }
+
+        function produtoNormalizado(id, dados) {
+            let categoria = dados.categoria || dados.comodo || dados.cômodo || 'Casa';
+            // Remove emojis se algum valor antigo tiver sido salvo com ícone junto ao texto.
+            categoria = String(categoria).replace(/[🛋🛏🍳📺🌳🐶✨🏠]/g, '').trim() || 'Casa';
+            const precoBase = Number(dados.preco ?? dados.valor ?? dados.precoMerit ?? 0);
+            const descontoAtivo = dados.desconto === true || dados.permiteDesconto === true || Number(dados.percentualDesconto || 0) > 0;
+            const percentualDesconto = descontoAtivo ? Number(dados.percentualDesconto || dados.descontoPercentual || 0) : 0;
+            const precoFinal = percentualDesconto > 0 ? precoBase * (1 - percentualDesconto / 100) : precoBase;
+
+            return {
+                id,
+                nome: dados.nome || dados.produto || 'Produto sem nome',
+                categoria,
+                comodo: dados.comodo || dados.cômodo || categoria,
+                preco: precoBase,
+                precoFinal,
+                percentualDesconto,
+                estoque: Number(dados.estoque ?? dados.quantidade ?? 0),
+                emoji: dados.emoji || emojiPorCategoria(categoria),
+                imagem: dados.imagem || dados.foto || dados.imagemUrl || dados.urlImagem || '',
+                descricao: dados.descricao || dados.descrição || 'Produto da Merit Magazine para montar a casa dos sonhos.',
+                raridade: dados.raridade || dados.nivel || 'Comum',
+                status: dados.status || 'Ativo'
+            };
+        }
+
+        async function garantirLoginAnonimo() {
+            if (auth.currentUser) {
+                autenticado = true;
+                return;
+            }
+            await signInAnonymously(auth);
+            autenticado = true;
+        }
+
+        function statusProdutoTexto(p) {
+            const status = normalizar(p.status || 'Ativo');
+            if (['inativo', 'inativa', 'oculto', 'oculta'].includes(status)) return 'INATIVO';
+            if (Number(p.estoque || 0) <= 0) return 'SEM_ESTOQUE';
+            return 'ATIVO';
+        }
+
+        function mostrarDiagnostico(rawDocs, ativos, erro='') {
+            const box = document.getElementById('diagnosticoProdutos');
+            if (!box) return;
+            box.style.display = 'block';
+
+            if (erro) {
+                box.innerHTML = `<h3>🧪 Diagnóstico da loja</h3><p class="debug-erro">Erro ao ler produtos: ${erro}</p><p>Se aparecer <b>permission-denied</b>, libere leitura da coleção <b>produtos</b> nas regras do Firestore.</p>`;
+                return;
+            }
+
+            const linhas = rawDocs.map(p => {
+                const motivo = statusProdutoTexto(p);
+                const classe = motivo === 'ATIVO' ? 'debug-ok' : 'debug-alerta';
+                return `<div class="debug-produto">
+                    <b>${p.nome || p.produto || p.id}</b><br>
+                    Categoria: ${p.categoria || p.comodo || '-'} • Status: ${p.status || 'Ativo'} • Estoque: ${p.estoque ?? p.quantidade ?? 0} • Preço: ${dinheiro(p.preco ?? p.valor ?? 0)}<br>
+                    Resultado: <span class="${classe}">${motivo === 'ATIVO' ? 'vai aparecer na loja' : motivo === 'SEM_ESTOQUE' ? 'não aparece porque estoque está zerado' : 'não aparece porque está inativo'}</span>
+                </div>`;
+            }).join('');
+
+            box.innerHTML = `<h3>🧪 Diagnóstico da loja</h3>
+                <p>Produtos encontrados na coleção <b>produtos</b>: <b>${rawDocs.length}</b></p>
+                <p>Produtos que podem aparecer na loja: <b>${ativos.length}</b></p>
+                ${rawDocs.length ? linhas : '<p class="debug-alerta">A coleção produtos foi lida, mas nenhum documento foi encontrado. O produto pode ter sido salvo em outra coleção ou em outro projeto Firebase.</p>'}
+            `;
+        }
+
+        async function carregarProdutosFirebase() {
+            mostrarStatus('🛍 Carregando produtos cadastrados no Painel Administrativo...');
+            try {
+                await garantirLoginAnonimo();
+                const snap = await getDocs(collection(db, 'produtos'));
+                produtos = [];
+                const rawDocs = [];
+
+                snap.forEach(docSnap => {
+                    const bruto = { id: docSnap.id, ...docSnap.data() };
+                    rawDocs.push(bruto);
+                    const p = produtoNormalizado(docSnap.id, docSnap.data());
+                    // A loja mostra produtos ativos, mesmo se o estoque estiver 0; nesse caso o botão fica indisponível.
+                    if (produtoAtivo(p)) produtos.push(p);
+                });
+
+                mostrarDiagnostico(rawDocs, produtos);
+
+                if (!produtos.length) {
+                    mostrarStatus('📦 Nenhum produto ativo encontrado. Veja o diagnóstico abaixo para saber se o produto está inativo, com outro campo ou em outra coleção.');
+                    renderizarProdutos([]);
+                    return;
+                }
+
+                esconderStatus();
+                filtrarProdutos();
+            } catch (e) {
+                console.error(e);
+                mostrarDiagnostico([], [], e.code || e.message || String(e));
+                mostrarStatus('⚠️ Não foi possível carregar os produtos. Confira se a autenticação anônima está ativa e se as regras do Firestore permitem leitura da coleção produtos para usuários logados.', true);
+                renderizarProdutos([]);
+            }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) autenticado = true;
+        });
+
+        function renderizarProdutos(lista) {
+            const area = document.getElementById('listaProdutos');
+            if (!lista.length) {
+                area.innerHTML = '<div class="rodape-info">Nenhum produto encontrado com esses filtros.</div>';
+                return;
+            }
+
+            area.innerHTML = lista.map(p => {
+                const temDesconto = p.percentualDesconto > 0 && p.precoFinal < p.preco;
+                const estoqueBaixo = p.estoque > 0 && p.estoque <= 3;
+                const semEstoque = p.estoque <= 0;
+                const imagem = p.imagem
+                    ? `<img src="${p.imagem}" alt="${p.nome}" onerror="this.parentElement.innerHTML='${p.emoji}'">`
+                    : p.emoji;
+
+                return `
+                    <article class="produto">
+                        <div class="imagem-produto">${imagem}</div>
+                        <div class="produto-conteudo">
+                            <div class="badges">
+                                <span class="badge">${p.categoria}</span>
+                                <span class="badge">🏠 ${p.comodo}</span>
+                                <span class="badge">⭐ ${p.raridade}</span>
+                                <span class="badge ${estoqueBaixo ? 'estoque-baixo' : ''}">${semEstoque ? 'Sem estoque' : 'Estoque: ' + p.estoque}</span>
+                                ${temDesconto ? `<span class="badge">🔥 ${p.percentualDesconto}% OFF</span>` : ''}
+                            </div>
+                            <h3>${p.nome}</h3>
+                            <p>${p.descricao}</p>
+                            <div class="preco">
+                                ${dinheiro(p.precoFinal)}
+                                ${temDesconto ? `<span class="preco-antigo">${dinheiro(p.preco)}</span>` : ''}
+                            </div>
+                            <button class="comprar" onclick="comprarProduto('${p.id}')" ${semEstoque ? 'disabled' : ''}>${semEstoque ? 'Indisponível' : 'Comprar'}</button>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        window.selecionarCategoria = (categoria) => {
+            document.getElementById('filtroCategoria').value = categoria;
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('ativo'));
+            const botao = Array.from(document.querySelectorAll('.chip')).find(c => c.innerText.includes(categoria) || (!categoria && c.innerText === 'Tudo'));
+            if (botao) botao.classList.add('ativo');
+            filtrarProdutos();
+        };
+
+        window.filtrarProdutos = () => {
+            const busca = normalizar(document.getElementById('busca').value);
+            const categoria = document.getElementById('filtroCategoria').value;
+            const ordenacao = document.getElementById('filtroOrdenacao').value;
+
+            let lista = produtos.filter(p => {
+                const texto = normalizar(`${p.nome} ${p.categoria} ${p.comodo} ${p.descricao} ${p.raridade}`);
+                const okBusca = !busca || texto.includes(busca);
+                const okCategoria = !categoria || normalizar(p.categoria) === normalizar(categoria) || normalizar(p.comodo) === normalizar(categoria);
+                return okBusca && okCategoria;
+            });
+
+            if (ordenacao === 'menorPreco') lista.sort((a,b) => a.precoFinal - b.precoFinal);
+            else if (ordenacao === 'maiorPreco') lista.sort((a,b) => b.precoFinal - a.precoFinal);
+            else if (ordenacao === 'estoque') lista.sort((a,b) => b.estoque - a.estoque);
+            else lista.sort((a,b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+
+            renderizarProdutos(lista);
+        };
+
+        window.comprarProduto = (id) => {
+            const produto = produtos.find(p => p.id === id);
+            if (!produto) return alert('Produto não encontrado.');
+            alert(`Próxima etapa: comprar ${produto.nome} por ${dinheiro(produto.precoFinal)}, descontar do saldo, registrar a compra e enviar para a casa na Vila Merit.`);
+        };
+
+        carregarProdutosFirebase();
+    </script>
+</body>
+</html>

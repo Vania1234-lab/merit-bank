@@ -1,0 +1,404 @@
+[
+  {
+    "id": "SAL001",
+    "nome": "Sofá Retrô Azul",
+    "categoria": "Sala",
+    "preco": 450,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/sala/SAL001.png"
+  },
+  {
+    "id": "SAL002",
+    "nome": "Sofá Retrô Vermelho",
+    "categoria": "Sala",
+    "preco": 450,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/sala/SAL002.png"
+  },
+  {
+    "id": "SAL003",
+    "nome": "Poltrona Retrô Azul",
+    "categoria": "Sala",
+    "preco": 300,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/sala/SAL003.png"
+  },
+  {
+    "id": "SAL004",
+    "nome": "Poltrona Retrô Marrom",
+    "categoria": "Sala",
+    "preco": 320,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/sala/SAL004.png"
+  },
+  {
+    "id": "SAL005",
+    "nome": "TV Tela Plana",
+    "categoria": "Sala",
+    "preco": 900,
+    "raridade": "Raro",
+    "estoque": 999,
+    "imagem": "assets/produtos/sala/SAL005.png"
+  },
+  {
+    "id": "SAL006",
+    "nome": "Tapete Geométrico",
+    "categoria": "Sala",
+    "preco": 180,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/sala/SAL006.png"
+  },
+  {
+    "id": "SAL007",
+    "nome": "Rack de Madeira",
+    "categoria": "Sala",
+    "preco": 350,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/sala/SAL007.png"
+  },
+  {
+    "id": "SAL008",
+    "nome": "Abajur de Sala",
+    "categoria": "Sala",
+    "preco": 160,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/sala/SAL008.png"
+  },
+
+  {
+    "id": "QUA001",
+    "nome": "Cama Solteiro Azul",
+    "categoria": "Quarto",
+    "preco": 520,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/quarto/QUA001.png"
+  },
+  {
+    "id": "QUA002",
+    "nome": "Cama Solteiro Rosa",
+    "categoria": "Quarto",
+    "preco": 520,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/quarto/QUA002.png"
+  },
+  {
+    "id": "QUA003",
+    "nome": "Cama Solteiro Vermelha",
+    "categoria": "Quarto",
+    "preco": 520,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/quarto/QUA003.png"
+  },
+  {
+    "id": "QUA004",
+    "nome": "Cama Solteiro Verde",
+    "categoria": "Quarto",
+    "preco": 520,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/quarto/QUA004.png"
+  },
+  {
+    "id": "QUA005",
+    "nome": "Guarda-Roupas Madeira",
+    "categoria": "Quarto",
+    "preco": 850,
+    "raridade": "Raro",
+    "estoque": 999,
+    "imagem": "assets/produtos/quarto/QUA005.png"
+  },
+  {
+    "id": "QUA006",
+    "nome": "Tapete Colorido",
+    "categoria": "Quarto",
+    "preco": 190,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/quarto/QUA006.png"
+  },
+
+  {
+    "id": "COZ001",
+    "nome": "Geladeira Duplex Inox",
+    "categoria": "Cozinha",
+    "preco": 1200,
+    "raridade": "Raro",
+    "estoque": 999,
+    "imagem": "assets/produtos/cozinha/COZ001.png"
+  },
+  {
+    "id": "COZ002",
+    "nome": "Geladeira Retrô Azul",
+    "categoria": "Cozinha",
+    "preco": 1000,
+    "raridade": "Raro",
+    "estoque": 999,
+    "imagem": "assets/produtos/cozinha/COZ002.png"
+  },
+  {
+    "id": "COZ003",
+    "nome": "Geladeira Retrô Vermelha",
+    "categoria": "Cozinha",
+    "preco": 1000,
+    "raridade": "Raro",
+    "estoque": 999,
+    "imagem": "assets/produtos/cozinha/COZ003.png"
+  },
+  {
+    "id": "COZ004",
+    "nome": "Geladeira Retrô Verde",
+    "categoria": "Cozinha",
+    "preco": 1000,
+    "raridade": "Raro",
+    "estoque": 999,
+    "imagem": "assets/produtos/cozinha/COZ004.png"
+  },
+  {
+    "id": "COZ005",
+    "nome": "Geladeira Retrô Amarela",
+    "categoria": "Cozinha",
+    "preco": 1000,
+    "raridade": "Raro",
+    "estoque": 999,
+    "imagem": "assets/produtos/cozinha/COZ005.png"
+  },
+  {
+    "id": "COZ006",
+    "nome": "Armário Cozinha Inox",
+    "categoria": "Cozinha",
+    "preco": 900,
+    "raridade": "Raro",
+    "estoque": 999,
+    "imagem": "assets/produtos/cozinha/COZ006.png"
+  },
+  {
+    "id": "COZ007",
+    "nome": "Armário Cozinha Vermelho",
+    "categoria": "Cozinha",
+    "preco": 850,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/cozinha/COZ007.png"
+  },
+  {
+    "id": "COZ008",
+    "nome": "Armário Cozinha Amarelo",
+    "categoria": "Cozinha",
+    "preco": 850,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/cozinha/COZ008.png"
+  },
+  {
+    "id": "COZ009",
+    "nome": "Armário Cozinha Verde",
+    "categoria": "Cozinha",
+    "preco": 850,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/cozinha/COZ009.png"
+  },
+  {
+    "id": "COZ010",
+    "nome": "Armário Cozinha Azul",
+    "categoria": "Cozinha",
+    "preco": 850,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/cozinha/COZ010.png"
+  },
+  {
+    "id": "COZ011",
+    "nome": "Mesa de Cozinha 4 Lugares",
+    "categoria": "Cozinha",
+    "preco": 500,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/cozinha/COZ011.png"
+  },
+  {
+    "id": "COZ012",
+    "nome": "Fogão 4 Bocas Inox",
+    "categoria": "Cozinha",
+    "preco": 800,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/cozinha/COZ012.png"
+  },
+  {
+    "id": "COZ013",
+    "nome": "Fogão 4 Bocas Azul",
+    "categoria": "Cozinha",
+    "preco": 750,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/cozinha/COZ013.png"
+  },
+  {
+    "id": "COZ014",
+    "nome": "Fogão 4 Bocas Vermelho",
+    "categoria": "Cozinha",
+    "preco": 750,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/cozinha/COZ014.png"
+  },
+  {
+    "id": "COZ015",
+    "nome": "Fogão 4 Bocas Verde",
+    "categoria": "Cozinha",
+    "preco": 750,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/cozinha/COZ015.png"
+  },
+  {
+    "id": "COZ016",
+    "nome": "Fogão 4 Bocas Amarelo",
+    "categoria": "Cozinha",
+    "preco": 750,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/cozinha/COZ016.png"
+  },
+
+  {
+    "id": "TEC001",
+    "nome": "Computador Gamer",
+    "categoria": "Tecnologia",
+    "preco": 1800,
+    "raridade": "Épico",
+    "estoque": 999,
+    "imagem": "assets/produtos/tecnologia/TEC001.png"
+  },
+  {
+    "id": "TEC002",
+    "nome": "Mesa para Computador",
+    "categoria": "Tecnologia",
+    "preco": 420,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/tecnologia/TEC002.png"
+  },
+  {
+    "id": "TEC003",
+    "nome": "Celular Super Tecnológico",
+    "categoria": "Tecnologia",
+    "preco": 1600,
+    "raridade": "Épico",
+    "estoque": 999,
+    "imagem": "assets/produtos/tecnologia/TEC003.png"
+  },
+  {
+    "id": "TEC004",
+    "nome": "Notebook Gamer",
+    "categoria": "Tecnologia",
+    "preco": 2200,
+    "raridade": "Épico",
+    "estoque": 999,
+    "imagem": "assets/produtos/tecnologia/TEC004.png"
+  },
+  {
+    "id": "TEC005",
+    "nome": "Robô Humanoide de Limpeza",
+    "categoria": "Tecnologia",
+    "preco": 3000,
+    "raridade": "Lendário",
+    "estoque": 999,
+    "imagem": "assets/produtos/tecnologia/TEC005.png"
+  },
+  {
+    "id": "TEC006",
+    "nome": "Robô Cachorro",
+    "categoria": "Tecnologia",
+    "preco": 2500,
+    "raridade": "Lendário",
+    "estoque": 999,
+    "imagem": "assets/produtos/tecnologia/TEC006.png"
+  },
+  {
+    "id": "TEC007",
+    "nome": "Robô Gato",
+    "categoria": "Tecnologia",
+    "preco": 2500,
+    "raridade": "Lendário",
+    "estoque": 999,
+    "imagem": "assets/produtos/tecnologia/TEC007.png"
+  },
+  {
+    "id": "TEC008",
+    "nome": "Drone Super Tec",
+    "categoria": "Tecnologia",
+    "preco": 1900,
+    "raridade": "Épico",
+    "estoque": 999,
+    "imagem": "assets/produtos/tecnologia/TEC008.png"
+  },
+  {
+    "id": "TEC009",
+    "nome": "Aparelho de Som Tecnológico",
+    "categoria": "Tecnologia",
+    "preco": 1100,
+    "raridade": "Raro",
+    "estoque": 999,
+    "imagem": "assets/produtos/tecnologia/TEC009.png"
+  },
+
+  {
+    "id": "JAR001",
+    "nome": "Piscina",
+    "categoria": "Jardim",
+    "preco": 3000,
+    "raridade": "Lendário",
+    "estoque": 999,
+    "imagem": "assets/produtos/jardim/JAR001.png"
+  },
+  {
+    "id": "JAR002",
+    "nome": "Árvore",
+    "categoria": "Jardim",
+    "preco": 300,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/jardim/JAR002.png"
+  },
+  {
+    "id": "JAR003",
+    "nome": "Coqueiro",
+    "categoria": "Jardim",
+    "preco": 450,
+    "raridade": "Comum",
+    "estoque": 999,
+    "imagem": "assets/produtos/jardim/JAR003.png"
+  },
+
+  {
+    "id": "LAV001",
+    "nome": "Máquina de Lavar",
+    "categoria": "Lavanderia",
+    "preco": 900,
+    "raridade": "Raro",
+    "estoque": 999,
+    "imagem": "assets/produtos/lavanderia/LAV001.png"
+  },
+
+  {
+    "id": "TRA001",
+    "nome": "Motinha Elétrica",
+    "categoria": "Transporte",
+    "preco": 1800,
+    "raridade": "Épico",
+    "estoque": 999,
+    "imagem": "assets/produtos/transporte/TRA001.png"
+  }
+]

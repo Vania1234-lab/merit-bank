@@ -1,0 +1,2150 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>EletivaBank - Painel Administrativo</title>
+    <style>
+        :root { --nu-roxo:#820AD1; --nu-roxo-hover:#6a0ab0; --bg-gray:#f5f5f5; --verde:#28a745; --roxo-claro:#6f42c1; --azul:#17a2b8; --vermelho:#dc3545; --cinza:#6c757d; }
+        * { box-sizing: border-box; }
+        body { font-family:'Segoe UI', Roboto, sans-serif; background-color:var(--bg-gray); padding:20px; display:flex; flex-direction:column; align-items:center; min-height:100vh; margin:0; }
+        input, select { display:block; width:100%; margin:8px 0; padding:12px; border:1px solid #ddd; border-radius:8px; background:white; }
+        button { background-color:var(--nu-roxo); color:white; border:none; padding:12px 18px; margin:5px; cursor:pointer; border-radius:12px; font-weight:600; transition:.3s; }
+        button:hover { background-color:var(--nu-roxo-hover); }
+        table { width:100%; border-collapse:separate; border-spacing:0; background:white; margin-top:15px; border-radius:16px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,.05); }
+        th,td { border-bottom:1px solid #eee; padding:12px; text-align:left; vertical-align:middle; }
+        th { background:#fafafa; color:#333; font-weight:700; }
+        .box { border:none; padding:20px; border-radius:16px; background:white; margin:15px 0; display:none; box-shadow:0 4px 12px rgba(0,0,0,.1); }
+        #login { background:white; padding:40px; border-radius:20px; box-shadow:0 10px 25px rgba(0,0,0,.1); text-align:center; width:320px; }
+        #painel { width:100%; max-width:1180px; display:none; }
+        .info-rendimento { background:#f0f8ff; color:var(--nu-roxo); padding:15px; border-radius:12px; margin-bottom:20px; border:1px solid #d1e7ff; font-weight:600; }
+        .tela { display:none; }
+        #telaInicial { display:block; }
+        .menu-principal, .botoes-alunos { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; }
+        .cabecalho-tela { display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap; margin-bottom:10px; }
+        .grid-mestres { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:15px; }
+        .card-mestre { background:white; padding:18px; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,.08); }
+        .grid-form { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; }
+        .filtros-alunos { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; margin:15px 0; align-items:end; }
+        .table-wrap { overflow-x:auto; width:100%; }
+        .btn-verde { background:var(--verde); } .btn-csv { background:var(--roxo-claro); } .btn-relatorio { background:var(--verde); }
+        .btn-voltar,.btn-cinza { background:var(--cinza); } .btn-ajuste { background:var(--azul); padding:6px 10px; } .btn-excluir { background:var(--vermelho); padding:6px 10px; }
+        .btn-mini { padding:5px 8px; border-radius:8px; font-size:12px; }
+        .status-ativo { color:#155724; background:#d4edda; padding:4px 8px; border-radius:999px; font-weight:700; }
+        .status-inativo { color:#721c24; background:#f8d7da; padding:4px 8px; border-radius:999px; font-weight:700; }
+        .status-transferido { color:#856404; background:#fff3cd; padding:4px 8px; border-radius:999px; font-weight:700; }
+
+        .dashboard-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin:18px 0 24px; }
+        .dashboard-card { background:white; border-radius:18px; padding:18px; box-shadow:0 4px 12px rgba(0,0,0,.08); border-left:6px solid var(--nu-roxo); }
+        .dashboard-card small { color:#666; font-weight:700; text-transform:uppercase; letter-spacing:.3px; }
+        .dashboard-card .numero { font-size:28px; font-weight:800; color:#333; margin-top:6px; }
+        .dashboard-card .sub { color:#777; font-size:12px; margin-top:4px; }
+        .versao-selo { display:inline-block; background:#efe3ff; color:var(--nu-roxo); padding:6px 10px; border-radius:999px; font-weight:800; font-size:12px; margin-left:8px; }
+        small { color:#666; display:block; line-height:1.4; }
+        .vila-card { background: linear-gradient(135deg,#fff,#f4e8ff); border:2px dashed var(--nu-roxo); border-radius:20px; padding:22px; box-shadow:0 6px 18px rgba(130,10,209,.12); }
+        .vila-mapa-preview { font-family:monospace; background:#1f1330; color:#fff; border-radius:16px; padding:18px; line-height:1.8; overflow-x:auto; margin-top:15px; }
+        .vila-status { display:inline-block; background:#fff3cd; color:#856404; border:1px solid #ffeeba; padding:6px 10px; border-radius:999px; font-weight:700; }
+
+        .produto-img { width:54px; height:54px; object-fit:cover; border-radius:12px; border:1px solid #eee; background:#fafafa; }
+        .produto-sem-img { width:54px; height:54px; border-radius:12px; border:1px dashed #ccc; background:#f8f9fa; display:flex; align-items:center; justify-content:center; font-size:22px; }
+        .produto-preview-card { display:flex; gap:12px; align-items:center; background:#fafafa; border:1px solid #eee; border-radius:14px; padding:12px; margin-top:8px; }
+
+    
+        /* ===== VILA MERIT ADM - MAPA E GERENCIAMENTO ===== */
+        .vila-adm-full {
+            position:fixed;
+            inset:0;
+            z-index:9999;
+            background:#05050f;
+            display:none;
+            overflow:auto;
+        }
+        .vila-adm-wrap {
+            position:relative;
+            width:min(100vw,1536px);
+            aspect-ratio:1536/1024;
+            min-width:980px;
+            margin:auto;
+            box-shadow:0 0 0 4px #000, 0 0 32px rgba(255,57,212,.45);
+        }
+        .vila-adm-page {
+            min-height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            background:#05050f;
+            overflow:auto;
+        }
+        .vila-adm-img {
+            position:absolute;
+            inset:0;
+            width:100%;
+            height:100%;
+            object-fit:contain;
+            image-rendering:pixelated;
+            user-select:none;
+            pointer-events:none;
+        }
+        .hotspot-adm {
+            position:absolute;
+            display:block;
+            background:rgba(255,255,255,0.01);
+            border:0;
+            cursor:pointer;
+            z-index:5;
+            margin:0;
+            padding:0;
+            box-shadow:none;
+        }
+        .hotspot-adm:hover {
+            background:rgba(255,226,74,.12);
+            outline:4px solid #ffe24a;
+            box-shadow:0 0 24px rgba(255,226,74,.95);
+            transform:none;
+        }
+        .hotspot-adm-loja { left:62.2%; top:17.8%; width:15.2%; height:24.5%; }
+        .hotspot-adm-sair { left:89.2%; top:2.2%; width:9%; height:6%; }
+        .hotspot-adm-produtos { left:43.5%; top:61.5%; width:16%; height:20%; }
+
+        .painel-loja-adm-full {
+            position:fixed;
+            inset:0;
+            z-index:10000;
+            display:none;
+            overflow:auto;
+            background:#f4f4f9;
+        }
+        .painel-loja-adm-header {
+            position:sticky;
+            top:0;
+            z-index:2;
+            background:linear-gradient(90deg,#6c00b8,#a100ff);
+            color:white;
+            padding:16px;
+            box-shadow:0 4px 18px rgba(0,0,0,.2);
+        }
+        .painel-loja-adm-header-inner {
+            max-width:1180px;
+            margin:0 auto;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            flex-wrap:wrap;
+            gap:12px;
+        }
+        .painel-loja-adm-container {
+            max-width:1180px;
+            margin:0 auto;
+            padding:18px;
+        }
+        .produto-adm-layout {
+            display:grid;
+            grid-template-columns:360px 1fr;
+            gap:18px;
+            align-items:start;
+        }
+        .produto-form-card, .produto-lista-card {
+            background:white;
+            border-radius:20px;
+            padding:20px;
+            box-shadow:0 8px 24px rgba(0,0,0,.08);
+        }
+        .produto-imagem-preview-grande {
+            width:100%;
+            height:220px;
+            border-radius:18px;
+            border:2px dashed #cfc3ff;
+            background:linear-gradient(135deg,#f8f4ff,#fff7e6);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            overflow:hidden;
+            margin:10px 0;
+        }
+        .produto-imagem-preview-grande img {
+            max-width:100%;
+            max-height:100%;
+            object-fit:contain;
+            image-rendering:pixelated;
+        }
+        .produto-imagem-preview-grande .sem-img {
+            font-size:56px;
+            opacity:.55;
+        }
+        .produtos-adm-grid {
+            display:grid;
+            grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
+            gap:14px;
+            margin-top:15px;
+        }
+        .produto-adm-card {
+            background:#fff;
+            border:1px solid #eee;
+            border-radius:18px;
+            overflow:hidden;
+            box-shadow:0 5px 14px rgba(0,0,0,.07);
+        }
+        .produto-adm-card-img {
+            height:140px;
+            background:#101042;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border-bottom:1px solid #eee;
+        }
+        .produto-adm-card-img img {
+            max-width:100%;
+            max-height:100%;
+            object-fit:contain;
+            image-rendering:pixelated;
+            padding:10px;
+        }
+        .produto-adm-card-body {
+            padding:12px;
+        }
+        .produto-adm-card-body h4 {
+            margin:0 0 6px;
+            color:var(--nu-roxo);
+        }
+        .produto-acoes {
+            display:flex;
+            gap:6px;
+            flex-wrap:wrap;
+        }
+        .produto-acoes button {
+            width:auto;
+            padding:8px 10px;
+            font-size:12px;
+        }
+        @media(max-width:900px){
+            .produto-adm-layout { grid-template-columns:1fr; }
+            .vila-adm-page { justify-content:flex-start; align-items:flex-start; }
+        }
+
+    </style>
+</head>
+<body>
+    <div id="login">
+        <h2 style="color:var(--nu-roxo);">EletivaBank Admin</h2>
+        <input type="email" id="email" placeholder="E-mail da administradora">
+        <input type="password" id="senha" placeholder="Senha de acesso">
+        <button onclick="acessar()" style="width:100%;">Entrar</button>
+    </div>
+
+    <div id="painel">
+        <h2 style="color:#333;">Painel de Controle</h2>
+        <div id="adminLogado" style="margin-bottom:15px;color:#666;font-size:14px;"></div>
+        <button onclick="sairAdmin()" class="btn-cinza" style="margin-bottom:20px;">Sair do ADM</button>
+        <div class="info-rendimento" id="bannerTaxa">📈 Carregando...</div>
+
+        <div id="telaInicial" class="tela">
+            <h3>🏠 Painel Administrativo <span class="versao-selo">MERIT BANK ADM • v1.0</span></h3>
+            <p style="color:#666;">Visão geral da plataforma e atalhos principais.</p>
+
+            <div class="dashboard-grid">
+                <div class="dashboard-card"><small>🏫 Escolas</small><div class="numero" id="dashEscolas">0</div><div class="sub">unidades cadastradas</div></div>
+                <div class="dashboard-card"><small>👩‍🏫 Professores</small><div class="numero" id="dashProfessores">0</div><div class="sub">professores cadastrados</div></div>
+                <div class="dashboard-card"><small>👨‍🎓 Estudantes</small><div class="numero" id="dashAlunos">0</div><div class="sub">alunos cadastrados</div></div>
+                <div class="dashboard-card"><small>📚 Questões</small><div class="numero" id="dashQuestoes">0</div><div class="sub">questões oficiais</div></div>
+                <div class="dashboard-card"><small>📝 Atividades</small><div class="numero" id="dashAtividades">0</div><div class="sub">atividades publicadas</div></div>
+                <div class="dashboard-card"><small>🛒 Produtos</small><div class="numero" id="dashProdutos">0</div><div class="sub">itens cadastrados</div></div>
+                <div class="dashboard-card"><small>💰 Saldo em circulação</small><div class="numero" id="dashSaldo">M$ 0,00</div><div class="sub">soma dos saldos dos alunos</div></div>
+                <div class="dashboard-card"><small>🏦 Poupança total</small><div class="numero" id="dashPoupanca">M$ 0,00</div><div class="sub">soma das poupanças</div></div>
+                <div class="dashboard-card"><small>📋 Transações</small><div class="numero" id="dashTransacoes">0</div><div class="sub">movimentações registradas</div></div>
+            </div>
+
+            <div class="menu-principal">
+                <button onclick="mostrarTela('telaAlunos')">👨‍🎓 Área de Alunos</button>
+                <button onclick="mostrarTela('telaCadastros')">🏫 Escolas, Séries e Turmas</button>
+                <button onclick="mostrarTela('telaProfessores')">👩‍🏫 Professores</button>
+                <button onclick="mostrarTela('telaProdutos')">🛒 Produtos</button>
+                <button onclick="mostrarTela('telaQuestoes')">📚 Banco de Questões</button>
+                <button onclick="document.getElementById('relatorioBox').style.display='block'" class="btn-relatorio">📊 Gerar Transações</button>
+                <button onclick="mostrarTela('telaVila')" style="background:#ff9800;">🏠 Vila Merit</button>
+                <button onclick="alert('Configurações serão criadas em uma etapa futura.')">⚙ Configurações</button>
+            </div>
+        </div>
+
+        <div id="telaCadastros" class="tela">
+            <div class="cabecalho-tela">
+                <div>
+                    <h3>🏫 Escolas, Séries e Turmas</h3>
+                    <p style="color:#666;margin-top:-5px;">Cadastre a escola, depois crie turmas usando apenas número da série e letra da turma.</p>
+                </div>
+                <button onclick="mostrarTela('telaInicial')" class="btn-voltar">← Voltar ao Painel Inicial</button>
+            </div>
+
+            <div class="grid-mestres">
+                <div class="card-mestre">
+                    <h4>🏫 Cadastrar Escola</h4>
+                    <input type="text" id="novaEscola" placeholder="Ex.: Moacyr Miranda Pinto">
+                    <button onclick="salvarEscola()" class="btn-verde" style="width:100%;">Salvar Escola</button>
+                </div>
+                <div class="card-mestre">
+                    <h4>📚 Cadastrar Série</h4>
+                    <input type="number" id="novaSerieNumero" placeholder="Digite apenas o número. Ex.: 7" min="1" max="9">
+                    <small>O sistema gravará como: 7ª série, 8ª série, 9ª série...</small>
+                    <button onclick="salvarSerie()" class="btn-verde" style="width:100%;">Salvar Série</button>
+                </div>
+                <div class="card-mestre">
+                    <h4>👥 Cadastrar Turma</h4>
+                    <select id="turmaEscola"></select>
+                    <select id="turmaSerie"></select>
+                    <input type="text" id="novaTurmaLetra" placeholder="Digite apenas a letra. Ex.: A, B, C" maxlength="3">
+                    <small>Exemplo gerado: Moacyr Miranda Pinto — 7ª série A</small>
+                    <button onclick="salvarTurma()" class="btn-verde" style="width:100%;">Salvar Turma</button>
+                </div>
+            
+            <div class="card-mestre" style="margin-top:15px;">
+                <h4>📄 Gerar arquivo de acessos dos estudantes</h4>
+                <small>Escolha a escola, a série e a turma para baixar um arquivo compatível com Excel contendo: nome do titular da conta, número da conta, dígito e senha.</small>
+                <div class="grid-form" style="margin-top:10px;">
+                    <select id="relatorioAcessoEscola" onchange="atualizarRelatorioAcessoSeries(); atualizarRelatorioAcessoTurmas();">
+                        <option value="">Selecione a escola</option>
+                    </select>
+                    <select id="relatorioAcessoSerie" onchange="atualizarRelatorioAcessoTurmas()">
+                        <option value="">Selecione a série</option>
+                    </select>
+                    <select id="relatorioAcessoTurma">
+                        <option value="">Selecione a turma</option>
+                    </select>
+                </div>
+                <button onclick="gerarArquivoAcessosAlunos()" class="btn-verde" style="width:100%;margin-left:0;margin-right:0;">📥 Baixar acessos em Excel/CSV</button>
+            </div>
+</div>
+
+            <div class="table-wrap">
+                <table><thead><tr><th>Escolas cadastradas</th><th>Ações</th></tr></thead><tbody id="tabelaEscolas"></tbody></table>
+                <table><thead><tr><th>Séries cadastradas</th><th>Número</th><th>Ações</th></tr></thead><tbody id="tabelaSeries"></tbody></table>
+                <table><thead><tr><th>Turma gerada</th><th>Escola</th><th>Série</th><th>Letra</th><th>Ações</th></tr></thead><tbody id="tabelaTurmas"></tbody></table>
+            </div>
+        </div>
+
+        <div id="telaAlunos" class="tela">
+            <div class="cabecalho-tela">
+                <div>
+                    <h3>👨‍🎓 Área de Alunos</h3>
+                    <p style="color:#666;margin-top:-5px;">Cadastre, importe, filtre e gerencie os estudantes.</p>
+                </div>
+                <button onclick="mostrarTela('telaInicial')" class="btn-voltar">← Voltar ao Painel Inicial</button>
+            </div>
+
+            <div class="botoes-alunos">
+                <button onclick="document.getElementById('form').style.display='block'">+ Cadastrar Aluno</button>
+                <button onclick="document.getElementById('formCSV').style.display='block'" class="btn-csv">📂 Importar CSV</button>
+            </div>
+
+            <div class="filtros-alunos">
+                <select id="filtroEscola" onchange="atualizarFiltroSeries(); atualizarFiltroTurmas(); filtrarTabela();"><option value="">🏫 Todas as escolas</option></select>
+                <select id="filtroSerie" onchange="atualizarFiltroTurmas(); filtrarTabela();"><option value="">📚 Todas as séries</option></select>
+                <select id="filtroTurma" onchange="filtrarTabela()"><option value="">👥 Todas as turmas</option></select>
+                <select id="filtroStatus" onchange="filtrarTabela()"><option value="">🟢 Todos os status</option><option value="Ativo">Ativo</option><option value="Inativo">Inativo</option><option value="Transferido">Transferido</option></select>
+                <input type="text" id="busca" placeholder="🔍 Localizar aluno..." onkeyup="filtrarTabela()">
+            </div>
+
+            <div id="formCSV" class="box">
+                <h4>Importar CSV</h4>
+                <small>Modelo novo: Conta;Digito;Nome;Senha;Saldo;Escola;Serie;Turma;Status</small>
+                <small>Exemplo: 1;0;Ana Silva;1234;100;Moacyr Miranda Pinto;7;A;Ativo</small>
+                <input type="file" id="csvFile" accept=".csv">
+                <button onclick="importarCSV()" style="width:100%;background-color:#6f42c1;">Processar Arquivo</button>
+            </div>
+
+            <div id="form" class="box" style="max-width:800px;">
+                <h4>Cadastrar Aluno</h4>
+                <div class="grid-form">
+                    <input type="text" id="conta" placeholder="Conta">
+                    <input type="text" id="digito" placeholder="Dígito">
+                    <input type="text" id="nome" placeholder="Nome completo">
+                    <select id="alunoEscola" onchange="atualizarAlunoSeries(); atualizarSelectTurmasAluno();"></select>
+                    <select id="alunoSerie" onchange="atualizarSelectTurmasAluno();"></select>
+                    <select id="alunoTurma"></select>
+                    <select id="statusAluno"><option value="Ativo">Ativo</option><option value="Inativo">Inativo</option><option value="Transferido">Transferido</option></select>
+                    <input type="text" id="senhaC" placeholder="Senha">
+                    <input type="number" id="saldo" placeholder="Saldo Inicial">
+                </div>
+                <button onclick="salvarAluno()" style="width:100%;">Gravar Aluno</button>
+            </div>
+
+            <div class="info-rendimento" id="statusTempoRealAlunos" style="background:#e8fff0;color:#155724;border-color:#c3e6cb;">🔄 Saldos dos alunos sincronizados em tempo real com o Painel Professor.</div>
+
+            <div class="table-wrap">
+                <div class="info-rendimento" style="background:#fff3cd;color:#856404;border-color:#ffeeba;">💡 Alunos antigos importados pelo Excel podem aparecer como <b>Sem escola definida</b>. Eles continuam salvos; depois você pode recadastrar/atualizar a escola, série e turma.</div>
+                <table>
+                    <thead><tr><th>Nome</th><th>Escola</th><th>Série</th><th>Turma</th><th>Status</th><th>Conta</th><th>Saldo</th><th>Poupança</th><th>Senha</th><th>Ações</th></tr></thead>
+                    <tbody id="tabela"></tbody>
+                </table>
+            </div>
+
+            <div class="table-wrap" style="margin-top:20px;">
+                <h4>📋 Últimas movimentações registradas</h4>
+                <small>Quando o professor der ou retirar dinheiro, a transação aparecerá aqui e o saldo do aluno será atualizado na tabela acima.</small>
+                <table>
+                    <thead><tr><th>Data/Hora</th><th>Aluno</th><th>Valor</th><th>Feito por</th><th>Observação</th></tr></thead>
+                    <tbody id="tabelaTransacoesRecentes"><tr><td colspan="5">Carregando movimentações...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="telaProfessores" class="tela">
+            <div class="cabecalho-tela">
+                <div>
+                    <h3>👩‍🏫 Área de Professores</h3>
+                    <p style="color:#666;margin-top:-5px;">Cadastre, consulte e gerencie os professores vinculados às escolas.</p>
+                </div>
+                <button onclick="mostrarTela('telaInicial')" class="btn-voltar">← Voltar ao Painel Inicial</button>
+            </div>
+
+            <div class="botoes-alunos">
+                <button onclick="document.getElementById('formProfessor').style.display='block'">+ Cadastrar Professor</button>
+                <button onclick="limparFiltrosProfessores()" class="btn-cinza">🔄 Mostrar todos</button>
+            </div>
+
+            <div id="formProfessor" class="box" style="max-width:900px;">
+                <h4>Cadastrar Professor</h4>
+                <div class="grid-form">
+                    <input type="text" id="profNome" placeholder="Nome completo do professor">
+                    <input type="email" id="profEmail" placeholder="E-mail do professor">
+                    <div style="display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #ddd;border-radius:8px;padding:0 8px;">
+                        <input type="password" id="profSenha" placeholder="Senha de acesso do professor" style="border:none;margin:0;width:100%;">
+                        <button type="button" onclick="toggleSenhaCampo('profSenha')" class="btn-mini" style="margin:0;">👁</button>
+                    </div>
+                    <input type="text" id="profDisciplina" placeholder="Disciplina. Ex.: Matemática">
+                    <select id="profEscola" onchange="atualizarProfSeries(); atualizarSelectTurmasProfessor();"></select>
+                    <select id="profSerie" onchange="atualizarSelectTurmasProfessor();"></select>
+                    <select id="profTurma"></select>
+                    <select id="profStatus"><option value="Ativo">Ativo</option><option value="Inativo">Inativo</option></select>
+                </div>
+                <small>Este cadastro define quais alunos o professor poderá acompanhar no Painel Professor: escola + série + turma. A senha fica oculta por padrão e pode ser exibida pelo botão de olho.</small>
+                <button onclick="salvarProfessor()" style="width:100%;">Gravar Professor</button>
+            </div>
+
+            <div class="filtros-alunos">
+                <select id="filtroProfEscola" onchange="atualizarFiltroProfSeries(); atualizarFiltroProfTurmas(); filtrarProfessores()"><option value="">🏫 Todas as escolas</option></select>
+                <select id="filtroProfSerie" onchange="atualizarFiltroProfTurmas(); filtrarProfessores()"><option value="">📚 Todas as séries</option></select>
+                <select id="filtroProfTurma" onchange="filtrarProfessores()"><option value="">👥 Todas as turmas</option></select>
+                <select id="filtroProfStatus" onchange="filtrarProfessores()"><option value="">🟢 Todos os status</option><option value="Ativo">Ativo</option><option value="Inativo">Inativo</option></select>
+                <input type="text" id="buscaProfessor" placeholder="🔍 Localizar professor..." onkeyup="filtrarProfessores()">
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Nome</th><th>E-mail</th><th>Senha</th><th>Disciplina</th><th>Escola</th><th>Série</th><th>Turma</th><th>Status</th><th>Ações</th></tr></thead>
+                    <tbody id="tabelaProfessores"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="telaProdutos" class="tela">
+            <div class="cabecalho-tela">
+                <div>
+                    <h3>🛒 Produtos — Merit Magazine</h3>
+                    <p style="color:#666;margin-top:-5px;">Cadastre e gerencie os produtos que futuramente aparecerão na loja dos estudantes.</p>
+                </div>
+                <button onclick="mostrarTela('telaInicial')" class="btn-voltar">← Voltar ao Painel Inicial</button>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="dashboard-card"><small>📦 Produtos cadastrados</small><div class="numero" id="prodTotal">0</div><div class="sub">total de itens</div></div>
+                <div class="dashboard-card"><small>🟢 Ativos</small><div class="numero" id="prodAtivos">0</div><div class="sub">visíveis na loja</div></div>
+                <div class="dashboard-card"><small>🔴 Inativos</small><div class="numero" id="prodInativos">0</div><div class="sub">ocultos da loja</div></div>
+                <div class="dashboard-card"><small>📉 Estoque baixo</small><div class="numero" id="prodEstoqueBaixo">0</div><div class="sub">5 unidades ou menos</div></div>
+            </div>
+
+            <div class="botoes-alunos">
+                <button onclick="abrirFormularioProduto()">+ Cadastrar Produto</button>
+                <button onclick="limparFiltrosProdutos()" class="btn-cinza">🔄 Mostrar todos</button>
+            </div>
+
+            <div id="formProduto" class="box" style="max-width:1000px;">
+                <h4 id="tituloFormProduto">Cadastrar Produto</h4>
+                <input type="hidden" id="produtoEditandoId">
+                <div class="grid-form">
+                    <input type="text" id="produtoNome" placeholder="Nome do produto. Ex.: Caderno">
+                    <select id="produtoCategoria">
+                        <option value="Sala">🛋 Sala</option>
+                        <option value="Quarto">🛏 Quarto</option>
+                        <option value="Cozinha">🍳 Cozinha</option>
+                        <option value="Eletrônicos">📺 Eletrônicos</option>
+                        <option value="Jardim">🌳 Jardim</option>
+                        <option value="Pets">🐶 Pets</option>
+                        <option value="Decoração">✨ Decoração</option>
+                    
+                        <option value="Tecnologia">💻 Tecnologia</option>
+                    
+                        <option value="Lavanderia">🧺 Lavanderia</option>
+                    
+                        <option value="Transporte">🛵 Transporte</option>
+                    </select>
+                    <input type="number" id="produtoPreco" placeholder="Preço em Merit$. Ex.: 50" min="0" step="0.01">
+                    <input type="number" id="produtoEstoque" placeholder="Estoque. Ex.: 20" min="0" step="1">
+                    <select id="produtoStatus">
+                        <option value="Ativo">Ativo</option>
+                        <option value="Inativo">Inativo</option>
+                    </select>
+                    <select id="produtoPermiteDesconto">
+                        <option value="Não">Permitir desconto? Não</option>
+                        <option value="Sim">Permitir desconto? Sim</option>
+                    </select>
+                    <input type="number" id="produtoDesconto" placeholder="% desconto. Ex.: 10" min="0" max="100" step="1">
+                    <input type="text" id="produtoImagem" placeholder="URL da imagem do produto (opcional)">
+                </div>
+                <textarea id="produtoDescricao" placeholder="Descrição do produto" style="width:100%;min-height:80px;margin:8px 0;padding:12px;border:1px solid #ddd;border-radius:8px;font-family:inherit;"></textarea>
+                <div id="previewProduto" class="produto-preview-card" style="display:none;"></div>
+                <button onclick="salvarProduto()" style="width:100%;">Salvar Produto</button>
+                <button onclick="cancelarEdicaoProduto()" class="btn-cinza" style="width:100%;">Cancelar</button>
+            </div>
+
+            <div class="filtros-alunos">
+                <input type="text" id="buscaProduto" placeholder="🔍 Buscar produto..." onkeyup="filtrarProdutos()">
+                <select id="filtroProdutoCategoria" onchange="filtrarProdutos()">
+                    <option value="">Todas as categorias</option>
+                    <option value="Sala">Sala</option>
+                    <option value="Quarto">Quarto</option>
+                    <option value="Cozinha">Cozinha</option>
+                    <option value="Eletrônicos">Eletrônicos</option>
+                    <option value="Jardim">Jardim</option>
+                    <option value="Pets">Pets</option>
+                    <option value="Decoração">Decoração</option>
+                
+                        <option value="Tecnologia">Tecnologia</option>
+                    
+                        <option value="Lavanderia">Lavanderia</option>
+                    
+                        <option value="Transporte">Transporte</option>
+                    </select>
+                <select id="filtroProdutoStatus" onchange="filtrarProdutos()">
+                    <option value="">Todos os status</option>
+                    <option value="Ativo">Ativo</option>
+                    <option value="Inativo">Inativo</option>
+                </select>
+                <select id="filtroProdutoEstoque" onchange="filtrarProdutos()">
+                    <option value="">Todos os estoques</option>
+                    <option value="baixo">Estoque baixo</option>
+                    <option value="zerado">Estoque zerado</option>
+                </select>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Imagem</th>
+                            <th>Produto</th>
+                            <th>Categoria</th>
+                            <th>Preço</th>
+                            <th>Desconto</th>
+                            <th>Preço final</th>
+                            <th>Estoque</th>
+                            <th>Status</th>
+                            <th>Descrição</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaProdutos"><tr><td colspan="10">Carregando produtos...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <div id="telaQuestoes" class="tela">
+            <div class="cabecalho-tela">
+                <div>
+                    <h3>📚 Banco Oficial de Questões</h3>
+                    <p style="color:#666;margin-top:-5px;">Cadastre, consulte, edite e exclua questões oficiais da plataforma.</p>
+                </div>
+                <button onclick="mostrarTela('telaInicial')" class="btn-voltar">← Voltar ao Painel Inicial</button>
+            </div>
+
+            <div class="botoes-alunos">
+                <button onclick="abrirFormularioQuestao()">+ Cadastrar Questão</button>
+                <button onclick="limparFiltrosQuestoes()" class="btn-cinza">🔄 Mostrar todas</button>
+            </div>
+
+            <div id="formQuestao" class="box" style="max-width:1000px;">
+                <h4 id="tituloFormQuestao">Cadastrar Questão Oficial</h4>
+                <input type="hidden" id="questaoEditandoId">
+                <div class="grid-form">
+                    <input type="text" id="questaoCodigo" placeholder="Código da questão. Ex.: MAT-0001">
+                    <input type="text" id="questaoDisciplina" placeholder="Disciplina. Ex.: Matemática">
+                    <select id="questaoSerie"></select>
+                    <input type="text" id="questaoTema" placeholder="Tema. Ex.: Porcentagem">
+                    <input type="text" id="questaoHabilidade" placeholder="Habilidade BNCC/SAEB/SARESP (opcional)">
+                    <select id="questaoDificuldade">
+                        <option value="Fácil">Fácil</option>
+                        <option value="Médio">Médio</option>
+                        <option value="Difícil">Difícil</option>
+                    </select>
+                    <input type="number" id="questaoValorSugerido" placeholder="Valor sugerido (Merit$). Ex.: 50" min="0" step="0.01">
+                    <input type="number" id="questaoTempoEstimado" placeholder="Tempo estimado (minutos). Ex.: 10" min="0" step="1">
+                    <select id="questaoStatus">
+                        <option value="Ativa">Ativa</option>
+                        <option value="Inativa">Inativa</option>
+                    </select>
+                </div>
+                <textarea id="questaoEnunciado" placeholder="Enunciado da questão" style="width:100%;min-height:90px;margin:8px 0;padding:12px;border:1px solid #ddd;border-radius:8px;font-family:inherit;"></textarea>
+                <div class="grid-form">
+                    <input type="text" id="questaoA" placeholder="Alternativa A">
+                    <input type="text" id="questaoB" placeholder="Alternativa B">
+                    <input type="text" id="questaoC" placeholder="Alternativa C">
+                    <input type="text" id="questaoD" placeholder="Alternativa D">
+                    <select id="questaoCorreta">
+                        <option value="A">Correta: A</option>
+                        <option value="B">Correta: B</option>
+                        <option value="C">Correta: C</option>
+                        <option value="D">Correta: D</option>
+                    </select>
+                </div>
+                <textarea id="questaoExplicacao" placeholder="Explicação da resposta (opcional)" style="width:100%;min-height:70px;margin:8px 0;padding:12px;border:1px solid #ddd;border-radius:8px;font-family:inherit;"></textarea>
+                <button onclick="salvarQuestao()" style="width:100%;">Salvar Questão</button>
+                <button onclick="cancelarEdicaoQuestao()" class="btn-cinza" style="width:100%;">Cancelar</button>
+            </div>
+
+            <div class="filtros-alunos">
+                <input type="text" id="buscaQuestao" placeholder="🔍 Buscar questão, tema, habilidade..." onkeyup="filtrarQuestoes()">
+                <select id="filtroQuestaoSerie" onchange="filtrarQuestoes()"><option value="">📚 Todas as séries</option></select>
+                <select id="filtroQuestaoDificuldade" onchange="filtrarQuestoes()">
+                    <option value="">Todos os níveis</option>
+                    <option value="Fácil">Fácil</option>
+                    <option value="Médio">Médio</option>
+                    <option value="Difícil">Difícil</option>
+                </select>
+                <select id="filtroQuestaoStatus" onchange="filtrarQuestoes()">
+                    <option value="">Todos os status</option>
+                    <option value="Ativa">Ativa</option>
+                    <option value="Inativa">Inativa</option>
+                </select>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código</th><th>Disciplina</th><th>Série</th><th>Tema</th><th>Dificuldade</th><th>⏱ Tempo</th><th>💰 Merit$</th><th>Enunciado</th><th>Correta</th><th>Status</th><th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaQuestoes"><tr><td colspan="11">Carregando questões...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="telaVila" class="tela">
+            <div class="cabecalho-tela">
+                <div>
+                    <h3>🏠 Vila Merit — Administração</h3>
+                    <p style="color:#666;margin-top:-5px;">Abra a Vila Merit como o estudante vê, mas com ferramentas de cadastro e edição.</p>
+                </div>
+                <button onclick="mostrarTela('telaInicial')" class="btn-voltar">← Voltar ao Painel Inicial</button>
+            </div>
+
+            <div class="vila-card">
+                <span class="vila-status">🛠 Modo Administradora</span>
+                <h2 style="color:var(--nu-roxo);margin-bottom:6px;">Central da Vila Merit</h2>
+                <p style="color:#555;line-height:1.6;">
+                    Clique para abrir a Vila em tela cheia. Dentro dela, a Merit Magazine poderá ser gerenciada manualmente:
+                    cadastro, edição, imagem, categoria, preço, estoque e status dos produtos.
+                </p>
+
+                <button onclick="abrirVilaAdmTelaCheia()" style="background:#ff9800;width:100%;font-size:18px;">
+                    🎮 Abrir Vila Merit em tela cheia
+                </button>
+
+                <button onclick="abrirLojaAdmTelaCheia()" style="background:#820AD1;width:100%;font-size:18px;">
+                    🛒 Gerenciar Merit Magazine
+                </button>
+            </div>
+        </div>
+
+
+        <div id="relatorioBox" class="box">
+            <h4>Gerar relatório de transações</h4>
+            <input type="date" id="dataInicio">
+            <input type="date" id="dataFim">
+            <button onclick="gerarRelatorio()" style="width:100%;background-color:#28a745;">Baixar Transações CSV</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, collection, getDocs, onSnapshot, updateDoc, deleteDoc, getDoc, addDoc, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+
+        const firebaseConfig = { apiKey:"AIzaSyCG_jh9lDlTj8mAKKm6sYhI9XNSP_OLjFY", authDomain:"banco-sandra.firebaseapp.com", projectId:"banco-sandra", storageBucket:"banco-sandra.firebasestorage.app", messagingSenderId:"506761695598", appId:"1:506761695598:web:783a6bfa6d5ff0b143317f" };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let monitoramentoIniciado = false;
+        let escolas = [], series = [], turmas = [], listaAlunos = [], professores = [], listaTransacoes = [], questoes = [], atividades = [], produtos = [];
+
+        window.mostrarTela = (id) => {
+            document.querySelectorAll('.tela').forEach(t => t.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+        };
+        function formatarMoeda(valor) {
+            return `M$ ${parseFloat(valor || 0).toFixed(2).replace('.', ',')}`;
+        }
+
+        function normalizarTexto(valor) {
+            return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+        }
+
+        function atualizarDashboard() {
+            const setTxt = (id, valor) => { const el = document.getElementById(id); if (el) el.innerText = valor; };
+            const saldoTotal = listaAlunos.reduce((s, a) => s + parseFloat(a.saldo || 0), 0);
+            const poupancaTotal = listaAlunos.reduce((s, a) => s + parseFloat(a.poupanca || 0), 0);
+            setTxt('dashEscolas', escolas.length);
+            setTxt('dashProfessores', professores.length);
+            setTxt('dashAlunos', listaAlunos.length);
+            setTxt('dashQuestoes', questoes.length);
+            setTxt('dashAtividades', atividades.length);
+            setTxt('dashProdutos', produtos.length);
+            setTxt('dashSaldo', formatarMoeda(saldoTotal));
+            setTxt('dashPoupanca', formatarMoeda(poupancaTotal));
+            setTxt('dashTransacoes', listaTransacoes.length);
+        }
+
+
+        window.acessar = async () => {
+            const email = document.getElementById('email').value.trim();
+            const senha = document.getElementById('senha').value;
+            if (!email || !senha) return alert('Digite o e-mail e a senha da administradora.');
+            try { await signInWithEmailAndPassword(auth, email, senha); } catch (erro) { console.error(erro); alert('Login incorreto ou usuário sem acesso.'); }
+        };
+
+        window.sairAdmin = async () => { await signOut(auth); window.location.reload(); };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { document.getElementById('login').style.display='block'; document.getElementById('painel').style.display='none'; return; }
+            try {
+                const adminSnap = await getDoc(doc(db, 'admins', user.uid));
+                if (!adminSnap.exists()) { await signOut(auth); alert('Este usuário existe, mas não está cadastrado como administrador.'); return; }
+                document.getElementById('login').style.display='none';
+                document.getElementById('painel').style.display='block';
+                document.getElementById('adminLogado').innerText = `Administradora logada: ${user.email}`;
+                if (!monitoramentoIniciado) { monitoramentoIniciado = true; iniciarMonitoramentoMestres(); iniciarMonitoramentoAlunos(); iniciarMonitoramentoProfessores(); iniciarMonitoramentoTransacoes(); iniciarMonitoramentoQuestoes(); iniciarMonitoramentoAtividades(); iniciarMonitoramentoProdutos(); carregarTaxa(); }
+            } catch (erro) { console.error(erro); alert('Não foi possível verificar a permissão de administradora. Confira as regras do Firestore.'); }
+        });
+
+        function formatarSerie(valor) {
+            const texto = String(valor || '').trim().replace('º','').replace('ª','');
+            const numero = parseInt(texto, 10);
+            if (isNaN(numero)) return '';
+            return `${numero}ª série`;
+        }
+        function numeroSerie(nome) { const m = String(nome || '').match(/\d+/); return m ? parseInt(m[0],10) : 999; }
+        function normalizarLetraTurma(valor) { return String(valor || '').trim().toUpperCase().replace(/[^A-Z0-9]/g,''); }
+        function montarNomeTurma(escolaNome, serieNome, letra) { return `${escolaNome} — ${serieNome} ${letra}`; }
+
+        function slugify(valor) {
+            return String(valor || '')
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/(^-|-$)/g, '') || String(Date.now());
+        }
+
+        function preencherSelect(id, itens, textoPadrao, selecionado='') {
+            const select = document.getElementById(id); if (!select) return;
+            const atual = selecionado || select.value;
+            select.innerHTML = `<option value="">${textoPadrao}</option>`;
+            itens.forEach(item => { const opt = document.createElement('option'); opt.value = item.id; opt.textContent = item.nome; select.appendChild(opt); });
+            if ([...select.options].some(o => o.value === atual)) select.value = atual;
+        }
+        function preencherSelectTurmas(id, lista, textoPadrao) {
+            const select = document.getElementById(id); if (!select) return;
+            const atual = select.value;
+            select.innerHTML = `<option value="">${textoPadrao}</option>`;
+            lista.forEach(t => { const opt = document.createElement('option'); opt.value = t.id; opt.textContent = t.nomeCompleto || montarNomeTurma(t.escolaNome, t.serieNome, t.letra || t.nome); select.appendChild(opt); });
+            if ([...select.options].some(o => o.value === atual)) select.value = atual;
+        }
+
+        function seriesDaEscola(escolaId) {
+            if (!escolaId) return series;
+            const ids = new Set(turmas.filter(t => t.escolaId === escolaId).map(t => t.serieId));
+            return series.filter(s => ids.has(s.id));
+        }
+
+        window.atualizarRelatorioAcessoSeries = () => {
+            const escolaId = document.getElementById('relatorioAcessoEscola')?.value || '';
+            preencherSelect('relatorioAcessoSerie', seriesDaEscola(escolaId), 'Selecione a série');
+            atualizarRelatorioAcessoTurmas();
+        };
+
+        window.atualizarRelatorioAcessoTurmas = () => {
+            const escolaId = document.getElementById('relatorioAcessoEscola')?.value || '';
+            const serieId = document.getElementById('relatorioAcessoSerie')?.value || '';
+            const filtradas = turmas.filter(t => (!escolaId || t.escolaId === escolaId) && (!serieId || t.serieId === serieId));
+            preencherSelectTurmas('relatorioAcessoTurma', filtradas, 'Selecione a turma');
+        };
+        window.atualizarAlunoSeries = () => {
+            const escolaId = document.getElementById('alunoEscola')?.value || '';
+            preencherSelect('alunoSerie', seriesDaEscola(escolaId), 'Selecione a série');
+        };
+        window.atualizarFiltroSeries = () => {
+            const escolaId = document.getElementById('filtroEscola')?.value || '';
+            preencherSelect('filtroSerie', seriesDaEscola(escolaId), '📚 Todas as séries');
+        };
+        window.atualizarSelectTurmasAluno = () => {
+            const escolaId = document.getElementById('alunoEscola')?.value || '';
+            const serieId = document.getElementById('alunoSerie')?.value || '';
+            const filtradas = turmas.filter(t => (!escolaId || t.escolaId === escolaId) && (!serieId || t.serieId === serieId));
+            preencherSelectTurmas('alunoTurma', filtradas, 'Selecione a turma');
+        };
+        window.atualizarFiltroTurmas = () => {
+            const escolaId = document.getElementById('filtroEscola')?.value || '';
+            const serieId = document.getElementById('filtroSerie')?.value || '';
+            const filtradas = turmas.filter(t => (!escolaId || t.escolaId === escolaId) && (!serieId || t.serieId === serieId));
+            preencherSelectTurmas('filtroTurma', filtradas, '👥 Todas as turmas');
+        };
+        window.atualizarProfSeries = () => {
+            const escolaId = document.getElementById('profEscola')?.value || '';
+            preencherSelect('profSerie', seriesDaEscola(escolaId), 'Selecione a série do professor');
+        };
+        window.atualizarSelectTurmasProfessor = () => {
+            const escolaId = document.getElementById('profEscola')?.value || '';
+            const serieId = document.getElementById('profSerie')?.value || '';
+            const filtradas = turmas.filter(t => (!escolaId || t.escolaId === escolaId) && (!serieId || t.serieId === serieId));
+            preencherSelectTurmas('profTurma', filtradas, 'Selecione a turma do professor');
+        };
+        window.atualizarFiltroProfSeries = () => {
+            const escolaId = document.getElementById('filtroProfEscola')?.value || '';
+            preencherSelect('filtroProfSerie', seriesDaEscola(escolaId), '📚 Todas as séries');
+        };
+        window.atualizarFiltroProfTurmas = () => {
+            const escolaId = document.getElementById('filtroProfEscola')?.value || '';
+            const serieId = document.getElementById('filtroProfSerie')?.value || '';
+            const filtradas = turmas.filter(t => (!escolaId || t.escolaId === escolaId) && (!serieId || t.serieId === serieId));
+            preencherSelectTurmas('filtroProfTurma', filtradas, '👥 Todas as turmas');
+        };
+        function atualizarTodosSelects() {
+            preencherSelect('turmaEscola', escolas, 'Selecione a escola');
+            preencherSelect('turmaSerie', series, 'Selecione a série');
+            preencherSelect('relatorioAcessoEscola', escolas, 'Selecione a escola');
+            atualizarRelatorioAcessoSeries();
+            atualizarRelatorioAcessoTurmas();
+            preencherSelect('alunoEscola', escolas, 'Selecione a escola');
+            atualizarAlunoSeries();
+            preencherSelect('filtroEscola', escolas, '🏫 Todas as escolas');
+            preencherSelect('questaoSerie', series, 'Selecione a série da questão');
+            preencherSelect('filtroQuestaoSerie', series, '📚 Todas as séries');
+            preencherSelect('profEscola', escolas, 'Selecione a escola do professor');
+            atualizarProfSeries();
+            atualizarSelectTurmasProfessor();
+            preencherSelect('filtroProfEscola', escolas, '🏫 Todas as escolas');
+            atualizarFiltroProfSeries();
+            atualizarFiltroProfTurmas();
+            atualizarFiltroSeries();
+            atualizarSelectTurmasAluno();
+            atualizarFiltroTurmas();
+        }
+
+        function iniciarMonitoramentoMestres() {
+            onSnapshot(collection(db, 'escolas'), (snap) => {
+                escolas = []; snap.forEach(d => escolas.push({id:d.id, nome:d.data().nome || ''}));
+                escolas.sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+                renderizarEscolas(); atualizarNomesTurmas(); atualizarTodosSelects(); renderizarTurmas(); renderizarAlunos(); atualizarDashboard(); atualizarDashboard();
+            });
+            onSnapshot(collection(db, 'series'), (snap) => {
+                series = []; snap.forEach(d => series.push({id:d.id, nome:d.data().nome || '', numero:d.data().numero || numeroSerie(d.data().nome)}));
+                series.sort((a,b)=>(a.numero||999)-(b.numero||999));
+                renderizarSeries(); atualizarNomesTurmas(); atualizarTodosSelects(); renderizarTurmas(); renderizarAlunos(); atualizarDashboard(); atualizarDashboard();
+            });
+            onSnapshot(collection(db, 'turmas'), (snap) => {
+                turmas = []; snap.forEach(d => turmas.push({id:d.id, ...d.data()}));
+                atualizarNomesTurmas(); turmas.sort((a,b)=>(a.nomeCompleto || a.nome || '').localeCompare(b.nomeCompleto || b.nome || '', 'pt-BR'));
+                atualizarTodosSelects(); renderizarTurmas(); renderizarAlunos(); atualizarDashboard();
+            });
+        }
+        function atualizarNomesTurmas() {
+            turmas = turmas.map(t => {
+                const escolaNome = t.escolaNome || escolas.find(e => e.id === t.escolaId)?.nome || '';
+                const serieNome = t.serieNome || series.find(s => s.id === t.serieId)?.nome || '';
+                const letra = t.letra || normalizarLetraTurma(t.nome);
+                return {...t, escolaNome, serieNome, letra, nomeCompleto: t.nomeCompleto || (escolaNome && serieNome && letra ? montarNomeTurma(escolaNome, serieNome, letra) : (t.nome || ''))};
+            });
+        }
+        function renderizarEscolas() {
+            const tbody = document.getElementById('tabelaEscolas'); tbody.innerHTML='';
+            escolas.forEach(e => tbody.innerHTML += `<tr><td>${e.nome}</td><td><button onclick="excluirMestre('escolas','${e.id}')" class="btn-excluir">X</button></td></tr>`);
+        }
+        function renderizarSeries() {
+            const tbody = document.getElementById('tabelaSeries'); tbody.innerHTML='';
+            series.forEach(s => tbody.innerHTML += `<tr><td>${s.nome}</td><td>${s.numero || numeroSerie(s.nome)}</td><td><button onclick="excluirMestre('series','${s.id}')" class="btn-excluir">X</button></td></tr>`);
+        }
+        function renderizarTurmas() {
+            const tbody = document.getElementById('tabelaTurmas'); tbody.innerHTML='';
+            turmas.forEach(t => tbody.innerHTML += `<tr><td>${t.nomeCompleto || '-'}</td><td>${t.escolaNome || '-'}</td><td>${t.serieNome || '-'}</td><td>${t.letra || '-'}</td><td><button onclick="excluirMestre('turmas','${t.id}')" class="btn-excluir">X</button></td></tr>`);
+        }
+
+        window.salvarEscola = async () => {
+            const nome = document.getElementById('novaEscola').value.trim();
+            if (!nome) return alert('Digite o nome da escola.');
+            const jaExiste = escolas.some(e => e.nome.toLowerCase() === nome.toLowerCase());
+            if (jaExiste) return alert('Essa escola já está cadastrada.');
+
+            const id = slugify(nome);
+            try {
+                await setDoc(doc(db, 'escolas', id), { nome, criadaEm: serverTimestamp() }, { merge:true });
+                if (!escolas.some(e => e.id === id)) escolas.push({ id, nome });
+                escolas.sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+                renderizarEscolas(); atualizarTodosSelects();
+                document.getElementById('novaEscola').value='';
+                document.getElementById('turmaEscola').value = id;
+                alert('Escola cadastrada e já disponível para seleção!');
+            } catch (erro) {
+                console.error(erro);
+                alert('Não foi possível salvar a escola. Se aparecer “permission-denied” no console, é preciso liberar as coleções escolas, series e turmas nas regras do Firestore.');
+            }
+        };
+
+        window.salvarSerie = async () => {
+            const numero = parseInt(document.getElementById('novaSerieNumero').value, 10);
+            const nome = formatarSerie(numero);
+            if (!nome) return alert('Digite apenas o número da série. Ex.: 7');
+            if (series.some(s => Number(s.numero || numeroSerie(s.nome)) === numero)) return alert('Essa série já está cadastrada.');
+
+            const id = `serie-${numero}`;
+            try {
+                await setDoc(doc(db, 'series', id), { nome, numero, criadaEm: serverTimestamp() }, { merge:true });
+                if (!series.some(s => s.id === id)) series.push({ id, nome, numero });
+                series.sort((a,b)=>(a.numero||999)-(b.numero||999));
+                renderizarSeries(); atualizarTodosSelects();
+                document.getElementById('novaSerieNumero').value='';
+                document.getElementById('turmaSerie').value = id;
+                alert(`${nome} cadastrada e já disponível para seleção!`);
+            } catch (erro) {
+                console.error(erro);
+                alert('Não foi possível salvar a série. Se aparecer “permission-denied” no console, é preciso liberar as coleções escolas, series e turmas nas regras do Firestore.');
+            }
+        };
+
+        window.salvarTurma = async () => {
+            const escolaId = document.getElementById('turmaEscola').value;
+            const serieId = document.getElementById('turmaSerie').value;
+            const letra = normalizarLetraTurma(document.getElementById('novaTurmaLetra').value);
+            const escolaNome = escolas.find(e => e.id === escolaId)?.nome || '';
+            const serieNome = series.find(s => s.id === serieId)?.nome || '';
+            if (!escolaId) return alert('Primeiro cadastre e selecione uma escola.');
+            if (!serieId) return alert('Primeiro cadastre e selecione uma série.');
+            if (!letra) return alert('Digite apenas a letra da turma. Ex.: A');
+            if (turmas.some(t => t.escolaId === escolaId && t.serieId === serieId && (t.letra || '').toUpperCase() === letra)) return alert('Essa turma já existe para essa escola e série.');
+
+            const nomeCompleto = montarNomeTurma(escolaNome, serieNome, letra);
+            const id = `${escolaId}_${serieId}_${letra}`.toLowerCase();
+            const turmaNova = { escolaId, escolaNome, serieId, serieNome, letra, nome: letra, nomeCompleto, criadaEm: serverTimestamp() };
+            try {
+                await setDoc(doc(db, 'turmas', id), turmaNova, { merge:true });
+                if (!turmas.some(t => t.id === id)) turmas.push({ id, ...turmaNova });
+                atualizarNomesTurmas(); renderizarTurmas(); atualizarTodosSelects();
+                document.getElementById('novaTurmaLetra').value='';
+                alert(`Turma cadastrada: ${nomeCompleto}`);
+            } catch (erro) {
+                console.error(erro);
+                alert('Não foi possível salvar a turma. Se aparecer “permission-denied” no console, é preciso liberar as coleções escolas, series e turmas nas regras do Firestore.');
+            }
+        };
+        window.excluirMestre = async (colecao, id) => { if (confirm('Excluir este cadastro?')) await deleteDoc(doc(db, colecao, id)); };
+
+
+        function escaparCSV(valor) {
+            const texto = String(valor ?? '').replace(/"/g, '""');
+            return `"${texto}"`;
+        }
+
+        function separarContaDigito(idAluno) {
+            const partes = String(idAluno || '').split('-');
+            return {
+                conta: partes[0] || '',
+                digito: partes.slice(1).join('-') || ''
+            };
+        }
+
+        function baixarCSV(nomeArquivo, cabecalho, linhas) {
+            const csv = [cabecalho, ...linhas]
+                .map(linha => linha.map(escaparCSV).join(';'))
+                .join('\n');
+
+            const blob = new Blob(['\ufeff', csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = nomeArquivo;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        window.gerarArquivoAcessosAlunos = () => {
+            const escolaId = document.getElementById('relatorioAcessoEscola')?.value || '';
+            const serieId = document.getElementById('relatorioAcessoSerie')?.value || '';
+            const turmaId = document.getElementById('relatorioAcessoTurma')?.value || '';
+
+            if (!escolaId) return alert('Selecione a escola.');
+            if (!serieId) return alert('Selecione a série.');
+            if (!turmaId) return alert('Selecione a turma.');
+
+            const escolaNome = escolas.find(e => e.id === escolaId)?.nome || 'escola';
+            const serieNome = series.find(s => s.id === serieId)?.nome || 'serie';
+            const turmaObj = turmas.find(t => t.id === turmaId);
+            const turmaNome = turmaObj?.nomeCompleto || turmaObj?.nome || turmaObj?.letra || 'turma';
+
+            const alunosFiltrados = listaAlunos
+                .filter(aluno => {
+                    const alunoTurmaNome = String(aluno.turma || aluno.turmaNome || '').trim().toLowerCase();
+                    const turmaNomeLower = String(turmaNome || '').trim().toLowerCase();
+
+                    const porId = String(aluno.escolaId || '') === String(escolaId) &&
+                                  String(aluno.serieId || '') === String(serieId) &&
+                                  String(aluno.turmaId || '') === String(turmaId);
+
+                    const porNome = String(aluno.escola || '').trim().toLowerCase() === escolaNome.trim().toLowerCase() &&
+                                    String(aluno.serie || '').trim().toLowerCase() === serieNome.trim().toLowerCase() &&
+                                    alunoTurmaNome && turmaNomeLower &&
+                                    (alunoTurmaNome === turmaNomeLower || alunoTurmaNome.includes(turmaNomeLower) || turmaNomeLower.includes(alunoTurmaNome));
+
+                    return porId || porNome;
+                })
+                .sort((a, b) => String(a.nome || '').localeCompare(String(b.nome || ''), 'pt-BR'));
+
+            if (!alunosFiltrados.length) {
+                return alert('Nenhum estudante encontrado para essa escola, série e turma.');
+            }
+
+            const linhas = alunosFiltrados.map(aluno => {
+                const contaInfo = separarContaDigito(aluno.id);
+                return [
+                    aluno.nome || '',
+                    contaInfo.conta,
+                    contaInfo.digito,
+                    aluno.senha || ''
+                ];
+            });
+
+            const nomeSeguro = `${escolaNome}_${serieNome}`
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-zA-Z0-9]+/g, '_')
+                .replace(/^_+|_+$/g, '');
+
+            baixarCSV(
+                `acessos_estudantes_${nomeSeguro}.csv`,
+                ['Nome do titular da conta', 'Número da conta', 'Dígito', 'Senha'],
+                linhas
+            );
+        };
+
+        function escaparHTML(valor) {
+            return String(valor ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function calcularPrecoFinalProduto(produto) {
+            const preco = parseFloat(produto.preco || 0);
+            const desconto = produto.permiteDesconto === 'Sim' ? parseFloat(produto.percentualDesconto || 0) : 0;
+            const descontoValido = isNaN(desconto) ? 0 : Math.min(Math.max(desconto, 0), 100);
+            return preco * (1 - descontoValido / 100);
+        }
+
+        function renderizarResumoProdutos() {
+            const setTxt = (id, valor) => { const el = document.getElementById(id); if (el) el.innerText = valor; };
+            const ativos = produtos.filter(p => (p.status || 'Ativo') === 'Ativo').length;
+            const inativos = produtos.filter(p => (p.status || 'Ativo') === 'Inativo').length;
+            const estoqueBaixo = produtos.filter(p => Number(p.estoque || 0) > 0 && Number(p.estoque || 0) <= 5).length;
+            setTxt('prodTotal', produtos.length);
+            setTxt('prodAtivos', ativos);
+            setTxt('prodInativos', inativos);
+            setTxt('prodEstoqueBaixo', estoqueBaixo);
+        }
+
+        function iniciarMonitoramentoProdutos() {
+            onSnapshot(collection(db, 'produtos'), (snap) => {
+                produtos = [];
+                snap.forEach(d => produtos.push({ id:d.id, ...d.data() }));
+                produtos.sort((a,b)=>(a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
+                renderizarProdutos();
+                renderizarResumoProdutos();
+                if (typeof renderizarProdutosVilaAdm === 'function') renderizarProdutosVilaAdm();
+                atualizarDashboard();
+            }, (erro) => {
+                console.error(erro);
+                const tbody = document.getElementById('tabelaProdutos');
+                if (tbody) tbody.innerHTML = '<tr><td colspan="10">⚠️ Não foi possível carregar produtos. Confira as regras da coleção produtos.</td></tr>';
+            });
+        }
+
+        window.abrirFormularioProduto = () => {
+            cancelarEdicaoProduto(false);
+            document.getElementById('formProduto').style.display = 'block';
+            document.getElementById('produtoNome').focus();
+        };
+
+        function dadosFormularioProduto() {
+            const nome = document.getElementById('produtoNome').value.trim();
+            const categoria = document.getElementById('produtoCategoria').value;
+            const descricao = document.getElementById('produtoDescricao').value.trim();
+            const preco = parseFloat(document.getElementById('produtoPreco').value);
+            const estoque = parseInt(document.getElementById('produtoEstoque').value, 10);
+            const status = document.getElementById('produtoStatus').value;
+            const permiteDesconto = document.getElementById('produtoPermiteDesconto').value;
+            const percentualDesconto = parseFloat(document.getElementById('produtoDesconto').value);
+            const imagem = document.getElementById('produtoImagem').value.trim();
+
+            return {
+                nome,
+                categoria,
+                descricao,
+                preco: isNaN(preco) ? 0 : preco,
+                estoque: isNaN(estoque) ? 0 : estoque,
+                status,
+                permiteDesconto,
+                percentualDesconto: isNaN(percentualDesconto) ? 0 : percentualDesconto,
+                imagem
+            };
+        }
+
+        window.salvarProduto = async () => {
+            const editandoId = document.getElementById('produtoEditandoId').value;
+            const dados = dadosFormularioProduto();
+
+            if (!dados.nome) return alert('Digite o nome do produto.');
+            if (!dados.categoria) return alert('Selecione a categoria.');
+            if (dados.preco < 0) return alert('O preço não pode ser negativo.');
+            if (dados.estoque < 0) return alert('O estoque não pode ser negativo.');
+            if (dados.percentualDesconto < 0 || dados.percentualDesconto > 100) return alert('O desconto deve estar entre 0% e 100%.');
+
+            const id = editandoId || slugify(dados.nome + '-' + Date.now());
+
+            try {
+                await setDoc(doc(db, 'produtos', id), {
+                    ...dados,
+                    precoFinal: calcularPrecoFinalProduto(dados),
+                    atualizadoEm: serverTimestamp(),
+                    criadoEm: editandoId ? (produtos.find(p => p.id === editandoId)?.criadoEm || serverTimestamp()) : serverTimestamp()
+                }, { merge:true });
+
+                alert(editandoId ? 'Produto atualizado!' : 'Produto cadastrado!');
+                cancelarEdicaoProduto();
+            } catch (erro) {
+                console.error(erro);
+                alert('Não foi possível salvar o produto. Se aparecer permission-denied, libere escrita na coleção produtos para administradores.');
+            }
+        };
+
+        window.editarProduto = (id) => {
+            const p = produtos.find(x => x.id === id);
+            if (!p) return alert('Produto não encontrado.');
+
+            document.getElementById('produtoEditandoId').value = p.id;
+            document.getElementById('tituloFormProduto').innerText = 'Editar Produto';
+            document.getElementById('produtoNome').value = p.nome || '';
+            document.getElementById('produtoCategoria').value = p.categoria || 'Decoração';
+            document.getElementById('produtoDescricao').value = p.descricao || '';
+            document.getElementById('produtoPreco').value = p.preco ?? '';
+            document.getElementById('produtoEstoque').value = p.estoque ?? '';
+            document.getElementById('produtoStatus').value = p.status || 'Ativo';
+            document.getElementById('produtoPermiteDesconto').value = p.permiteDesconto || 'Não';
+            document.getElementById('produtoDesconto').value = p.percentualDesconto ?? '';
+            document.getElementById('produtoImagem').value = p.imagem || '';
+
+            atualizarPreviewProduto();
+            document.getElementById('formProduto').style.display = 'block';
+            document.getElementById('formProduto').scrollIntoView({ behavior:'smooth', block:'start' });
+        };
+
+        window.excluirProduto = async (id) => {
+            const p = produtos.find(x => x.id === id);
+            if (!confirm(`Excluir o produto "${p?.nome || id}"?`)) return;
+
+            try {
+                await deleteDoc(doc(db, 'produtos', id));
+            } catch (erro) {
+                console.error(erro);
+                alert('Não foi possível excluir o produto. Confira as regras da coleção produtos.');
+            }
+        };
+
+        window.alterarStatusProduto = async (id, statusAtual) => {
+            const novo = statusAtual === 'Ativo' ? 'Inativo' : 'Ativo';
+            try {
+                await updateDoc(doc(db, 'produtos', id), { status: novo, atualizadoEm: serverTimestamp() });
+            } catch (erro) {
+                console.error(erro);
+                alert('Não foi possível alterar o status do produto.');
+            }
+        };
+
+        window.cancelarEdicaoProduto = (fechar=true) => {
+            ['produtoEditandoId','produtoNome','produtoDescricao','produtoPreco','produtoEstoque','produtoDesconto','produtoImagem'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            document.getElementById('produtoCategoria').value = 'Sala';
+            document.getElementById('produtoStatus').value = 'Ativo';
+            document.getElementById('produtoPermiteDesconto').value = 'Não';
+            document.getElementById('tituloFormProduto').innerText = 'Cadastrar Produto';
+            const preview = document.getElementById('previewProduto');
+            if (preview) { preview.style.display = 'none'; preview.innerHTML = ''; }
+            if (fechar) document.getElementById('formProduto').style.display = 'none';
+        };
+
+        window.atualizarPreviewProduto = () => {
+            const preview = document.getElementById('previewProduto');
+            if (!preview) return;
+            const dados = dadosFormularioProduto();
+            const precoFinal = calcularPrecoFinalProduto(dados);
+            preview.style.display = 'flex';
+            preview.innerHTML = `
+                ${dados.imagem ? `<img src="${escaparHTML(dados.imagem)}" class="produto-img" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'produto-sem-img',innerText:'🛒'}))">` : `<div class="produto-sem-img">🛒</div>`}
+                <div>
+                    <b>${escaparHTML(dados.nome || 'Nome do produto')}</b><br>
+                    <small>${escaparHTML(dados.categoria || 'Categoria')} • ${formatarMoeda(dados.preco || 0)} ${dados.permiteDesconto === 'Sim' ? `→ ${formatarMoeda(precoFinal)}` : ''}</small>
+                </div>
+            `;
+        };
+
+        function renderizarProdutos() {
+            const tbody = document.getElementById('tabelaProdutos');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (!produtos.length) {
+                tbody.innerHTML = '<tr><td colspan="10">Nenhum produto cadastrado ainda.</td></tr>';
+                renderizarResumoProdutos();
+                return;
+            }
+
+            produtos.forEach(p => {
+                const status = p.status || 'Ativo';
+                const classeStatus = status === 'Ativo' ? 'status-ativo' : 'status-inativo';
+                const preco = parseFloat(p.preco || 0);
+                const desconto = p.permiteDesconto === 'Sim' ? parseFloat(p.percentualDesconto || 0) : 0;
+                const precoFinal = calcularPrecoFinalProduto(p);
+                const estoque = Number(p.estoque || 0);
+                const estoqueTexto = estoque === 0 ? '<b style="color:#dc3545;">0</b>' : (estoque <= 5 ? `<b style="color:#856404;">${estoque}</b>` : estoque);
+
+                tbody.innerHTML += `<tr data-categoria="${escaparHTML(p.categoria || '')}" data-status="${status}" data-estoque="${estoque}">
+                    <td>${p.imagem ? `<img src="${escaparHTML(p.imagem)}" class="produto-img" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'produto-sem-img',innerText:'🛒'}))">` : '<div class="produto-sem-img">🛒</div>'}</td>
+                    <td><b>${escaparHTML(p.nome || '-')}</b></td>
+                    <td>${escaparHTML(p.categoria || '-')}</td>
+                    <td>${formatarMoeda(preco)}</td>
+                    <td>${p.permiteDesconto === 'Sim' ? `${desconto || 0}%` : '-'}</td>
+                    <td><b>${formatarMoeda(precoFinal)}</b></td>
+                    <td>${estoqueTexto}</td>
+                    <td><span class="${classeStatus}">${status}</span></td>
+                    <td>${escaparHTML(resumoTexto(p.descricao || '-', 70))}</td>
+                    <td>
+                        <button onclick="editarProduto('${p.id}')" class="btn-ajuste">Editar</button>
+                        <button onclick="alterarStatusProduto('${p.id}', '${status}')" class="btn-cinza btn-mini">Status</button>
+                        <button onclick="excluirProduto('${p.id}')" class="btn-excluir">X</button>
+                    </td>
+                </tr>`;
+            });
+
+            renderizarResumoProdutos();
+            filtrarProdutos();
+        }
+
+        window.filtrarProdutos = () => {
+            const busca = (document.getElementById('buscaProduto')?.value || '').toLowerCase();
+            const categoria = document.getElementById('filtroProdutoCategoria')?.value || '';
+            const status = document.getElementById('filtroProdutoStatus')?.value || '';
+            const estoqueFiltro = document.getElementById('filtroProdutoEstoque')?.value || '';
+
+            document.querySelectorAll('#tabelaProdutos tr').forEach(linha => {
+                const estoque = Number(linha.dataset.estoque || 0);
+                const okBusca = linha.innerText.toLowerCase().includes(busca);
+                const okCategoria = !categoria || linha.dataset.categoria === categoria;
+                const okStatus = !status || linha.dataset.status === status;
+                const okEstoque = !estoqueFiltro ||
+                    (estoqueFiltro === 'baixo' && estoque > 0 && estoque <= 5) ||
+                    (estoqueFiltro === 'zerado' && estoque === 0);
+
+                linha.style.display = (okBusca && okCategoria && okStatus && okEstoque) ? '' : 'none';
+            });
+        };
+
+        window.limparFiltrosProdutos = () => {
+            ['buscaProduto','filtroProdutoCategoria','filtroProdutoStatus','filtroProdutoEstoque'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            filtrarProdutos();
+        };
+
+
+        function iniciarMonitoramentoProfessores() {
+            onSnapshot(collection(db, 'professores'), (snap) => {
+                professores = [];
+                snap.forEach(d => professores.push({id:d.id, ...d.data()}));
+                professores.sort((a,b)=>(a.nome||'').localeCompare(b.nome||'', 'pt-BR'));
+                renderizarProfessores();
+                atualizarDashboard();
+            }, (erro) => {
+                console.error(erro);
+                alert('Não foi possível carregar professores. Se aparecer “permission-denied”, libere a coleção professores nas regras do Firestore.');
+            });
+        }
+
+        function renderizarProfessores() {
+            const tbody = document.getElementById('tabelaProfessores');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            professores.forEach(p => {
+                const turmaObj = turmas.find(t => t.id === p.turmaId);
+                const escolaNome = p.escola || nomePorId(escolas, p.escolaId, '') || 'Sem escola definida';
+                const serieNome = p.serie || nomePorId(series, p.serieId, '') || 'Sem série definida';
+                const turmaNome = p.turma || turmaObj?.nomeCompleto || turmaObj?.nome || 'Sem turma definida';
+                const status = p.status || 'Ativo';
+                const classeStatus = status === 'Ativo' ? 'status-ativo' : 'status-inativo';
+                tbody.innerHTML += `<tr data-escolaid="${p.escolaId || ''}" data-serieid="${p.serieId || ''}" data-turmaid="${p.turmaId || ''}" data-status="${status}">
+                    <td>${p.nome || '-'}</td>
+                    <td>${p.email || '-'}</td>
+                    <td><input type="password" id="pass-prof-${p.id}" value="${p.senha || ''}" readonly style="width:90px;border:none;background:transparent"><button onclick="toggleSenhaProfessor('${p.id}')" class="btn-mini">👁</button></td>
+                    <td>${p.disciplina || '-'}</td>
+                    <td>${escolaNome}</td>
+                    <td>${serieNome}</td>
+                    <td>${turmaNome}</td>
+                    <td><span class="${classeStatus}">${status}</span></td>
+                    <td><button onclick="editarProfessor('${p.id}')" class="btn-ajuste">Editar</button><button onclick="alterarStatusProfessor('${p.id}', '${status}')" class="btn-cinza btn-mini">Status</button><button onclick="excluirProfessor('${p.id}')" class="btn-excluir">X</button></td>
+                </tr>`;
+            });
+            filtrarProfessores();
+        }
+
+        window.salvarProfessor = async () => {
+            const nome = document.getElementById('profNome').value.trim();
+            const email = document.getElementById('profEmail').value.trim().toLowerCase();
+            const disciplina = document.getElementById('profDisciplina').value.trim();
+            const senha = document.getElementById('profSenha').value.trim();
+            const escolaId = document.getElementById('profEscola').value;
+            const serieId = document.getElementById('profSerie').value;
+            const turmaId = document.getElementById('profTurma').value;
+            const status = document.getElementById('profStatus').value;
+            const escola = escolas.find(e => e.id === escolaId)?.nome || '';
+            const serie = series.find(s => s.id === serieId)?.nome || '';
+            const turmaObj = turmas.find(t => t.id === turmaId);
+            const turma = turmaObj?.nomeCompleto || turmaObj?.nome || '';
+            if (!nome || !email || !senha || !disciplina || !escolaId || !serieId || !turmaId) return alert('Preencha nome, e-mail, senha, disciplina, escola, série e turma do professor.');
+            const id = slugify(email || nome);
+            try {
+                await setDoc(doc(db, 'professores', id), { nome, email, senha, disciplina, escolaId, escola, serieId, serie, turmaId, turma, status, criadoEm: serverTimestamp() }, { merge:true });
+                alert('Professor cadastrado!');
+                ['profNome','profEmail','profSenha','profDisciplina'].forEach(c => document.getElementById(c).value = '');
+                document.getElementById('profEscola').value = '';
+                document.getElementById('profSerie').value = '';
+                document.getElementById('profTurma').value = '';
+                document.getElementById('profStatus').value = 'Ativo';
+                document.getElementById('formProfessor').style.display = 'none';
+            } catch (erro) {
+                console.error(erro);
+                alert('Não foi possível salvar o professor. Se aparecer “permission-denied”, libere a coleção professores nas regras do Firestore.');
+            }
+        };
+
+        window.editarProfessor = async (id) => {
+            const p = professores.find(x => x.id === id);
+            if (!p) return;
+            const nome = prompt('Nome do professor:', p.nome || ''); if (!nome) return;
+            const email = prompt('E-mail do professor:', p.email || ''); if (!email) return;
+            const senha = prompt('Senha do professor:', p.senha || ''); if (!senha) return;
+            const disciplina = prompt('Disciplina:', p.disciplina || ''); if (!disciplina) return;
+            await updateDoc(doc(db, 'professores', id), { nome:nome.trim(), email:email.trim().toLowerCase(), senha:senha.trim(), disciplina:disciplina.trim() });
+        };
+
+        window.alterarStatusProfessor = async (id, statusAtual) => {
+            const novo = prompt('Digite o novo status: Ativo ou Inativo', statusAtual || 'Ativo');
+            if (!novo) return;
+            if (!['Ativo','Inativo'].includes(novo)) return alert('Status inválido. Use Ativo ou Inativo.');
+            await updateDoc(doc(db, 'professores', id), { status:novo });
+        };
+
+        window.excluirProfessor = async (id) => {
+            if (confirm('Excluir este professor?')) await deleteDoc(doc(db, 'professores', id));
+        };
+
+        window.filtrarProfessores = () => {
+            const busca = (document.getElementById('buscaProfessor')?.value || '').toLowerCase();
+            const escolaId = document.getElementById('filtroProfEscola')?.value || '';
+            const serieId = document.getElementById('filtroProfSerie')?.value || '';
+            const turmaId = document.getElementById('filtroProfTurma')?.value || '';
+            const status = document.getElementById('filtroProfStatus')?.value || '';
+            document.querySelectorAll('#tabelaProfessores tr').forEach(linha => {
+                const okBusca = linha.innerText.toLowerCase().includes(busca);
+                const okEscola = !escolaId || linha.dataset.escolaid === escolaId;
+                const okSerie = !serieId || linha.dataset.serieid === serieId;
+                const okTurma = !turmaId || linha.dataset.turmaid === turmaId;
+                const okStatus = !status || linha.dataset.status === status;
+                linha.style.display = (okBusca && okEscola && okSerie && okTurma && okStatus) ? '' : 'none';
+            });
+        };
+
+        window.limparFiltrosProfessores = () => {
+            ['filtroProfEscola','filtroProfSerie','filtroProfTurma','filtroProfStatus','buscaProfessor'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            atualizarFiltroProfSeries();
+            atualizarFiltroProfTurmas();
+            filtrarProfessores();
+        };
+
+        function iniciarMonitoramentoQuestoes() {
+            onSnapshot(collection(db, 'questoes'), (snap) => {
+                questoes = [];
+                snap.forEach(d => questoes.push({ id:d.id, ...d.data() }));
+                questoes.sort((a,b)=>(a.codigo || a.criadaEm || '').toString().localeCompare((b.codigo || b.criadaEm || '').toString(), 'pt-BR'));
+                renderizarQuestoes();
+                atualizarDashboard();
+            }, (erro) => {
+                console.error(erro);
+                const tbody = document.getElementById('tabelaQuestoes');
+                if (tbody) tbody.innerHTML = '<tr><td colspan="11">⚠️ Não foi possível carregar questões. Confira as regras da coleção questoes.</td></tr>';
+            });
+        }
+
+        window.abrirFormularioQuestao = () => {
+            cancelarEdicaoQuestao(false);
+            document.getElementById('formQuestao').style.display = 'block';
+        };
+
+        function resumoTexto(txt, limite=80) {
+            const t = String(txt || '').replace(/\s+/g, ' ').trim();
+            return t.length > limite ? t.slice(0, limite) + '...' : t;
+        }
+
+        function gerarCodigoQuestao() {
+            const n = questoes.length + 1;
+            return `Q-${String(n).padStart(5, '0')}`;
+        }
+
+        function dadosFormularioQuestao() {
+            const serieId = document.getElementById('questaoSerie').value;
+            const serieObj = series.find(s => s.id === serieId);
+            const codigoDigitado = document.getElementById('questaoCodigo').value.trim();
+            const codigo = codigoDigitado || gerarCodigoQuestao();
+            const disciplina = document.getElementById('questaoDisciplina').value.trim();
+            const tema = document.getElementById('questaoTema').value.trim();
+            const habilidade = document.getElementById('questaoHabilidade').value.trim();
+            const dificuldade = document.getElementById('questaoDificuldade').value;
+            const valorSugerido = parseFloat(document.getElementById('questaoValorSugerido').value);
+            const tempoEstimado = parseInt(document.getElementById('questaoTempoEstimado').value, 10);
+            const status = document.getElementById('questaoStatus').value;
+            const enunciado = document.getElementById('questaoEnunciado').value.trim();
+            const alternativas = {
+                A: document.getElementById('questaoA').value.trim(),
+                B: document.getElementById('questaoB').value.trim(),
+                C: document.getElementById('questaoC').value.trim(),
+                D: document.getElementById('questaoD').value.trim()
+            };
+            const correta = document.getElementById('questaoCorreta').value;
+            const explicacao = document.getElementById('questaoExplicacao').value.trim();
+            return {
+                codigo, disciplina, serieId, serie: serieObj?.nome || '', tema, habilidade, dificuldade,
+                valorSugerido: isNaN(valorSugerido) ? 0 : valorSugerido,
+                recompensaSugerida: isNaN(valorSugerido) ? 0 : valorSugerido,
+                tempoEstimado: isNaN(tempoEstimado) ? 0 : tempoEstimado,
+                status, enunciado, alternativas, correta, explicacao
+            };
+        }
+
+        window.salvarQuestao = async () => {
+            const editandoId = document.getElementById('questaoEditandoId').value;
+            const dados = dadosFormularioQuestao();
+            if (!dados.disciplina || !dados.serieId || !dados.tema || !dados.enunciado || !dados.alternativas.A || !dados.alternativas.B || !dados.alternativas.C || !dados.alternativas.D || !dados.correta) {
+                return alert('Preencha disciplina, série, tema, enunciado, alternativas A, B, C, D e alternativa correta.');
+            }
+            if (dados.valorSugerido < 0 || dados.tempoEstimado < 0) {
+                return alert('Valor sugerido e tempo estimado não podem ser negativos.');
+            }
+            const id = editandoId || slugify(dados.codigo);
+            try {
+                await setDoc(doc(db, 'questoes', id), {
+                    ...dados,
+                    tipo: 'oficial_admin',
+                    origem: 'Banco Oficial',
+                    atualizadaEm: serverTimestamp(),
+                    criadaEm: editandoId ? (questoes.find(q => q.id === editandoId)?.criadaEm || serverTimestamp()) : serverTimestamp()
+                }, { merge:true });
+                alert(editandoId ? 'Questão atualizada!' : 'Questão cadastrada no Banco Oficial!');
+                cancelarEdicaoQuestao();
+            } catch (erro) {
+                console.error(erro);
+                alert('Não foi possível salvar a questão. Se aparecer permission-denied, libere escrita na coleção questoes para administradores.');
+            }
+        };
+
+        window.editarQuestao = (id) => {
+            const q = questoes.find(x => x.id === id);
+            if (!q) return alert('Questão não encontrada.');
+            document.getElementById('questaoEditandoId').value = q.id;
+            document.getElementById('tituloFormQuestao').innerText = 'Editar Questão Oficial';
+            document.getElementById('questaoCodigo').value = q.codigo || '';
+            document.getElementById('questaoDisciplina').value = q.disciplina || '';
+            document.getElementById('questaoSerie').value = q.serieId || '';
+            document.getElementById('questaoTema').value = q.tema || '';
+            document.getElementById('questaoHabilidade').value = q.habilidade || '';
+            document.getElementById('questaoDificuldade').value = q.dificuldade || 'Fácil';
+            document.getElementById('questaoValorSugerido').value = q.valorSugerido ?? q.recompensaSugerida ?? '';
+            document.getElementById('questaoTempoEstimado').value = q.tempoEstimado ?? '';
+            document.getElementById('questaoStatus').value = q.status || 'Ativa';
+            document.getElementById('questaoEnunciado').value = q.enunciado || '';
+            document.getElementById('questaoA').value = q.alternativas?.A || '';
+            document.getElementById('questaoB').value = q.alternativas?.B || '';
+            document.getElementById('questaoC').value = q.alternativas?.C || '';
+            document.getElementById('questaoD').value = q.alternativas?.D || '';
+            document.getElementById('questaoCorreta').value = q.correta || 'A';
+            document.getElementById('questaoExplicacao').value = q.explicacao || '';
+            document.getElementById('formQuestao').style.display = 'block';
+            document.getElementById('formQuestao').scrollIntoView({ behavior:'smooth', block:'start' });
+        };
+
+        window.excluirQuestao = async (id) => {
+            const q = questoes.find(x => x.id === id);
+            if (!confirm(`Excluir a questão ${q?.codigo || id}?`)) return;
+            try {
+                await deleteDoc(doc(db, 'questoes', id));
+            } catch (erro) {
+                console.error(erro);
+                alert('Não foi possível excluir a questão. Confira as regras da coleção questoes.');
+            }
+        };
+
+        window.alterarStatusQuestao = async (id, statusAtual) => {
+            const novo = statusAtual === 'Ativa' ? 'Inativa' : 'Ativa';
+            try {
+                await updateDoc(doc(db, 'questoes', id), { status: novo, atualizadaEm: serverTimestamp() });
+            } catch (erro) {
+                console.error(erro);
+                alert('Não foi possível alterar o status da questão.');
+            }
+        };
+
+        window.cancelarEdicaoQuestao = (fechar=true) => {
+            const ids = ['questaoEditandoId','questaoCodigo','questaoDisciplina','questaoTema','questaoHabilidade','questaoValorSugerido','questaoTempoEstimado','questaoEnunciado','questaoA','questaoB','questaoC','questaoD','questaoExplicacao'];
+            ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+            document.getElementById('questaoSerie').value = '';
+            document.getElementById('questaoDificuldade').value = 'Fácil';
+            document.getElementById('questaoStatus').value = 'Ativa';
+            document.getElementById('questaoCorreta').value = 'A';
+            document.getElementById('tituloFormQuestao').innerText = 'Cadastrar Questão Oficial';
+            if (fechar) document.getElementById('formQuestao').style.display = 'none';
+        };
+
+        function renderizarQuestoes() {
+            const tbody = document.getElementById('tabelaQuestoes');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            if (!questoes.length) {
+                tbody.innerHTML = '<tr><td colspan="11">Nenhuma questão cadastrada ainda.</td></tr>';
+                return;
+            }
+            questoes.forEach(q => {
+                const status = q.status || 'Ativa';
+                const classeStatus = status === 'Ativa' ? 'status-ativo' : 'status-inativo';
+                tbody.innerHTML += `<tr data-serieid="${q.serieId || ''}" data-dificuldade="${q.dificuldade || ''}" data-status="${status}">
+                    <td>${q.codigo || q.id}</td>
+                    <td>${q.disciplina || '-'}</td>
+                    <td>${q.serie || nomePorId(series, q.serieId, 'Sem série')}</td>
+                    <td>${q.tema || '-'}</td>
+                    <td>${q.dificuldade || '-'}</td>
+                    <td>${q.tempoEstimado ? q.tempoEstimado + ' min' : '-'}</td>
+                    <td>${Number(q.valorSugerido ?? q.recompensaSugerida ?? 0).toFixed(2)}</td>
+                    <td>${resumoTexto(q.enunciado, 90)}</td>
+                    <td><b>${q.correta || '-'}</b></td>
+                    <td><span class="${classeStatus}">${status}</span></td>
+                    <td><button onclick="editarQuestao('${q.id}')" class="btn-ajuste">Editar</button><button onclick="alterarStatusQuestao('${q.id}', '${status}')" class="btn-cinza btn-mini">Status</button><button onclick="excluirQuestao('${q.id}')" class="btn-excluir">X</button></td>
+                </tr>`;
+            });
+            filtrarQuestoes();
+        }
+
+        window.filtrarQuestoes = () => {
+            const busca = (document.getElementById('buscaQuestao')?.value || '').toLowerCase();
+            const serieId = document.getElementById('filtroQuestaoSerie')?.value || '';
+            const dificuldade = document.getElementById('filtroQuestaoDificuldade')?.value || '';
+            const status = document.getElementById('filtroQuestaoStatus')?.value || '';
+            document.querySelectorAll('#tabelaQuestoes tr').forEach(linha => {
+                const okBusca = linha.innerText.toLowerCase().includes(busca);
+                const okSerie = !serieId || linha.dataset.serieid === serieId;
+                const okDif = !dificuldade || linha.dataset.dificuldade === dificuldade;
+                const okStatus = !status || linha.dataset.status === status;
+                linha.style.display = (okBusca && okSerie && okDif && okStatus) ? '' : 'none';
+            });
+        };
+
+        window.limparFiltrosQuestoes = () => {
+            ['buscaQuestao','filtroQuestaoSerie','filtroQuestaoDificuldade','filtroQuestaoStatus'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            filtrarQuestoes();
+        };
+
+        function iniciarMonitoramentoAtividades() {
+            onSnapshot(collection(db, 'atividades'), (snap) => {
+                atividades = [];
+                snap.forEach(d => atividades.push({ id: d.id, ...d.data() }));
+                atualizarDashboard();
+            }, (erro) => {
+                console.warn('Não foi possível carregar atividades para o Dashboard:', erro);
+                atividades = [];
+                atualizarDashboard();
+            });
+        }
+
+        function iniciarMonitoramentoAlunos() {
+            onSnapshot(collection(db, 'usuarios'), (snap) => {
+                listaAlunos = [];
+                snap.forEach(d => listaAlunos.push({id:d.id, ...d.data()}));
+                listaAlunos.sort((a,b)=>(a.nome||'').localeCompare(b.nome||'', 'pt-BR'));
+                renderizarAlunos();
+                atualizarDashboard();
+                const aviso = document.getElementById('statusTempoRealAlunos');
+                if (aviso) aviso.innerText = `🔄 Saldos sincronizados em tempo real. Total de alunos carregados: ${listaAlunos.length}. Última atualização: ${new Date().toLocaleTimeString('pt-BR')}`;
+            }, (erro) => {
+                console.error(erro);
+                const aviso = document.getElementById('statusTempoRealAlunos');
+                if (aviso) aviso.innerText = '⚠️ Não foi possível acompanhar os alunos em tempo real. Confira as regras do Firestore para leitura da coleção usuarios.';
+            });
+        }
+        function iniciarMonitoramentoTransacoes() {
+            onSnapshot(collection(db, 'transacoes'), (snap) => {
+                listaTransacoes = [];
+                snap.forEach(d => listaTransacoes.push({ id: d.id, ...d.data() }));
+                listaTransacoes.sort((a, b) => {
+                    const da = a.data && a.data.toDate ? a.data.toDate().getTime() : 0;
+                    const dbb = b.data && b.data.toDate ? b.data.toDate().getTime() : 0;
+                    return dbb - da;
+                });
+                renderizarTransacoesRecentes();
+                atualizarDashboard();
+            }, (erro) => {
+                console.error(erro);
+                const tbody = document.getElementById('tabelaTransacoesRecentes');
+                if (tbody) tbody.innerHTML = '<tr><td colspan="5">⚠️ Não foi possível carregar movimentações. Confira as regras da coleção transacoes.</td></tr>';
+            });
+        }
+
+        function renderizarTransacoesRecentes() {
+            const tbody = document.getElementById('tabelaTransacoesRecentes');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            const recentes = listaTransacoes.slice(0, 15);
+            if (!recentes.length) {
+                tbody.innerHTML = '<tr><td colspan="5">Nenhuma movimentação registrada ainda.</td></tr>';
+                return;
+            }
+            recentes.forEach(t => {
+                const data = t.data && t.data.toDate ? t.data.toDate() : null;
+                const quando = data ? `${data.toLocaleDateString('pt-BR')} ${data.toLocaleTimeString('pt-BR')}` : '-';
+                const valor = parseFloat(t.valor || 0);
+                const feitoPor = t.professorNome || t.professorEmail || t.origem || 'ADMIN';
+                tbody.innerHTML += `<tr>
+                    <td>${quando}</td>
+                    <td>${t.nomeDestino || t.destino || '-'}</td>
+                    <td style="font-weight:700;${valor < 0 ? 'color:#dc3545;' : 'color:#28a745;'}">M$ ${valor.toFixed(2)}</td>
+                    <td>${feitoPor}</td>
+                    <td>${t.obs || '-'}</td>
+                </tr>`;
+            });
+        }
+
+        function nomePorId(lista, id, fallback) { return lista.find(x => x.id === id)?.nome || fallback || ''; }
+        function renderizarAlunos() {
+            const tbody = document.getElementById('tabela'); tbody.innerHTML='';
+            listaAlunos.forEach(u => {
+                const turmaObj = turmas.find(t => t.id === u.turmaId);
+                const escolaNome = u.escola || nomePorId(escolas, u.escolaId, '') || 'Sem escola definida';
+                const serieNome = u.serie || nomePorId(series, u.serieId, '') || 'Sem série definida';
+                const turmaNome = u.turma || turmaObj?.nomeCompleto || turmaObj?.nome || 'Sem turma definida';
+                const status = u.status || 'Ativo';
+                const classeStatus = status === 'Ativo' ? 'status-ativo' : status === 'Transferido' ? 'status-transferido' : 'status-inativo';
+                tbody.innerHTML += `<tr data-escolaid="${u.escolaId || ''}" data-serieid="${u.serieId || ''}" data-turmaid="${u.turmaId || ''}" data-escola="${escolaNome.toLowerCase()}" data-serie="${serieNome.toLowerCase()}" data-turma="${turmaNome.toLowerCase()}" data-status="${status}">
+                    <td>${u.nome || '-'} <button onclick="editarNome('${u.id}')" class="btn-mini">✎</button></td><td>${escolaNome}</td><td>${serieNome}</td><td>${turmaNome}</td><td><span class="${classeStatus}">${status}</span></td><td>${u.id}</td><td>M$ ${parseFloat(u.saldo || 0).toFixed(2)}</td><td>M$ ${parseFloat(u.poupanca || 0).toFixed(2)}</td><td><input type="password" id="pass-${u.id}" value="${u.senha || ''}" readonly style="width:70px;border:none;background:transparent"><button onclick="toggleSenha('${u.id}')" class="btn-mini">👁</button></td><td><button onclick="ajustarSaldo('${u.id}', ${u.saldo || 0})" class="btn-ajuste">+/-</button><button onclick="alterarStatus('${u.id}', '${status}')" class="btn-cinza btn-mini">Status</button><button onclick="excluir('${u.id}')" class="btn-excluir">X</button></td></tr>`;
+            });
+            filtrarTabela();
+        }
+        window.limparFiltrosAlunos = () => {
+            ['filtroEscola','filtroSerie','filtroTurma','filtroStatus','busca'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            atualizarFiltroSeries();
+            atualizarFiltroTurmas();
+            filtrarTabela();
+        };
+        window.filtrarTabela = () => {
+            const busca = (document.getElementById('busca').value || '').toLowerCase();
+            const escolaId = document.getElementById('filtroEscola').value;
+            const serieId = document.getElementById('filtroSerie').value;
+            const turmaId = document.getElementById('filtroTurma').value;
+            const status = document.getElementById('filtroStatus').value;
+            document.querySelectorAll('#tabela tr').forEach(linha => {
+                const okBusca = linha.innerText.toLowerCase().includes(busca);
+                const okEscola = !escolaId || linha.dataset.escolaid === escolaId;
+                const okSerie = !serieId || linha.dataset.serieid === serieId;
+                const okTurma = !turmaId || linha.dataset.turmaid === turmaId;
+                const okStatus = !status || linha.dataset.status === status;
+                linha.style.display = (okBusca && okEscola && okSerie && okTurma && okStatus) ? '' : 'none';
+            });
+        };
+        window.salvarAluno = async () => {
+            const conta = document.getElementById('conta').value.trim();
+            const digito = document.getElementById('digito').value.trim();
+            const nome = document.getElementById('nome').value.trim();
+            const escolaId = document.getElementById('alunoEscola').value;
+            const serieId = document.getElementById('alunoSerie').value;
+            const turmaId = document.getElementById('alunoTurma').value;
+            const status = document.getElementById('statusAluno').value;
+            const senha = document.getElementById('senhaC').value.trim();
+            const saldo = parseFloat(document.getElementById('saldo').value);
+            const escola = escolas.find(e => e.id === escolaId)?.nome || '';
+            const serie = series.find(s => s.id === serieId)?.nome || '';
+            const turmaObj = turmas.find(t => t.id === turmaId);
+            const turma = turmaObj?.nomeCompleto || turmaObj?.nome || '';
+            if (!conta || !digito || !nome || !escolaId || !serieId || !turmaId || !senha || isNaN(saldo)) return alert('Preencha conta, dígito, nome, escola, série, turma, senha e saldo.');
+            const id = `${conta}-${digito}`;
+            await setDoc(doc(db, 'usuarios', id), { nome, escolaId, escola, serieId, serie, turmaId, turma, status, senha, saldo, poupanca:0, dataCadastro:serverTimestamp() }, { merge:true });
+            alert('Aluno gravado!'); ['conta','digito','nome','senhaC','saldo'].forEach(c=>document.getElementById(c).value=''); document.getElementById('statusAluno').value='Ativo'; document.getElementById('form').style.display='none';
+        };
+        window.editarNome = async (id) => { const n = prompt('Novo nome:'); if (n) await updateDoc(doc(db, 'usuarios', id), { nome:n }); };
+        window.alterarStatus = async (id, statusAtual) => { const novo = prompt('Digite o novo status: Ativo, Inativo ou Transferido', statusAtual || 'Ativo'); if (!novo) return; if (!['Ativo','Inativo','Transferido'].includes(novo)) return alert('Status inválido.'); await updateDoc(doc(db, 'usuarios', id), { status:novo }); };
+        window.toggleSenha = (id) => { const el = document.getElementById('pass-'+id); if (el) el.type = el.type === 'password' ? 'text' : 'password'; };
+        window.toggleSenhaProfessor = (id) => { const el = document.getElementById('pass-prof-'+id); if (el) el.type = el.type === 'password' ? 'text' : 'password'; };
+        window.toggleSenhaCampo = (id) => { const el = document.getElementById(id); if (el) el.type = el.type === 'password' ? 'text' : 'password'; };
+        window.excluir = async (id) => { if (confirm('Eliminar aluno?')) await deleteDoc(doc(db, 'usuarios', id)); };
+        window.ajustarSaldo = async (id, saldoAtual) => { const v = parseFloat(prompt('Valor (+ ou -):')); if (isNaN(v)) return; const motivo = prompt('Motivo:'); await updateDoc(doc(db, 'usuarios', id), { saldo: saldoAtual + v }); await addDoc(collection(db, 'transacoes'), { origem:'ADMIN', nomeDestino:id, valor:v, obs:motivo || 'Ajuste', data:serverTimestamp() }); };
+        async function carregarTaxa() { const snap = await getDoc(doc(db, 'config', 'taxas')); document.getElementById('bannerTaxa').innerText = snap.exists() ? `📈 Poupança: ${snap.data().descricao}` : '📈 Taxa não configurada.'; }
+        window.gerarRelatorio = async () => {
+            const inicio = document.getElementById('dataInicio').value;
+            const fim = document.getElementById('dataFim').value;
+            if (!inicio || !fim) return alert('Selecione o intervalo!');
+
+            const dataInicio = new Date(inicio + 'T00:00:00');
+            const dataFim = new Date(fim + 'T23:59:59');
+
+            let csv = 'Data;Hora;Tipo;Origem/Responsável;Aluno/Destinatário;Valor;Observação;Professor;E-mail do Professor;ID da Transação\n';
+            let achou = false;
+
+            const usuariosSnap = await getDocs(collection(db, 'usuarios'));
+            const mapaUsuarios = {};
+            usuariosSnap.forEach(d => mapaUsuarios[d.id] = d.data().nome || d.id);
+
+            const transSnap = await getDocs(collection(db, 'transacoes'));
+            const linhas = [];
+
+            transSnap.forEach(t => {
+                const d = t.data();
+                if (!d.data || !d.data.toDate) return;
+
+                const dataTrans = d.data.toDate();
+                if (dataTrans < dataInicio || dataTrans > dataFim) return;
+
+                const valor = parseFloat(d.valor || 0);
+
+                let tipo = d.tipo || d.categoria || '';
+                if (!tipo) {
+                    if (d.professorNome || d.professorEmail || d.origem === 'PROFESSOR') {
+                        tipo = valor < 0 ? 'Retirada pelo professor' : 'Recompensa do professor';
+                    } else if (d.origem === 'ADMIN') {
+                        tipo = 'Ajuste administrativo';
+                    } else {
+                        tipo = 'PIX / Transferência';
+                    }
+                }
+
+                const origem = d.professorNome || d.professorEmail || mapaUsuarios[d.origem] || d.nomeOrigem || d.origem || 'Desconhecido';
+                const destino = d.nomeDestino || mapaUsuarios[d.destino] || d.destino || d.alunoNome || d.alunoId || 'N/A';
+                const observacao = d.obs || d.observacao || d.motivo || '';
+                const professor = d.professorNome || '';
+                const professorEmail = d.professorEmail || '';
+
+                linhas.push({
+                    dataTrans,
+                    linha: `${dataTrans.toLocaleDateString('pt-BR')};${dataTrans.toLocaleTimeString('pt-BR')};${tipo};${origem};${destino};${valor.toFixed(2).replace('.', ',')};${observacao};${professor};${professorEmail};${t.id}\n`
+                });
+
+                achou = true;
+            });
+
+            if (!achou) return alert('Nenhuma transação encontrada neste período.');
+
+            linhas.sort((a, b) => a.dataTrans - b.dataTrans);
+            linhas.forEach(item => csv += item.linha);
+
+            const blob = new Blob(['\ufeff', csv], { type:'text/csv;charset=utf-8;' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'relatorio_transacoes.csv';
+            a.click();
+        };
+
+        function encontrarPorNome(lista, nome) { return lista.find(x => (x.nome || '').toLowerCase() === String(nome || '').toLowerCase()); }
+        function encontrarSeriePorTexto(txt) { const n = numeroSerie(txt); return series.find(s => Number(s.numero || numeroSerie(s.nome)) === n); }
+        window.importarCSV = () => {
+            const file = document.getElementById('csvFile').files[0]; if (!file) return alert('Selecione um arquivo CSV primeiro!');
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const lines = e.target.result.split('\n'); let processados=0, pulados=0;
+                for (let i=0;i<lines.length;i++) {
+                    const cleanLine = lines[i].trim(); if (!cleanLine) continue;
+                    const separador = cleanLine.includes(';') ? ';' : ','; const colunas = cleanLine.split(separador).map(c => c.trim());
+                    if (i === 0 && colunas[0].toLowerCase().includes('conta')) continue;
+                    if (colunas.length >= 8) {
+                        const [conta,digito,nome,senha,saldo,escolaTxt,serieTxt,turmaTxt,statusTxt] = colunas;
+                        const escolaObj = encontrarPorNome(escolas, escolaTxt) || {id:'', nome:escolaTxt || 'Não informado'};
+                        const serieObj = encontrarSeriePorTexto(serieTxt) || {id:'', nome:formatarSerie(serieTxt) || serieTxt || 'Não informado'};
+                        const letra = normalizarLetraTurma(turmaTxt);
+                        const turmaObj = turmas.find(t => t.escolaId === escolaObj.id && t.serieId === serieObj.id && (t.letra || '').toUpperCase() === letra) || {id:'', nomeCompleto: escolaObj.nome && serieObj.nome && letra ? montarNomeTurma(escolaObj.nome, serieObj.nome, letra) : (turmaTxt || 'Não informado')};
+                        try { await setDoc(doc(db, 'usuarios', `${conta}-${digito}`), { nome, senha, saldo:parseFloat(String(saldo).replace(',','.')) || 0, poupanca:0, escolaId:escolaObj.id, escola:escolaObj.nome, serieId:serieObj.id, serie:serieObj.nome, turmaId:turmaObj.id, turma:turmaObj.nomeCompleto || turmaObj.nome, status:statusTxt || 'Ativo' }, { merge:true }); processados++; } catch(err) { console.error(err); pulados++; }
+                    } else if (colunas.length >= 5) {
+                        const [conta,digito,nome,senha,saldo] = colunas;
+                        try { await setDoc(doc(db, 'usuarios', `${conta}-${digito}`), { nome, senha, saldo:parseFloat(String(saldo).replace(',','.')) || 0, poupanca:0, escola:'Não informado', serie:'Não informado', turma:'Não informado', status:'Ativo' }, { merge:true }); processados++; } catch(err) { console.error(err); pulados++; }
+                    } else pulados++;
+                }
+                alert(`Importação finalizada! ${processados} alunos processados. ${pulados} linhas puladas.`); document.getElementById('formCSV').style.display='none';
+            };
+            reader.readAsText(file);
+        };
+
+        ['produtoNome','produtoCategoria','produtoPreco','produtoDesconto','produtoImagem','produtoPermiteDesconto'].forEach(id => {
+            document.addEventListener('input', (ev) => {
+                if (ev.target && ev.target.id === id && document.getElementById('formProduto')?.style.display === 'block') atualizarPreviewProduto();
+            });
+            document.addEventListener('change', (ev) => {
+                if (ev.target && ev.target.id === id && document.getElementById('formProduto')?.style.display === 'block') atualizarPreviewProduto();
+            });
+        });
+
+
+
+        // ===== VILA MERIT ADM + GERENCIADOR MANUAL DE PRODUTOS =====
+        window.abrirVilaAdmTelaCheia = () => {
+            const el = document.getElementById('vilaAdmFull');
+            if (el) el.style.display = 'block';
+        };
+
+        window.fecharVilaAdmTelaCheia = () => {
+            const el = document.getElementById('vilaAdmFull');
+            if (el) el.style.display = 'none';
+        };
+
+        window.abrirLojaAdmTelaCheia = () => {
+            const el = document.getElementById('lojaAdmFull');
+            if (el) el.style.display = 'block';
+            renderizarProdutosVilaAdm();
+        };
+
+        window.fecharLojaAdmTelaCheia = () => {
+            const el = document.getElementById('lojaAdmFull');
+            if (el) el.style.display = 'none';
+        };
+
+        function imagemProdutoCorrigida(imagem) {
+            imagem = String(imagem || '').trim();
+            if (!imagem) return '';
+            if (imagem.startsWith('http') || imagem.startsWith('data:') || imagem.startsWith('../')) return imagem;
+            if (imagem.startsWith('assets/')) return '../' + imagem;
+            return imagem;
+        }
+
+        window.atualizarPreviewProdutoVila = () => {
+            const box = document.getElementById('previewProdutoVila');
+            if (!box) return;
+            const imagem = imagemProdutoCorrigida(document.getElementById('produtoVilaImagem')?.value || '');
+            if (!imagem) {
+                box.innerHTML = '<div class="sem-img">🛒</div>';
+                return;
+            }
+            box.innerHTML = `<img src="${escaparHTML(imagem)}" onerror="this.parentElement.innerHTML='<div class=\\'sem-img\\'>⚠️</div>'">`;
+        };
+
+        window.abrirFormularioProdutoVilaNovo = () => {
+            limparFormularioProdutoVila();
+            document.getElementById('produtoVilaNome')?.focus();
+        };
+
+        window.limparFormularioProdutoVila = () => {
+            const campos = [
+                'produtoVilaEditandoId','produtoVilaNome','produtoVilaPreco','produtoVilaEstoque',
+                'produtoVilaImagem','produtoVilaDescricao'
+            ];
+            campos.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+            const cat = document.getElementById('produtoVilaCategoria'); if (cat) cat.value = 'Sala';
+            const status = document.getElementById('produtoVilaStatus'); if (status) status.value = 'Ativo';
+            const raridade = document.getElementById('produtoVilaRaridade'); if (raridade) raridade.value = 'Comum';
+            const titulo = document.getElementById('tituloFormProdutoVila'); if (titulo) titulo.innerText = 'Cadastrar Produto';
+            atualizarPreviewProdutoVila();
+        };
+
+        function dadosProdutoVila() {
+            const preco = parseFloat(document.getElementById('produtoVilaPreco')?.value || 0);
+            const estoque = parseInt(document.getElementById('produtoVilaEstoque')?.value || 0, 10);
+            return {
+                nome: document.getElementById('produtoVilaNome')?.value.trim() || '',
+                categoria: document.getElementById('produtoVilaCategoria')?.value || 'Sala',
+                preco: isNaN(preco) ? 0 : preco,
+                estoque: isNaN(estoque) ? 0 : estoque,
+                status: document.getElementById('produtoVilaStatus')?.value || 'Ativo',
+                raridade: document.getElementById('produtoVilaRaridade')?.value || 'Comum',
+                imagem: document.getElementById('produtoVilaImagem')?.value.trim() || '',
+                descricao: document.getElementById('produtoVilaDescricao')?.value.trim() || '',
+                permiteDesconto: 'Não',
+                percentualDesconto: 0
+            };
+        }
+
+        window.salvarProdutoVila = async () => {
+            const editandoId = document.getElementById('produtoVilaEditandoId')?.value || '';
+            const dados = dadosProdutoVila();
+
+            if (!dados.nome) return alert('Digite o nome do produto.');
+            if (!dados.categoria) return alert('Selecione a categoria.');
+            if (dados.preco < 0) return alert('O preço não pode ser negativo.');
+            if (dados.estoque < 0) return alert('O estoque não pode ser negativo.');
+
+            const id = editandoId || slugify(dados.nome + '-' + Date.now());
+
+            try {
+                await setDoc(doc(db, 'produtos', id), {
+                    ...dados,
+                    imagem: imagemProdutoCorrigida(dados.imagem),
+                    imagemUrl: imagemProdutoCorrigida(dados.imagem),
+                    precoFinal: dados.preco,
+                    atualizadoEm: serverTimestamp(),
+                    criadoEm: editandoId ? (produtos.find(p => p.id === editandoId)?.criadoEm || serverTimestamp()) : serverTimestamp()
+                }, { merge:true });
+
+                alert(editandoId ? 'Produto atualizado!' : 'Produto cadastrado!');
+                limparFormularioProdutoVila();
+            } catch (erro) {
+                console.error(erro);
+                alert('Não foi possível salvar o produto. Confira as regras da coleção produtos.');
+            }
+        };
+
+        window.editarProdutoVila = (id) => {
+            const p = produtos.find(x => x.id === id);
+            if (!p) return alert('Produto não encontrado.');
+
+            document.getElementById('produtoVilaEditandoId').value = p.id;
+            document.getElementById('produtoVilaNome').value = p.nome || '';
+            document.getElementById('produtoVilaCategoria').value = p.categoria || 'Sala';
+            document.getElementById('produtoVilaPreco').value = p.preco ?? '';
+            document.getElementById('produtoVilaEstoque').value = p.estoque ?? '';
+            document.getElementById('produtoVilaStatus').value = p.status || 'Ativo';
+            document.getElementById('produtoVilaRaridade').value = p.raridade || 'Comum';
+            document.getElementById('produtoVilaImagem').value = p.imagem || p.imagemUrl || '';
+            document.getElementById('produtoVilaDescricao').value = p.descricao || '';
+            document.getElementById('tituloFormProdutoVila').innerText = 'Editar Produto';
+            atualizarPreviewProdutoVila();
+            document.getElementById('produtoVilaNome')?.scrollIntoView({behavior:'smooth', block:'center'});
+        };
+
+        window.excluirProdutoVila = async (id) => {
+            const p = produtos.find(x => x.id === id);
+            if (!confirm(`Excluir o produto "${p?.nome || id}"?`)) return;
+            try {
+                await deleteDoc(doc(db, 'produtos', id));
+            } catch (erro) {
+                console.error(erro);
+                alert('Não foi possível excluir o produto.');
+            }
+        };
+
+        window.alternarStatusProdutoVila = async (id) => {
+            const p = produtos.find(x => x.id === id);
+            if (!p) return;
+            const novo = (p.status || 'Ativo') === 'Ativo' ? 'Inativo' : 'Ativo';
+            try {
+                await updateDoc(doc(db, 'produtos', id), { status: novo, atualizadoEm: serverTimestamp() });
+            } catch (erro) {
+                console.error(erro);
+                alert('Não foi possível alterar o status.');
+            }
+        };
+
+        window.renderizarProdutosVilaAdm = () => {
+            const lista = document.getElementById('listaProdutosVilaAdm');
+            const contador = document.getElementById('contadorProdutosVilaAdm');
+            if (contador) contador.innerText = `${produtos.length} produto(s) cadastrados na Merit Magazine`;
+            if (!lista) return;
+
+            const busca = normalizarTexto(document.getElementById('buscaProdutoVila')?.value || '');
+            const categoria = document.getElementById('filtroProdutoVilaCategoria')?.value || '';
+            const status = document.getElementById('filtroProdutoVilaStatus')?.value || '';
+
+            const filtrados = produtos.filter(p => {
+                const texto = normalizarTexto(`${p.nome || ''} ${p.categoria || ''} ${p.descricao || ''} ${p.raridade || ''}`);
+                const catProduto = normalizarTexto(p.categoria || '');
+                const catFiltro = normalizarTexto(categoria);
+                const okBusca = !busca || texto.includes(busca);
+                const okCategoria = !categoria || catProduto === catFiltro;
+                const okStatus = !status || String(p.status || 'Ativo') === status;
+                return okBusca && okCategoria && okStatus;
+            });
+
+            if (!produtos.length) {
+                lista.innerHTML = '<div class="aviso">Nenhum produto cadastrado ainda. Use o formulário ao lado para criar o primeiro item da Merit Magazine.</div>';
+                return;
+            }
+
+            if (!filtrados.length) {
+                lista.innerHTML = `<div class="aviso">Existem ${produtos.length} produto(s) cadastrados, mas nenhum corresponde aos filtros escolhidos.</div>`;
+                return;
+            }
+
+            lista.innerHTML = filtrados.map(p => {
+                const img = imagemProdutoCorrigida(p.imagem || p.imagemUrl || p.urlImagem || '');
+                const statusProduto = p.status || 'Ativo';
+                const estoque = Number(p.estoque || 0);
+                return `
+                    <div class="produto-adm-card">
+                        <div class="produto-adm-card-img">
+                            ${img ? `<img src="${escaparHTML(img)}" onerror="this.replaceWith(document.createTextNode('🛒'))">` : '🛒'}
+                        </div>
+                        <div class="produto-adm-card-body">
+                            <h4>${escaparHTML(p.nome || 'Produto')}</h4>
+                            <small>${escaparHTML(p.categoria || '-')} • ${escaparHTML(p.raridade || 'Comum')}</small>
+                            <div style="font-weight:900;margin:6px 0;">${formatarMoeda(p.preco || 0)}</div>
+                            <small>Estoque: ${estoque}</small>
+                            <span class="${statusProduto === 'Ativo' ? 'status-ativo' : 'status-inativo'}">${statusProduto}</span>
+                            <div class="produto-acoes" style="margin-top:10px;">
+                                <button onclick="editarProdutoVila('${p.id}')" class="btn-ajuste">✏️ Editar</button>
+                                <button onclick="alternarStatusProdutoVila('${p.id}')" class="btn-cinza">${statusProduto === 'Ativo' ? 'Ocultar' : 'Mostrar'}</button>
+                                <button onclick="excluirProdutoVila('${p.id}')" class="btn-excluir">Excluir</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+    </script>
+
+    <!-- Vila Merit em tela cheia para o ADM -->
+    <div id="vilaAdmFull" class="vila-adm-full">
+        <div class="vila-adm-page">
+            <div class="vila-adm-wrap">
+                <img class="vila-adm-img" src="../assets/vila/vila-merit.png" onerror="this.style.display='none'; document.getElementById('fallbackVilaAdm').style.display='flex';">
+                <div id="fallbackVilaAdm" style="display:none;position:absolute;inset:0;background:linear-gradient(180deg,#0c56c7 0%,#27b7ff 25%,#43c94f 25%,#238a33 100%);align-items:center;justify-content:center;color:white;font-size:34px;font-weight:900;text-align:center;padding:40px;">
+                    🏠 VILA MERIT<br><span style="font-size:18px;">Coloque a imagem oficial em: assets/vila/vila-merit.png</span>
+                </div>
+
+                <button class="hotspot-adm hotspot-adm-loja" title="Gerenciar Merit Magazine" onclick="abrirLojaAdmTelaCheia()"></button>
+                <button class="hotspot-adm hotspot-adm-produtos" title="Produtos da Vila" onclick="abrirLojaAdmTelaCheia()"></button>
+                <button class="hotspot-adm hotspot-adm-sair" title="Fechar Vila" onclick="fecharVilaAdmTelaCheia()"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gerenciador visual da Merit Magazine no ADM -->
+    <div id="lojaAdmFull" class="painel-loja-adm-full">
+        <div class="painel-loja-adm-header">
+            <div class="painel-loja-adm-header-inner">
+                <div>
+                    <h2 style="margin:0;">🛒 Merit Magazine — Gerenciador</h2>
+                    <small style="color:#fff;">Cadastre e edite os produtos que aparecerão na loja do estudante.</small><small id="contadorProdutosVilaAdm" style="color:#fff;font-weight:800;margin-top:4px;">0 produtos cadastrados</small>
+                </div>
+                <div>
+                    <button onclick="fecharLojaAdmTelaCheia()" class="btn-cinza">← Voltar para Vila</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="painel-loja-adm-container">
+            <div class="produto-adm-layout">
+                <div class="produto-form-card">
+                    <h3 id="tituloFormProdutoVila">Cadastrar Produto</h3>
+                    <input type="hidden" id="produtoVilaEditandoId">
+
+                    <label>Nome do produto</label>
+                    <input type="text" id="produtoVilaNome" placeholder="Ex.: Sofá Retrô Azul">
+
+                    <label>Categoria</label>
+                    <select id="produtoVilaCategoria">
+                        <option value="Sala">🛋 Sala</option>
+                        <option value="Quarto">🛏 Quarto</option>
+                        <option value="Cozinha">🍳 Cozinha</option>
+                        <option value="Tecnologia">💻 Tecnologia</option>
+                        <option value="Eletrônicos">📺 Eletrônicos</option>
+                        <option value="Jardim">🌳 Jardim</option>
+                        <option value="Pets">🐶 Pets</option>
+                        <option value="Decoração">✨ Decoração</option>
+                        <option value="Lavanderia">🧺 Lavanderia</option>
+                        <option value="Transporte">🛵 Transporte</option>
+                    </select>
+
+                    <div class="grid-form">
+                        <input type="number" id="produtoVilaPreco" placeholder="Preço em Merit$" min="0" step="0.01">
+                        <input type="number" id="produtoVilaEstoque" placeholder="Estoque" min="0" step="1">
+                    </div>
+
+                    <div class="grid-form">
+                        <select id="produtoVilaStatus">
+                            <option value="Ativo">Ativo</option>
+                            <option value="Inativo">Inativo</option>
+                        </select>
+                        <select id="produtoVilaRaridade">
+                            <option value="Comum">Comum</option>
+                            <option value="Raro">Raro</option>
+                            <option value="Épico">Épico</option>
+                            <option value="Lendário">Lendário</option>
+                        </select>
+                    </div>
+
+                    <label>Caminho/URL da imagem</label>
+                    <input type="text" id="produtoVilaImagem" placeholder="../assets/produtos/sala/SAL001.png" oninput="atualizarPreviewProdutoVila()">
+
+                    <div class="produto-imagem-preview-grande" id="previewProdutoVila">
+                        <div class="sem-img">🛒</div>
+                    </div>
+
+                    <textarea id="produtoVilaDescricao" placeholder="Descrição do produto" style="width:100%;min-height:80px;margin:8px 0;padding:12px;border:1px solid #ddd;border-radius:8px;font-family:inherit;"></textarea>
+
+                    <button onclick="salvarProdutoVila()" class="btn-verde" style="width:100%;">💾 Salvar Produto</button>
+                    <button onclick="limparFormularioProdutoVila()" class="btn-cinza" style="width:100%;">Limpar / Cancelar</button>
+                </div>
+
+                <div class="produto-lista-card">
+                    <div class="cabecalho-tela">
+                        <div>
+                            <h3>Produtos cadastrados</h3>
+                            <small>Esses produtos ficam salvos na coleção <b>produtos</b> do Firestore.</small>
+                        </div>
+                        <button onclick="abrirFormularioProdutoVilaNovo()" class="btn-verde">+ Novo</button>
+                    </div>
+
+                    <div class="filtros-alunos">
+                        <input type="text" id="buscaProdutoVila" placeholder="🔍 Buscar produto..." onkeyup="renderizarProdutosVilaAdm()">
+                        <select id="filtroProdutoVilaCategoria" onchange="renderizarProdutosVilaAdm()">
+                            <option value="">Todas as categorias</option>
+                            <option value="Sala">Sala</option>
+                            <option value="Quarto">Quarto</option>
+                            <option value="Cozinha">Cozinha</option>
+                            <option value="Tecnologia">Tecnologia</option>
+                            <option value="Eletrônicos">Eletrônicos</option>
+                            <option value="Jardim">Jardim</option>
+                            <option value="Pets">Pets</option>
+                            <option value="Decoração">Decoração</option>
+                            <option value="Lavanderia">Lavanderia</option>
+                            <option value="Transporte">Transporte</option>
+                        </select>
+                        <select id="filtroProdutoVilaStatus" onchange="renderizarProdutosVilaAdm()">
+                            <option value="">Todos os status</option>
+                            <option value="Ativo">Ativo</option>
+                            <option value="Inativo">Inativo</option>
+                        </select>
+                    </div>
+
+                    <div id="listaProdutosVilaAdm" class="produtos-adm-grid">
+                        <div class="aviso">Carregando produtos...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

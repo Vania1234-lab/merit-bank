@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EletivaBank - Painel Professor</title>
+<style>
+        :root { --nu-roxo:#820AD1; --nu-roxo-hover:#6a0ab0; --bg-gray:#f5f5f5; --verde:#28a745; --azul:#17a2b8; --vermelho:#dc3545; --cinza:#6c757d; }
+        * { box-sizing:border-box; }
+        body { font-family:'Segoe UI', Roboto, sans-serif; background:var(--bg-gray); margin:0; padding:20px; min-height:100vh; color:#333; }
+        .container { width:100%; max-width:1150px; margin:0 auto; }
+        .card { background:white; border-radius:18px; padding:22px; box-shadow:0 4px 14px rgba(0,0,0,.08); margin-bottom:18px; }
+        #login { max-width:370px; margin:60px auto; text-align:center; }
+        input, select { width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; margin:8px 0; background:white; }
+        button { background:var(--nu-roxo); color:white; border:none; padding:12px 18px; border-radius:12px; cursor:pointer; font-weight:700; margin:5px; }
+        button:hover { background:var(--nu-roxo-hover); }
+        .btn-cinza { background:var(--cinza); }
+        .btn-verde { background:var(--verde); }
+        .topo { display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap; }
+        .badge { display:inline-block; padding:5px 10px; border-radius:999px; font-weight:700; background:#f0f8ff; color:var(--nu-roxo); margin:3px 4px 3px 0; }
+        .grid-resumo { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; margin-top:15px; }
+        .resumo { background:#fafafa; border:1px solid #eee; border-radius:14px; padding:16px; }
+        .resumo h3 { margin:0; color:var(--nu-roxo); font-size:24px; }
+        .resumo small { color:#666; }
+        .filtros { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; align-items:end; }
+        .table-wrap { overflow-x:auto; width:100%; }
+        table { width:100%; border-collapse:separate; border-spacing:0; background:white; border-radius:16px; overflow:hidden; margin-top:15px; box-shadow:0 4px 12px rgba(0,0,0,.05); }
+        th, td { padding:12px; border-bottom:1px solid #eee; text-align:left; white-space:nowrap; }
+        th { background:#fafafa; font-weight:700; }
+        .aviso { background:#fff3cd; border:1px solid #ffeeba; color:#856404; padding:14px; border-radius:12px; margin:12px 0; }
+        .erro { background:#f8d7da; border:1px solid #f5c6cb; color:#721c24; padding:14px; border-radius:12px; margin:12px 0; display:none; }
+        .status-ativo { color:#155724; background:#d4edda; padding:4px 8px; border-radius:999px; font-weight:700; }
+        .status-inativo { color:#721c24; background:#f8d7da; padding:4px 8px; border-radius:999px; font-weight:700; }
+        .muted { color:#666; }
+        .btn-azul { background:var(--azul); }
+        .btn-vermelho { background:var(--vermelho); }
+        .modal-fundo { position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; padding:18px; z-index:999; }
+        .modal { background:white; width:100%; max-width:430px; border-radius:18px; padding:22px; box-shadow:0 12px 30px rgba(0,0,0,.25); }
+        .modal h3 { margin-top:0; color:var(--nu-roxo); }
+        #painel { display:none; }
+        .secao-painel { display:block; }
+        #secaoAtividades { display:none; }
+        textarea { width:100%; min-height:90px; padding:12px; border:1px solid #ddd; border-radius:10px; margin:8px 0; resize:vertical; font-family:inherit; }
+        .grid-form { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:10px; align-items:end; }
+
+        .relatorio-acoes { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+        .relatorio-acoes button { width:auto; }
+        .tabela-relatorio-vazia { text-align:center; color:#666; padding:18px; }
+    </style>
+</head>
+<body>
+<div class="card" id="login">
+<h2 style="color:var(--nu-roxo); margin-bottom:5px;">👩‍🏫 Painel Professor</h2>
+<p class="muted">Acesse com o e-mail e a senha criados no Firebase Authentication e cadastrados no Painel Administrativo.</p>
+<input id="emailProfessor" placeholder="E-mail do professor" type="email"/>
+<div style="display:flex; gap:6px; align-items:center;">
+<input id="senhaProfessor" placeholder="Senha" style="margin:8px 0;" type="password"/>
+<button onclick="toggleSenhaLogin()" style="padding:12px 14px; margin:0;" type="button">👁</button>
+</div>
+<button onclick="entrarProfessor()" style="width:100%; margin-left:0; margin-right:0;">Entrar</button>
+<div class="erro" id="erroLogin"></div>
+</div>
+<div class="container" id="painel">
+<div class="card topo">
+<div>
+<h2 style="color:var(--nu-roxo); margin:0;">👩‍🏫 Painel Professor</h2>
+<div class="muted" id="dadosProfessor" style="margin-top:6px;"></div>
+<div id="vinculoProfessor" style="margin-top:8px;"></div>
+</div>
+<div>
+<button class="btn-verde" onclick="mostrarSecaoProfessor('secaoDashboard')">🏠 Dashboard</button>
+<button class="btn-azul" onclick="mostrarSecaoProfessor('secaoAtividades')">📝 Atividades</button>
+<button class="btn-verde" onclick="carregarAlunosDoProfessor()">🔄 Atualizar</button>
+<button class="btn-azul" onclick="mostrarSecaoProfessor('secaoRelatorios')">📊 Relatórios</button>
+<button class="btn-verde" onclick="abrirVilaMerit()">🏠 Vila Merit</button><button class="btn-cinza" onclick="sairProfessor()">Sair</button>
+</div>
+</div>
+<div class="secao-painel" id="secaoDashboard">
+<div class="card">
+<h3>📊 Resumo da Turma</h3>
+<div class="grid-resumo">
+<div class="resumo"><small>Estudantes encontrados</small><h3 id="totalAlunos">0</h3></div>
+<div class="resumo"><small>Soma dos saldos</small><h3 id="somaSaldos">M$ 0,00</h3></div>
+<div class="resumo"><small>Soma das poupanças</small><h3 id="somaPoupancas">M$ 0,00</h3></div>
+<div class="resumo"><small>Aluno com maior saldo</small><h3 id="maiorSaldo" style="font-size:18px;">-</h3></div>
+</div>
+</div>
+<div class="card">
+<h3>👨‍🎓 Meus Estudantes</h3>
+<p class="muted">A lista abaixo mostra apenas estudantes vinculados à mesma escola, série e turma do professor.</p>
+<div class="filtros">
+<input id="buscaAluno" onkeyup="filtrarAlunos()" placeholder="🔍 Buscar estudante..." type="text"/>
+<select id="filtroStatus" onchange="filtrarAlunos()">
+<option value="">Todos os status</option>
+<option value="Ativo">Ativo</option>
+<option value="Inativo">Inativo</option>
+<option value="Transferido">Transferido</option>
+</select>
+</div>
+<div class="aviso" id="avisoAlunos" style="display:none;"></div>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Nome</th>
+<th>Conta</th>
+<th>Escola</th>
+<th>Série</th>
+<th>Turma</th>
+<th>Saldo</th>
+<th>Poupança</th>
+<th>Status</th>
+<th>Ações</th>
+</tr>
+</thead>
+<tbody id="tabelaAlunos"></tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="secao-painel" id="secaoVila" style="display:none;"><div class="card"><h2>🏠 Vila Merit</h2><p>Bem-vindo à futura Vila Merit!</p><div class="aviso">🚧 Em desenvolvimento.</div><button class="btn-cinza" onclick="mostrarSecaoProfessor('secaoDashboard')">← Voltar ao Dashboard</button></div></div></div>
+
+<div class="secao-painel" id="secaoRelatorios" style="display:none;">
+<div class="card">
+<div class="topo">
+<div>
+<h3>📊 Relatórios da Turma</h3>
+<p class="muted">Escolha o tipo de relatório, visualize na tela ou baixe em formato compatível com Excel.</p>
+</div>
+<button class="btn-cinza" onclick="mostrarSecaoProfessor('secaoDashboard')">← Voltar ao Dashboard</button>
+</div>
+</div>
+<div class="card">
+<h3>Gerar relatório</h3>
+<div class="grid-form">
+<select id="tipoRelatorioProfessor">
+<option value="geral">Movimentações gerais</option>
+<option value="atividades">Recompensas por realização de atividades</option>
+</select>
+<input id="relatorioDataInicio" type="date"/>
+<input id="relatorioDataFim" type="date"/>
+</div>
+<p class="muted">As datas são opcionais. Se não preencher, o sistema busca todas as movimentações da turma.</p>
+<div class="relatorio-acoes">
+<button class="btn-azul" onclick="visualizarRelatorioProfessor()">👁 Visualizar na tela</button>
+<button class="btn-verde" onclick="baixarRelatorioProfessor()">📥 Baixar Excel/CSV</button>
+</div>
+<div id="avisoRelatorioProfessor" class="aviso" style="display:none;"></div>
+</div>
+<div class="card">
+<h3 id="tituloResultadoRelatorio">Resultado do relatório</h3>
+<div class="table-wrap">
+<table id="tabelaResultadoRelatorio">
+<thead><tr><th>Relatório</th></tr></thead>
+<tbody><tr><td class="tabela-relatorio-vazia">Escolha um tipo de relatório e clique em “Visualizar na tela”.</td></tr></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<div class="secao-painel" id="secaoAtividades">
+<div class="card">
+<div class="topo">
+<div>
+<h3>📝 Área de Atividades</h3>
+<p class="muted">Crie atividades para sua turma. Depois conectaremos este módulo ao Banco de Questões e ao Painel do Estudante.</p>
+</div>
+<button class="btn-cinza" onclick="mostrarSecaoProfessor('secaoDashboard')">← Voltar ao Dashboard</button>
+</div>
+</div>
+<div class="card">
+<h3>➕ Criar atividade</h3>
+<input id="atividadeQuestaoOficialId" type="hidden"/>
+<div class="aviso" id="avisoQuestaoSelecionada" style="display:none;"></div>
+<div class="grid-form">
+<input id="atividadeTitulo" placeholder="Título da atividade. Ex.: Sistema monetário" type="text"/>
+<input id="atividadeRecompensa" min="0" placeholder="Recompensa em Merit$" step="0.01" type="number"/>
+<input id="atividadePrazo" type="date"/>
+<select id="atividadeStatus">
+<option value="Ativa">Ativa</option>
+<option value="Rascunho">Rascunho</option>
+<option value="Encerrada">Encerrada</option>
+</select>
+</div>
+<textarea id="atividadeDescricao" placeholder="Descrição da atividade / orientações para os estudantes"></textarea>
+<textarea id="atividadeEnunciado" placeholder="Enunciado da questão que o estudante deverá responder"></textarea>
+<div class="grid-form">
+<input id="alternativaA" placeholder="Alternativa A" type="text"/>
+<input id="alternativaB" placeholder="Alternativa B" type="text"/>
+<input id="alternativaC" placeholder="Alternativa C" type="text"/>
+<input id="alternativaD" placeholder="Alternativa D" type="text"/>
+<select id="alternativaCorreta">
+<option value="">Selecione a alternativa correta</option>
+<option value="A">Alternativa A</option>
+<option value="B">Alternativa B</option>
+<option value="C">Alternativa C</option>
+<option value="D">Alternativa D</option>
+</select>
+</div>
+<small class="muted">Você pode criar uma questão própria ou escolher uma questão do Banco Oficial abaixo. O Painel Estudante usará esses dados para corrigir automaticamente e liberar a recompensa.</small>
+<button class="btn-verde" onclick="salvarAtividade()" style="width:100%; margin-left:0; margin-right:0;">Salvar atividade</button>
+<div class="aviso" id="avisoAtividades" style="display:none;"></div>
+</div>
+<div class="card">
+<h3>📚 Usar Banco Oficial de Questões</h3>
+<p class="muted">Escolha uma questão cadastrada pelo ADM. <b>Usar</b> preenche o formulário para edição. <b>Liberar</b> já transforma a questão em atividade ativa da sua turma.</p>
+<div class="filtros">
+<input id="buscaQuestaoOficial" onkeyup="filtrarQuestoesOficiais()" placeholder="🔍 Buscar por tema, código, enunciado..." type="text"/>
+<select id="filtroQuestaoOficialDificuldade" onchange="filtrarQuestoesOficiais()">
+<option value="">Todos os níveis</option>
+<option value="Fácil">Fácil</option>
+<option value="Médio">Médio</option>
+<option value="Difícil">Difícil</option>
+</select>
+<button class="btn-verde" onclick="carregarQuestoesOficiais()">🔄 Carregar Banco Oficial</button>
+</div>
+<div class="aviso" id="avisoQuestoesOficiais" style="display:none;"></div>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Disciplina</th>
+<th>Série</th>
+<th>Tema</th>
+<th>Dificuldade</th>
+<th>Enunciado</th>
+<th>Correta</th>
+<th>Ação</th>
+</tr>
+</thead>
+<tbody id="tabelaQuestoesOficiais"><tr><td colspan="8">Clique em “Carregar Banco Oficial”.</td></tr></tbody>
+</table>
+</div>
+</div>
+<div class="card">
+<h3>📋 Minhas atividades</h3>
+<p class="muted">A tabela mostra as atividades criadas para a escola, série e turma vinculadas ao seu cadastro.</p>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Título</th>
+<th>Turma</th>
+<th>Recompensa</th>
+<th>Prazo</th>
+<th>Status</th>
+<th>Enunciado</th>
+<th>Correta</th>
+<th>Descrição</th>
+<th>Origem</th>
+<th>Ações</th>
+</tr>
+</thead>
+<tbody id="tabelaAtividades"><tr><td colspan="10">Nenhuma atividade carregada ainda.</td></tr></tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="modal-fundo" id="modalMovimento">
+<div class="modal">
+<h3>💰 Movimentar dinheiro</h3>
+<p class="muted" id="alunoMovimentoInfo"></p>
+<input id="valorMovimento" min="0" placeholder="Valor em Merit$" step="0.01" type="number"/>
+<select id="tipoMovimento">
+<option value="dar">Dar dinheiro ao estudante</option>
+<option value="retirar">Retirar dinheiro do estudante</option>
+</select>
+<input id="obsMovimento" placeholder="Observação / motivo da movimentação" type="text"/>
+<button class="btn-verde" onclick="confirmarMovimento()" style="width:100%;">Confirmar movimentação</button>
+<button class="btn-cinza" onclick="fecharModalMovimento()" style="width:100%;">Cancelar</button>
+</div>
+</div>
+<script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey:"AIzaSyCG_jh9lDlTj8mAKKm6sYhI9XNSP_OLjFY",
+            authDomain:"banco-sandra.firebaseapp.com",
+            projectId:"banco-sandra",
+            storageBucket:"banco-sandra.firebasestorage.app",
+            messagingSenderId:"506761695598",
+            appId:"1:506761695598:web:783a6bfa6d5ff0b143317f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let professorLogado = null;
+        let alunosDaTurma = [];
+        let atividadesDaTurma = [];
+        let questoesOficiais = [];
+        let alunoSelecionadoMovimento = null;
+
+        function dinheiro(valor) {
+            return `M$ ${parseFloat(valor || 0).toFixed(2).replace('.', ',')}`;
+        }
+
+        function textoSeguro(valor, padrao='-') {
+            const v = String(valor ?? '').trim();
+            return v || padrao;
+        }
+
+        function normalizar(valor) {
+            return String(valor || '').trim().toLowerCase();
+        }
+
+        function alunoPertenceAoProfessor(aluno, professor) {
+            const porId = aluno.escolaId === professor.escolaId && aluno.serieId === professor.serieId && aluno.turmaId === professor.turmaId;
+            const porNome = normalizar(aluno.escola) === normalizar(professor.escola) && normalizar(aluno.serie) === normalizar(professor.serie) && normalizar(aluno.turma) === normalizar(professor.turma);
+            return porId || porNome;
+        }
+
+        window.toggleSenhaLogin = () => {
+            const campo = document.getElementById('senhaProfessor');
+            campo.type = campo.type === 'password' ? 'text' : 'password';
+        };
+
+        async function localizarProfessorPorEmail(email) {
+            const snap = await getDocs(collection(db, 'professores'));
+            let encontrado = null;
+            snap.forEach(docSnap => {
+                const p = { id: docSnap.id, ...docSnap.data() };
+                if (normalizar(p.email) === normalizar(email)) encontrado = p;
+            });
+            return encontrado;
+        }
+
+        window.entrarProfessor = async () => {
+            const email = document.getElementById('emailProfessor').value.trim().toLowerCase();
+            const senha = document.getElementById('senhaProfessor').value.trim();
+            const erro = document.getElementById('erroLogin');
+            erro.style.display = 'none';
+            erro.innerText = '';
+
+            if (!email || !senha) {
+                erro.innerText = 'Digite o e-mail e a senha do professor.';
+                erro.style.display = 'block';
+                return;
+            }
+
+            try {
+                await signInWithEmailAndPassword(auth, email, senha);
+                const encontrado = await localizarProfessorPorEmail(email);
+
+                if (!encontrado) {
+                    await signOut(auth);
+                    erro.innerText = 'Login existe no Firebase Authentication, mas este e-mail não está cadastrado na coleção professores.';
+                    erro.style.display = 'block';
+                    return;
+                }
+
+                if ((encontrado.status || 'Ativo') !== 'Ativo') {
+                    await signOut(auth);
+                    erro.innerText = 'Este professor está inativo. Verifique o cadastro no Painel Administrativo.';
+                    erro.style.display = 'block';
+                    return;
+                }
+
+                professorLogado = encontrado;
+                localStorage.setItem('professorLogadoEletivaBank', JSON.stringify(professorLogado));
+                abrirPainelProfessor();
+                await carregarAlunosDoProfessor();
+                await carregarAtividadesDoProfessor();
+            } catch (e) {
+                console.error(e);
+                if (e.code === 'auth/invalid-email') erro.innerText = 'O login precisa ser um e-mail válido, por exemplo: professor@email.com.';
+                else if (e.code === 'auth/invalid-credential' || e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password') erro.innerText = 'E-mail ou senha incorretos no Firebase Authentication.';
+                else if (e.code === 'permission-denied') erro.innerText = 'Login feito, mas o Firestore bloqueou a leitura. Publique as regras atualizadas para professores e usuarios.';
+                else erro.innerText = 'Não foi possível acessar. Confira se o professor existe no Authentication e na coleção professores.';
+                erro.style.display = 'block';
+            }
+        };
+
+        function abrirPainelProfessor() {
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('painel').style.display = 'block';
+            document.getElementById('secaoDashboard').style.display = 'block';
+            document.getElementById('secaoAtividades').style.display = 'none';
+            document.getElementById('dadosProfessor').innerHTML = `<b>${textoSeguro(professorLogado.nome)}</b> • ${textoSeguro(professorLogado.email)} • ${textoSeguro(professorLogado.disciplina)}`;
+            document.getElementById('vinculoProfessor').innerHTML = `
+                <span class="badge">🏫 ${textoSeguro(professorLogado.escola, 'Sem escola')}</span>
+                <span class="badge">📚 ${textoSeguro(professorLogado.serie, 'Sem série')}</span>
+                <span class="badge">👥 ${textoSeguro(professorLogado.turma, 'Sem turma')}</span>
+            `;
+        }
+
+        window.sairProfessor = async () => {
+            localStorage.removeItem('professorLogadoEletivaBank');
+            professorLogado = null;
+            try { await signOut(auth); } catch(e) { console.warn(e); }
+            window.location.reload();
+        };
+
+        window.carregarAlunosDoProfessor = async () => {
+            if (!professorLogado) return;
+            const aviso = document.getElementById('avisoAlunos');
+            aviso.style.display = 'none';
+            aviso.innerText = '';
+
+            try {
+                const snap = await getDocs(collection(db, 'usuarios'));
+                alunosDaTurma = [];
+                snap.forEach(docSnap => {
+                    const aluno = { id: docSnap.id, ...docSnap.data() };
+                    if (alunoPertenceAoProfessor(aluno, professorLogado)) alunosDaTurma.push(aluno);
+                });
+                alunosDaTurma.sort((a,b)=>(a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
+                renderizarAlunos();
+
+                if (alunosDaTurma.length === 0) {
+                    aviso.innerText = 'Nenhum estudante encontrado para essa escola, série e turma. Verifique se os alunos foram vinculados aos mesmos cadastros mestres usados no professor.';
+                    aviso.style.display = 'block';
+                }
+            } catch (e) {
+                console.error(e);
+                aviso.innerText = 'Não foi possível carregar os estudantes. Se aparecer permission-denied, ajuste as regras do Firestore para permitir leitura da coleção usuarios pelo Painel Professor.';
+                aviso.style.display = 'block';
+            }
+        };
+
+        function renderizarAlunos() {
+            const tbody = document.getElementById('tabelaAlunos');
+            tbody.innerHTML = '';
+            let somaSaldo = 0;
+            let somaPoupanca = 0;
+            let alunoMaior = null;
+
+            alunosDaTurma.forEach(a => {
+                const saldo = parseFloat(a.saldo || 0);
+                const poupanca = parseFloat(a.poupanca || 0);
+                somaSaldo += saldo;
+                somaPoupanca += poupanca;
+                if (!alunoMaior || saldo > parseFloat(alunoMaior.saldo || 0)) alunoMaior = a;
+
+                const status = a.status || 'Ativo';
+                const classeStatus = status === 'Ativo' ? 'status-ativo' : 'status-inativo';
+                tbody.innerHTML += `<tr data-status="${status}">
+                    <td>${textoSeguro(a.nome)}</td>
+                    <td>${textoSeguro(a.id)}</td>
+                    <td>${textoSeguro(a.escola, 'Sem escola')}</td>
+                    <td>${textoSeguro(a.serie, 'Sem série')}</td>
+                    <td>${textoSeguro(a.turma, 'Sem turma')}</td>
+                    <td>${dinheiro(saldo)}</td>
+                    <td>${dinheiro(poupanca)}</td>
+                    <td><span class="${classeStatus}">${status}</span></td>
+                    <td><button class="btn-azul" onclick="abrirMovimento('${a.id}')">💰 Dar/Retirar</button></td>
+                </tr>`;
+            });
+
+            document.getElementById('totalAlunos').innerText = alunosDaTurma.length;
+            document.getElementById('somaSaldos').innerText = dinheiro(somaSaldo);
+            document.getElementById('somaPoupancas').innerText = dinheiro(somaPoupanca);
+            document.getElementById('maiorSaldo').innerText = alunoMaior ? `${alunoMaior.nome || '-'} — ${dinheiro(alunoMaior.saldo || 0)}` : '-';
+            filtrarAlunos();
+        }
+
+
+        window.abrirMovimento = (alunoId) => {
+            alunoSelecionadoMovimento = alunosDaTurma.find(a => a.id === alunoId);
+            if (!alunoSelecionadoMovimento) return alert('Estudante não encontrado na lista do professor.');
+
+            document.getElementById('alunoMovimentoInfo').innerText = `${alunoSelecionadoMovimento.nome || 'Estudante'} • Saldo atual: ${dinheiro(alunoSelecionadoMovimento.saldo || 0)}`;
+            document.getElementById('valorMovimento').value = '';
+            document.getElementById('tipoMovimento').value = 'dar';
+            document.getElementById('obsMovimento').value = '';
+            document.getElementById('modalMovimento').style.display = 'flex';
+        };
+
+        window.fecharModalMovimento = () => {
+            document.getElementById('modalMovimento').style.display = 'none';
+            alunoSelecionadoMovimento = null;
+        };
+
+        window.confirmarMovimento = async () => {
+            if (!professorLogado || !alunoSelecionadoMovimento) return alert('Sessão inválida. Entre novamente no painel.');
+
+            const valorDigitado = parseFloat(document.getElementById('valorMovimento').value);
+            const tipo = document.getElementById('tipoMovimento').value;
+            const obs = document.getElementById('obsMovimento').value.trim();
+
+            if (isNaN(valorDigitado) || valorDigitado <= 0) return alert('Digite um valor maior que zero.');
+            if (!obs) return alert('Digite uma observação para registrar o motivo.');
+
+            const valorFinal = tipo === 'retirar' ? -Math.abs(valorDigitado) : Math.abs(valorDigitado);
+            const saldoAtual = parseFloat(alunoSelecionadoMovimento.saldo || 0);
+            const novoSaldo = saldoAtual + valorFinal;
+
+            if (novoSaldo < 0 && !confirm('O saldo ficará negativo. Deseja continuar?')) return;
+
+            try {
+                await updateDoc(doc(db, 'usuarios', alunoSelecionadoMovimento.id), { saldo: novoSaldo });
+
+                await addDoc(collection(db, 'transacoes'), {
+                    origem: `PROFESSOR:${professorLogado.id || professorLogado.email}`,
+                    professorId: professorLogado.id || '',
+                    professorNome: professorLogado.nome || '',
+                    professorEmail: professorLogado.email || '',
+                    destino: alunoSelecionadoMovimento.id,
+                    nomeDestino: alunoSelecionadoMovimento.nome || '',
+                    valor: valorFinal,
+                    tipo: tipo === 'retirar' ? 'retirada_professor' : 'credito_professor',
+                    obs: obs,
+                    escolaId: professorLogado.escolaId || alunoSelecionadoMovimento.escolaId || '',
+                    serieId: professorLogado.serieId || alunoSelecionadoMovimento.serieId || '',
+                    turmaId: professorLogado.turmaId || alunoSelecionadoMovimento.turmaId || '',
+                    data: serverTimestamp()
+                });
+
+                alert('Movimentação registrada com sucesso!');
+                fecharModalMovimento();
+                await carregarAlunosDoProfessor();
+            } catch (e) {
+                console.error(e);
+                alert('Não foi possível movimentar o dinheiro. Se aparecer permission-denied, libere escrita em usuarios e transacoes para professores nas regras do Firestore.');
+            }
+        };
+
+
+        function dataDaTransacao(t) {
+            if (t.data && t.data.toDate) return t.data.toDate();
+            if (t.criadaEm && t.criadaEm.toDate) return t.criadaEm.toDate();
+            if (t.dataCadastro && t.dataCadastro.toDate) return t.dataCadastro.toDate();
+            return null;
+        }
+
+        function escaparCSV(valor) {
+            const texto = String(valor ?? '').replace(/"/g, '""');
+            return `"${texto}"`;
+        }
+
+        function tipoTransacaoLegivel(t) {
+            const tipo = String(t.tipo || '').toLowerCase();
+            if (tipo.includes('retirada_professor')) return 'Retirada feita por professor';
+            if (tipo.includes('credito_professor')) return 'Recompensa dada por professor';
+            if (tipo.includes('pix')) return 'PIX';
+            if (String(t.origem || '').startsWith('PROFESSOR:')) return parseFloat(t.valor || 0) < 0 ? 'Retirada feita por professor' : 'Recompensa dada por professor';
+            if (String(t.origem || '').toUpperCase() === 'ADMIN') return 'Ajuste administrativo';
+            return tipo ? t.tipo : 'Movimentação';
+        }
+
+        function transacaoPertenceATurma(t, idsAlunosTurma, nomesAlunosTurma) {
+            const porVinculo =
+                String(t.escolaId || '') === String(professorLogado.escolaId || '') &&
+                String(t.serieId || '') === String(professorLogado.serieId || '') &&
+                String(t.turmaId || '') === String(professorLogado.turmaId || '');
+
+            const origemLimpa = String(t.origem || '').replace('PROFESSOR:', '');
+            const destinoLimpo = String(t.destino || t.nomeDestino || '').trim();
+            const nomeDestino = normalizar(t.nomeDestino || '');
+
+            const porAluno = idsAlunosTurma.has(origemLimpa) || idsAlunosTurma.has(destinoLimpo) || nomesAlunosTurma.has(nomeDestino);
+            return porVinculo || porAluno;
+        }
+
+        function dataDentroDoFiltro(dataObj) {
+            const inicio = document.getElementById('relatorioDataInicio')?.value || '';
+            const fim = document.getElementById('relatorioDataFim')?.value || '';
+            if (!dataObj) return true;
+            if (inicio) {
+                const di = new Date(inicio + 'T00:00:00');
+                if (dataObj < di) return false;
+            }
+            if (fim) {
+                const df = new Date(fim + 'T23:59:59');
+                if (dataObj > df) return false;
+            }
+            return true;
+        }
+
+        function ehRecompensaPorAtividade(t) {
+            const tipo = String(t.tipo || '').toLowerCase();
+            const origem = String(t.origem || '').toLowerCase();
+            return tipo.includes('recompensa_atividade') || origem === 'atividade' || !!t.atividadeId;
+        }
+
+        async function montarDadosRelatorioProfessor(tipoRelatorio) {
+            if (!professorLogado) throw new Error('Sessão inválida. Entre novamente no painel.');
+
+            const usuariosSnap = await getDocs(collection(db, 'usuarios'));
+            const mapaUsuarios = {};
+            const idsAlunosTurma = new Set(alunosDaTurma.map(a => a.id));
+            const nomesAlunosTurma = new Set(alunosDaTurma.map(a => normalizar(a.nome || '')));
+
+            usuariosSnap.forEach(docSnap => {
+                const u = { id: docSnap.id, ...docSnap.data() };
+                mapaUsuarios[u.id] = u.nome || u.id;
+                if (alunoPertenceAoProfessor(u, professorLogado)) {
+                    idsAlunosTurma.add(u.id);
+                    nomesAlunosTurma.add(normalizar(u.nome || ''));
+                }
+            });
+
+            const transSnap = await getDocs(collection(db, 'transacoes'));
+            const linhas = [];
+
+            transSnap.forEach(docSnap => {
+                const t = { id: docSnap.id, ...docSnap.data() };
+                if (!transacaoPertenceATurma(t, idsAlunosTurma, nomesAlunosTurma)) return;
+                if (tipoRelatorio === 'atividades' && !ehRecompensaPorAtividade(t)) return;
+
+                const dataObj = dataDaTransacao(t);
+                if (!dataDentroDoFiltro(dataObj)) return;
+
+                const origemBruta = String(t.origem || '').replace('PROFESSOR:', '');
+                const destinoBruto = String(t.destino || '').trim();
+                const origemNome = t.professorNome || t.nomeOrigem || mapaUsuarios[origemBruta] || origemBruta || 'Sistema/Administração';
+                const destinoNome = t.nomeDestino || mapaUsuarios[destinoBruto] || destinoBruto || 'Não informado';
+                const valor = parseFloat(t.valor || 0);
+
+                if (tipoRelatorio === 'atividades') {
+                    linhas.push({
+                        dataOrdenacao: dataObj ? dataObj.getTime() : 0,
+                        colunas: [
+                            dataObj ? dataObj.toLocaleDateString('pt-BR') : '-',
+                            dataObj ? dataObj.toLocaleTimeString('pt-BR') : '-',
+                            t.nomeOrigem || t.obs?.replace('Recompensa por atividade: ', '') || 'Atividade',
+                            destinoNome,
+                            dinheiro(valor),
+                            t.professorNome || t.professorEmail || professorLogado.nome || '-',
+                            t.obs || ''
+                        ]
+                    });
+                } else {
+                    linhas.push({
+                        dataOrdenacao: dataObj ? dataObj.getTime() : 0,
+                        colunas: [
+                            dataObj ? dataObj.toLocaleDateString('pt-BR') : '-',
+                            dataObj ? dataObj.toLocaleTimeString('pt-BR') : '-',
+                            tipoTransacaoLegivel(t),
+                            origemNome,
+                            destinoNome,
+                            t.obs || ''
+                        ]
+                    });
+                }
+            });
+
+            linhas.sort((a, b) => b.dataOrdenacao - a.dataOrdenacao);
+
+            const cabecalho = tipoRelatorio === 'atividades'
+                ? ['Data', 'Hora', 'Atividade', 'Estudante', 'Recompensa', 'Professor', 'Observação']
+                : ['Data', 'Hora', 'Tipo de movimentação', 'Nome de origem', 'Nome destino', 'Observação'];
+
+            return { cabecalho, linhas };
+        }
+
+        function renderizarRelatorioNaTela(cabecalho, linhas, tipoRelatorio) {
+            const tabela = document.getElementById('tabelaResultadoRelatorio');
+            const titulo = document.getElementById('tituloResultadoRelatorio');
+            if (!tabela) return;
+
+            titulo.innerText = tipoRelatorio === 'atividades'
+                ? 'Resultado — Recompensas por realização de atividades'
+                : 'Resultado — Movimentações gerais';
+
+            let html = '<thead><tr>' + cabecalho.map(c => `<th>${c}</th>`).join('') + '</tr></thead><tbody>';
+
+            if (!linhas.length) {
+                html += `<tr><td colspan="${cabecalho.length}" class="tabela-relatorio-vazia">Nenhum registro encontrado para este relatório.</td></tr>`;
+            } else {
+                linhas.forEach(l => {
+                    html += '<tr>' + l.colunas.map(c => `<td>${c || '-'}</td>`).join('') + '</tr>';
+                });
+            }
+
+            html += '</tbody>';
+            tabela.innerHTML = html;
+        }
+
+        window.visualizarRelatorioProfessor = async () => {
+            const tipoRelatorio = document.getElementById('tipoRelatorioProfessor').value;
+            const aviso = document.getElementById('avisoRelatorioProfessor');
+            if (aviso) { aviso.style.display = 'none'; aviso.innerText = ''; }
+
+            try {
+                const { cabecalho, linhas } = await montarDadosRelatorioProfessor(tipoRelatorio);
+                renderizarRelatorioNaTela(cabecalho, linhas, tipoRelatorio);
+                if (!linhas.length && aviso) {
+                    aviso.innerText = 'Nenhum registro encontrado para os filtros escolhidos.';
+                    aviso.style.display = 'block';
+                }
+            } catch (e) {
+                console.error(e);
+                if (aviso) {
+                    aviso.innerText = 'Não foi possível visualizar o relatório. Verifique as regras do Firestore para leitura de usuarios e transacoes.';
+                    aviso.style.display = 'block';
+                } else {
+                    alert('Não foi possível visualizar o relatório.');
+                }
+            }
+        };
+
+        window.baixarRelatorioProfessor = async () => {
+            const tipoRelatorio = document.getElementById('tipoRelatorioProfessor').value;
+            const aviso = document.getElementById('avisoRelatorioProfessor');
+            if (aviso) { aviso.style.display = 'none'; aviso.innerText = ''; }
+
+            try {
+                const { cabecalho, linhas } = await montarDadosRelatorioProfessor(tipoRelatorio);
+                if (!linhas.length) {
+                    if (aviso) {
+                        aviso.innerText = 'Nenhum registro encontrado para baixar.';
+                        aviso.style.display = 'block';
+                    } else {
+                        alert('Nenhum registro encontrado para baixar.');
+                    }
+                    return;
+                }
+
+                const csv = [cabecalho, ...linhas.map(l => l.colunas)]
+                    .map(linha => linha.map(escaparCSV).join(';'))
+                    .join('\n');
+
+                const blob = new Blob(['\ufeff', csv], { type: 'text/csv;charset=utf-8;' });
+                const a = document.createElement('a');
+                const turmaArquivo = String(professorLogado.turma || 'turma')
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                    .replace(/[^a-zA-Z0-9]+/g, '_');
+                const nomeRelatorio = tipoRelatorio === 'atividades' ? 'recompensas_atividades' : 'movimentacoes_gerais';
+                a.href = URL.createObjectURL(blob);
+                a.download = `relatorio_${nomeRelatorio}_${turmaArquivo}.csv`;
+                a.click();
+                URL.revokeObjectURL(a.href);
+            } catch (e) {
+                console.error(e);
+                if (aviso) {
+                    aviso.innerText = 'Não foi possível baixar o relatório. Verifique as regras do Firestore para leitura de usuarios e transacoes.';
+                    aviso.style.display = 'block';
+                } else {
+                    alert('Não foi possível baixar o relatório.');
+                }
+            }
+        };
+
+        window.gerarRelatorioMovimentacoesTurma = async () => {
+            document.getElementById('tipoRelatorioProfessor').value = 'geral';
+            await mostrarSecaoProfessor('secaoRelatorios');
+            await visualizarRelatorioProfessor();
+        };
+
+        window.mostrarSecaoProfessor = async (id) => {
+            document.querySelectorAll('.secao-painel').forEach(secao => secao.style.display = 'none');
+            const alvo = document.getElementById(id);
+            if (alvo) alvo.style.display = 'block';
+            if (id === 'secaoAtividades') { await carregarAtividadesDoProfessor(); await carregarQuestoesOficiais(); }
+        };
+
+
+        function resumoTexto(valor, limite=90) {
+            const txt = String(valor || '').trim();
+            return txt.length > limite ? txt.slice(0, limite) + '...' : (txt || '-');
+        }
+
+        function questaoOficialPertenceASerie(q) {
+            if (!professorLogado) return false;
+            const mesmaSerieId = String(q.serieId || '') === String(professorLogado.serieId || '');
+            const mesmaSerieNome = normalizar(q.serie || '') === normalizar(professorLogado.serie || '');
+            return mesmaSerieId || mesmaSerieNome || !q.serieId;
+        }
+
+        window.carregarQuestoesOficiais = async () => {
+            const tbody = document.getElementById('tabelaQuestoesOficiais');
+            const aviso = document.getElementById('avisoQuestoesOficiais');
+            if (!tbody) return;
+            if (aviso) { aviso.style.display = 'none'; aviso.innerText = ''; }
+            try {
+                const snap = await getDocs(collection(db, 'questoes'));
+                questoesOficiais = [];
+                snap.forEach(docSnap => {
+                    const q = { id: docSnap.id, ...docSnap.data() };
+                    const status = q.status || 'Ativa';
+                    if (status === 'Ativa' && questaoOficialPertenceASerie(q)) questoesOficiais.push(q);
+                });
+                questoesOficiais.sort((a,b) => String(a.codigo || a.tema || '').localeCompare(String(b.codigo || b.tema || ''), 'pt-BR'));
+                renderizarQuestoesOficiais();
+                if (!questoesOficiais.length && aviso) {
+                    aviso.innerText = 'Nenhuma questão ativa do Banco Oficial encontrada para esta série. Confira o cadastro no Painel Administrativo.';
+                    aviso.style.display = 'block';
+                }
+            } catch (e) {
+                console.error(e);
+                tbody.innerHTML = '<tr><td colspan="8">⚠️ Não foi possível carregar o Banco Oficial. Verifique a leitura da coleção questoes nas regras do Firestore.</td></tr>';
+            }
+        };
+
+        function renderizarQuestoesOficiais() {
+            const tbody = document.getElementById('tabelaQuestoesOficiais');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            if (!questoesOficiais.length) {
+                tbody.innerHTML = '<tr><td colspan="8">Nenhuma questão oficial disponível.</td></tr>';
+                return;
+            }
+            questoesOficiais.forEach(q => {
+                tbody.innerHTML += `<tr data-dificuldade="${q.dificuldade || ''}">
+                    <td>${textoSeguro(q.codigo || q.id)}</td>
+                    <td>${textoSeguro(q.disciplina)}</td>
+                    <td>${textoSeguro(q.serie, textoSeguro(professorLogado?.serie, ''))}</td>
+                    <td>${textoSeguro(q.tema)}</td>
+                    <td>${textoSeguro(q.dificuldade)}</td>
+                    <td>${resumoTexto(q.enunciado, 110)}</td>
+                    <td><b>${textoSeguro(q.correta)}</b></td>
+                    <td><button onclick="usarQuestaoOficial('${q.id}')" class="btn-verde">Usar</button><button onclick="liberarQuestaoOficial('${q.id}')" class="btn-azul">Liberar</button></td>
+                </tr>`;
+            });
+            filtrarQuestoesOficiais();
+        }
+
+        window.filtrarQuestoesOficiais = () => {
+            const busca = normalizar(document.getElementById('buscaQuestaoOficial')?.value || '');
+            const dificuldade = document.getElementById('filtroQuestaoOficialDificuldade')?.value || '';
+            document.querySelectorAll('#tabelaQuestoesOficiais tr').forEach(linha => {
+                const okBusca = normalizar(linha.innerText).includes(busca);
+                const okDif = !dificuldade || linha.dataset.dificuldade === dificuldade;
+                linha.style.display = (okBusca && okDif) ? '' : 'none';
+            });
+        };
+
+        window.usarQuestaoOficial = (questaoId) => {
+            const q = questoesOficiais.find(item => item.id === questaoId);
+            if (!q) return alert('Questão oficial não encontrada. Clique em carregar e tente novamente.');
+            const alternativas = q.alternativas || {};
+            document.getElementById('atividadeQuestaoOficialId').value = q.id;
+            document.getElementById('atividadeTitulo').value = q.tema ? `${q.tema} - ${q.codigo || 'Banco Oficial'}` : `Atividade - ${q.codigo || 'Banco Oficial'}`;
+            document.getElementById('atividadeDescricao').value = `Atividade criada a partir do Banco Oficial de Questões. Tema: ${q.tema || 'não informado'}.`;
+            document.getElementById('atividadeEnunciado').value = q.enunciado || '';
+            document.getElementById('alternativaA').value = q.alternativaA || alternativas.A || '';
+            document.getElementById('alternativaB').value = q.alternativaB || alternativas.B || '';
+            document.getElementById('alternativaC').value = q.alternativaC || alternativas.C || '';
+            document.getElementById('alternativaD').value = q.alternativaD || alternativas.D || '';
+            document.getElementById('alternativaCorreta').value = q.correta || q.alternativaCorreta || '';
+            const aviso = document.getElementById('avisoQuestaoSelecionada');
+            if (aviso) {
+                aviso.innerHTML = `📚 Questão oficial selecionada: <b>${q.codigo || q.id}</b> — ${q.tema || 'sem tema'}. Agora defina recompensa, prazo e salve a atividade.`;
+                aviso.style.display = 'block';
+            }
+            document.getElementById('atividadeTitulo').scrollIntoView({behavior:'smooth', block:'center'});
+        };
+
+        window.liberarQuestaoOficial = async (questaoId) => {
+            if (!professorLogado) return alert('Sessão inválida. Entre novamente no painel.');
+            const q = questoesOficiais.find(item => item.id === questaoId);
+            if (!q) return alert('Questão oficial não encontrada. Clique em carregar e tente novamente.');
+
+            const recompensaTexto = prompt('Recompensa em Merit$ para esta atividade:', '10');
+            if (recompensaTexto === null) return;
+            const recompensa = parseFloat(String(recompensaTexto).replace(',', '.'));
+            if (isNaN(recompensa) || recompensa < 0) return alert('Recompensa inválida.');
+
+            const prazo = prompt('Prazo da atividade no formato AAAA-MM-DD. Pode deixar em branco:', '');
+            if (prazo === null) return;
+
+            const alternativas = q.alternativas || {};
+            const alternativaA = q.alternativaA || alternativas.A || '';
+            const alternativaB = q.alternativaB || alternativas.B || '';
+            const alternativaC = q.alternativaC || alternativas.C || '';
+            const alternativaD = q.alternativaD || alternativas.D || '';
+            const correta = (q.correta || q.alternativaCorreta || '').trim().toUpperCase();
+
+            if (!q.enunciado || !alternativaA || !alternativaB || !alternativaC || !alternativaD || !correta) {
+                return alert('Essa questão oficial está incompleta. Confira enunciado, alternativas e alternativa correta no Painel Administrativo.');
+            }
+
+            const titulo = q.tema ? `${q.tema} - ${q.codigo || 'Banco Oficial'}` : `Atividade - ${q.codigo || 'Banco Oficial'}`;
+            const descricao = `Atividade liberada a partir do Banco Oficial de Questões. Tema: ${q.tema || 'não informado'}.`;
+
+            try {
+                await addDoc(collection(db, 'atividades'), {
+                    titulo,
+                    descricao,
+                    enunciado: q.enunciado || '',
+                    alternativas: { A: alternativaA, B: alternativaB, C: alternativaC, D: alternativaD },
+                    alternativaA,
+                    alternativaB,
+                    alternativaC,
+                    alternativaD,
+                    correta,
+                    alternativaCorreta: correta,
+                    recompensa,
+                    prazo: (prazo || '').trim(),
+                    status: 'Ativa',
+                    publicada: true,
+                    liberada: true,
+                    origemQuestao: 'Banco Oficial',
+                    questaoOficialId: q.id,
+                    codigoQuestao: q.codigo || q.id,
+                    disciplina: q.disciplina || '',
+                    tema: q.tema || '',
+                    habilidade: q.habilidade || '',
+                    dificuldade: q.dificuldade || '',
+                    professorId: professorLogado.id || '',
+                    professorNome: professorLogado.nome || '',
+                    professorEmail: professorLogado.email || '',
+                    escolaId: professorLogado.escolaId || '',
+                    escola: professorLogado.escola || '',
+                    escolaNome: professorLogado.escola || '',
+                    serieId: professorLogado.serieId || '',
+                    serie: professorLogado.serie || '',
+                    serieNome: professorLogado.serie || '',
+                    turmaId: professorLogado.turmaId || '',
+                    turma: professorLogado.turma || '',
+                    turmaNome: professorLogado.turma || '',
+                    turmaCompleta: professorLogado.turma || '',
+                    criadaEm: serverTimestamp()
+                });
+
+                alert('Questão liberada como atividade para a turma! Agora ela deve aparecer no Painel do Estudante.');
+                await carregarAtividadesDoProfessor();
+            } catch (e) {
+                console.error(e);
+                alert('Não foi possível liberar a questão. Se aparecer permission-denied, libere create na coleção atividades para professores.');
+            }
+        };
+
+        function atividadePertenceAoProfessor(atividade, professor) {
+            const porId = String(atividade.escolaId || '') === String(professor.escolaId || '') &&
+                String(atividade.serieId || '') === String(professor.serieId || '') &&
+                String(atividade.turmaId || '') === String(professor.turmaId || '');
+
+            const porNome = normalizar(atividade.escola) === normalizar(professor.escola) &&
+                normalizar(atividade.serie) === normalizar(professor.serie) &&
+                normalizar(atividade.turma) === normalizar(professor.turma);
+
+            const porProfessor = normalizar(atividade.professorEmail) === normalizar(professor.email) ||
+                String(atividade.professorId || '') === String(professor.id || '');
+
+            return (porId || porNome) && (porProfessor || !atividade.professorEmail);
+        }
+
+        function dataPrazoLegivel(valor) {
+            if (!valor) return '-';
+            if (valor.toDate) return valor.toDate().toLocaleDateString('pt-BR');
+            const data = new Date(valor + 'T00:00:00');
+            return isNaN(data.getTime()) ? String(valor) : data.toLocaleDateString('pt-BR');
+        }
+
+        window.carregarAtividadesDoProfessor = async () => {
+            if (!professorLogado) return;
+            const aviso = document.getElementById('avisoAtividades');
+            if (aviso) { aviso.style.display = 'none'; aviso.innerText = ''; }
+
+            try {
+                const snap = await getDocs(collection(db, 'atividades'));
+                atividadesDaTurma = [];
+                snap.forEach(docSnap => {
+                    const atividade = { id: docSnap.id, ...docSnap.data() };
+                    if (atividadePertenceAoProfessor(atividade, professorLogado)) atividadesDaTurma.push(atividade);
+                });
+                atividadesDaTurma.sort((a, b) => String(a.titulo || '').localeCompare(String(b.titulo || ''), 'pt-BR'));
+                renderizarAtividades();
+            } catch (e) {
+                console.error(e);
+                const tbody = document.getElementById('tabelaAtividades');
+                if (tbody) tbody.innerHTML = '<tr><td colspan="10">⚠️ Não foi possível carregar atividades. Se aparecer permission-denied, libere leitura da coleção atividades para professores.</td></tr>';
+                if (aviso) {
+                    aviso.innerText = 'Não foi possível carregar atividades. Verifique as regras do Firestore para a coleção atividades.';
+                    aviso.style.display = 'block';
+                }
+            }
+        };
+
+        function renderizarAtividades() {
+            const tbody = document.getElementById('tabelaAtividades');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            if (!atividadesDaTurma.length) {
+                tbody.innerHTML = '<tr><td colspan="10">Nenhuma atividade criada para esta turma ainda.</td></tr>';
+                return;
+            }
+            atividadesDaTurma.forEach(a => {
+                tbody.innerHTML += `<tr>
+                    <td>${textoSeguro(a.titulo)}</td>
+                    <td>${textoSeguro(a.turma, textoSeguro(professorLogado.turma))}</td>
+                    <td>${dinheiro(a.recompensa || 0)}</td>
+                    <td>${dataPrazoLegivel(a.prazo)}</td>
+                    <td>${textoSeguro(a.status, 'Ativa')}</td>
+                    <td>${textoSeguro(a.enunciado)}</td>
+                    <td>${textoSeguro(a.correta || a.alternativaCorreta)}</td>
+                    <td>${textoSeguro(a.descricao)}</td>
+                    <td>${textoSeguro(a.origemQuestao || (a.questaoOficialId ? 'Banco Oficial' : 'Questão do Professor'))}</td>
+                    <td>
+                        <button onclick="editarAtividade('${a.id}')" class="btn-azul">Editar</button>
+                        <button onclick="excluirAtividade('${a.id}')" class="btn-vermelho">Excluir</button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+
+        window.editarAtividade = async (atividadeId) => {
+            const atividade = atividadesDaTurma.find(a => a.id === atividadeId);
+            if (!atividade) return alert('Atividade não encontrada. Atualize a página e tente novamente.');
+
+            const titulo = prompt('Título da atividade:', atividade.titulo || '');
+            if (titulo === null) return;
+
+            const descricao = prompt('Descrição / orientações:', atividade.descricao || '');
+            if (descricao === null) return;
+
+            const enunciado = prompt('Enunciado da questão:', atividade.enunciado || '');
+            if (enunciado === null) return;
+
+            const alternativasAtuais = atividade.alternativas || {};
+            const alternativaA = prompt('Alternativa A:', atividade.alternativaA || alternativasAtuais.A || '');
+            if (alternativaA === null) return;
+            const alternativaB = prompt('Alternativa B:', atividade.alternativaB || alternativasAtuais.B || '');
+            if (alternativaB === null) return;
+            const alternativaC = prompt('Alternativa C:', atividade.alternativaC || alternativasAtuais.C || '');
+            if (alternativaC === null) return;
+            const alternativaD = prompt('Alternativa D:', atividade.alternativaD || alternativasAtuais.D || '');
+            if (alternativaD === null) return;
+
+            const alternativaCorreta = (prompt('Alternativa correta: A, B, C ou D', atividade.correta || atividade.alternativaCorreta || '') || '').trim().toUpperCase();
+            if (!['A','B','C','D'].includes(alternativaCorreta)) return alert('Alternativa correta inválida. Use A, B, C ou D.');
+
+            const recompensaTexto = prompt('Recompensa em Merit$:', atividade.recompensa ?? 0);
+            if (recompensaTexto === null) return;
+            const recompensa = parseFloat(String(recompensaTexto).replace(',', '.'));
+            if (isNaN(recompensa) || recompensa < 0) return alert('Recompensa inválida.');
+
+            const prazo = prompt('Prazo no formato AAAA-MM-DD:', atividade.prazo || '');
+            if (prazo === null) return;
+
+            const status = prompt('Status: Ativa, Rascunho ou Encerrada', atividade.status || 'Ativa');
+            if (status === null) return;
+            if (!['Ativa','Rascunho','Encerrada'].includes(status)) return alert('Status inválido. Use Ativa, Rascunho ou Encerrada.');
+
+            if (!titulo.trim() || !descricao.trim() || !enunciado.trim() || !alternativaA.trim() || !alternativaB.trim() || !alternativaC.trim() || !alternativaD.trim()) {
+                return alert('Nenhum campo principal pode ficar vazio.');
+            }
+
+            try {
+                await updateDoc(doc(db, 'atividades', atividadeId), {
+                    titulo: titulo.trim(),
+                    descricao: descricao.trim(),
+                    enunciado: enunciado.trim(),
+                    alternativas: {
+                        A: alternativaA.trim(),
+                        B: alternativaB.trim(),
+                        C: alternativaC.trim(),
+                        D: alternativaD.trim()
+                    },
+                    alternativaA: alternativaA.trim(),
+                    alternativaB: alternativaB.trim(),
+                    alternativaC: alternativaC.trim(),
+                    alternativaD: alternativaD.trim(),
+                    correta: alternativaCorreta,
+                    alternativaCorreta,
+                    recompensa,
+                    prazo: prazo.trim(),
+                    status,
+                    atualizadaEm: serverTimestamp()
+                });
+                alert('Atividade atualizada com sucesso!');
+                await carregarAtividadesDoProfessor();
+            } catch (e) {
+                console.error(e);
+                alert('Não foi possível editar a atividade. Se aparecer permission-denied, libere update na coleção atividades para professores.');
+            }
+        };
+
+        window.excluirAtividade = async (atividadeId) => {
+            const atividade = atividadesDaTurma.find(a => a.id === atividadeId);
+            if (!atividade) return alert('Atividade não encontrada. Atualize a página e tente novamente.');
+            if (!confirm(`Excluir a atividade "${atividade.titulo || 'sem título'}"? Essa ação não pode ser desfeita.`)) return;
+
+            try {
+                await deleteDoc(doc(db, 'atividades', atividadeId));
+                alert('Atividade excluída com sucesso!');
+                await carregarAtividadesDoProfessor();
+            } catch (e) {
+                console.error(e);
+                alert('Não foi possível excluir a atividade. Se aparecer permission-denied, libere delete na coleção atividades para professores.');
+            }
+        };
+
+        window.salvarAtividade = async () => {
+            if (!professorLogado) return alert('Sessão inválida. Entre novamente no painel.');
+
+            const titulo = document.getElementById('atividadeTitulo').value.trim();
+            const descricao = document.getElementById('atividadeDescricao').value.trim();
+            const enunciado = document.getElementById('atividadeEnunciado').value.trim();
+            const alternativaA = document.getElementById('alternativaA').value.trim();
+            const alternativaB = document.getElementById('alternativaB').value.trim();
+            const alternativaC = document.getElementById('alternativaC').value.trim();
+            const alternativaD = document.getElementById('alternativaD').value.trim();
+            const alternativaCorreta = document.getElementById('alternativaCorreta').value;
+            const recompensa = parseFloat(document.getElementById('atividadeRecompensa').value);
+            const prazo = document.getElementById('atividadePrazo').value;
+            const status = document.getElementById('atividadeStatus').value;
+
+            if (!titulo) return alert('Digite o título da atividade.');
+            if (!descricao) return alert('Digite a descrição da atividade.');
+            if (!enunciado) return alert('Digite o enunciado da questão.');
+            if (!alternativaA || !alternativaB || !alternativaC || !alternativaD) return alert('Preencha as quatro alternativas: A, B, C e D.');
+            if (!alternativaCorreta) return alert('Selecione a alternativa correta.');
+            if (isNaN(recompensa) || recompensa < 0) return alert('Digite uma recompensa válida.');
+
+            try {
+                await addDoc(collection(db, 'atividades'), {
+                    titulo,
+                    descricao,
+                    enunciado,
+                    alternativas: {
+                        A: alternativaA,
+                        B: alternativaB,
+                        C: alternativaC,
+                        D: alternativaD
+                    },
+                    alternativaA,
+                    alternativaB,
+                    alternativaC,
+                    alternativaD,
+                    correta: alternativaCorreta,
+                    alternativaCorreta,
+                    recompensa,
+                    prazo: prazo || '',
+                    status,
+                    questaoOficialId: document.getElementById('atividadeQuestaoOficialId').value || '',
+                    origemQuestao: document.getElementById('atividadeQuestaoOficialId').value ? 'Banco Oficial' : 'Questão do Professor',
+                    professorId: professorLogado.id || '',
+                    professorNome: professorLogado.nome || '',
+                    professorEmail: professorLogado.email || '',
+                    escolaId: professorLogado.escolaId || '',
+                    escola: professorLogado.escola || '',
+                    serieId: professorLogado.serieId || '',
+                    serie: professorLogado.serie || '',
+                    turmaId: professorLogado.turmaId || '',
+                    turma: professorLogado.turma || '',
+                    criadaEm: serverTimestamp()
+                });
+
+                document.getElementById('atividadeTitulo').value = '';
+                document.getElementById('atividadeDescricao').value = '';
+                document.getElementById('atividadeEnunciado').value = '';
+                document.getElementById('alternativaA').value = '';
+                document.getElementById('alternativaB').value = '';
+                document.getElementById('alternativaC').value = '';
+                document.getElementById('alternativaD').value = '';
+                document.getElementById('alternativaCorreta').value = '';
+                document.getElementById('atividadeQuestaoOficialId').value = '';
+                const avisoQuestao = document.getElementById('avisoQuestaoSelecionada');
+                if (avisoQuestao) { avisoQuestao.style.display = 'none'; avisoQuestao.innerText = ''; }
+                document.getElementById('atividadeRecompensa').value = '';
+                document.getElementById('atividadePrazo').value = '';
+                document.getElementById('atividadeStatus').value = 'Ativa';
+
+                alert('Atividade criada com sucesso!');
+                await carregarAtividadesDoProfessor();
+            } catch (e) {
+                console.error(e);
+                alert('Não foi possível salvar a atividade. Se aparecer permission-denied, libere escrita na coleção atividades para professores nas regras do Firestore.');
+            }
+        };
+
+        window.filtrarAlunos = () => {
+            const busca = normalizar(document.getElementById('buscaAluno').value);
+            const status = document.getElementById('filtroStatus').value;
+            document.querySelectorAll('#tabelaAlunos tr').forEach(linha => {
+                const okBusca = normalizar(linha.innerText).includes(busca);
+                const okStatus = !status || linha.dataset.status === status;
+                linha.style.display = okBusca && okStatus ? '' : 'none';
+            });
+        };
+
+        window.abrirVilaMerit=()=>{mostrarSecaoProfessor('secaoVila');};
+
+        onAuthStateChanged(auth, async (user) => {
+            const salvo = localStorage.getItem('professorLogadoEletivaBank');
+            if (user && salvo) {
+                try {
+                    professorLogado = JSON.parse(salvo);
+                    abrirPainelProfessor();
+                    await carregarAlunosDoProfessor();
+                    await carregarAtividadesDoProfessor();
+                } catch (e) {
+                    localStorage.removeItem('professorLogadoEletivaBank');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
