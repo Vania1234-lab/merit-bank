@@ -486,7 +486,7 @@
                         <option value="Sim">Permitir desconto? Sim</option>
                     </select>
                     <input type="number" id="produtoDesconto" placeholder="% desconto. Ex.: 10" min="0" max="100" step="1">
-                    <input type="text" id="produtoImagem" placeholder="Caminho da imagem. Ex.: assets/imagens/produtos/cozinha/COZ0001.png">
+                    <input type="text" id="produtoImagem" placeholder="Imagem. Ex.: cozinha/COZ0001.png ou assets/imagens/produtos/cozinha/COZ0001.png" oninput="atualizarPreviewProduto()">
                 </div>
                 <textarea id="produtoDescricao" placeholder="Descrição do produto" style="width:100%;min-height:80px;margin:8px 0;padding:12px;border:1px solid #ddd;border-radius:8px;font-family:inherit;"></textarea>
                 <div id="previewProduto" class="produto-preview-card" style="display:none;"></div>
@@ -1088,7 +1088,7 @@
             const status = document.getElementById('produtoStatus').value;
             const permiteDesconto = document.getElementById('produtoPermiteDesconto').value;
             const percentualDesconto = parseFloat(document.getElementById('produtoDesconto').value);
-            const imagem = document.getElementById('produtoImagem').value.trim();
+            const imagem = imagemProdutoCorrigida(document.getElementById('produtoImagem').value.trim());
 
             return {
                 nome,
@@ -1118,6 +1118,8 @@
             try {
                 await setDoc(doc(db, 'produtos', id), {
                     ...dados,
+                    imagem: imagemProdutoCorrigida(dados.imagem),
+                    imagemUrl: imagemProdutoCorrigida(dados.imagem),
                     precoFinal: calcularPrecoFinalProduto(dados),
                     atualizadoEm: serverTimestamp(),
                     criadoEm: editandoId ? (produtos.find(p => p.id === editandoId)?.criadoEm || serverTimestamp()) : serverTimestamp()
@@ -1222,9 +1224,10 @@
                 const precoFinal = calcularPrecoFinalProduto(p);
                 const estoque = Number(p.estoque || 0);
                 const estoqueTexto = estoque === 0 ? '<b style="color:#dc3545;">0</b>' : (estoque <= 5 ? `<b style="color:#856404;">${estoque}</b>` : estoque);
+                const imgProduto = imagemProdutoCorrigida(p.imagem || p.imagemUrl || p.urlImagem || '');
 
                 tbody.innerHTML += `<tr data-categoria="${escaparHTML(p.categoria || '')}" data-status="${status}" data-estoque="${estoque}">
-                    <td>${p.imagem ? `<img src="${escaparHTML(p.imagem)}" class="produto-img" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'produto-sem-img',innerText:'🛒'}))">` : '<div class="produto-sem-img">🛒</div>'}</td>
+                    <td>${imgProduto ? `<img src="${escaparHTML(imgProduto)}" class="produto-img" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'produto-sem-img',innerText:'🛒'}))">` : '<div class="produto-sem-img">🛒</div>'}</td>
                     <td><b>${escaparHTML(p.nome || '-')}</b></td>
                     <td>${escaparHTML(p.categoria || '-')}</td>
                     <td>${formatarMoeda(preco)}</td>
@@ -1844,10 +1847,13 @@
         function imagemProdutoCorrigida(imagem) {
             imagem = String(imagem || '').trim();
             if (!imagem) return '';
-            if (imagem.startsWith('http') || imagem.startsWith('data:')) return imagem;
+            if (imagem.startsWith('http://') || imagem.startsWith('https://') || imagem.startsWith('data:')) return imagem;
             while (imagem.startsWith('../')) imagem = imagem.slice(3);
             if (imagem.startsWith('/')) imagem = imagem.slice(1);
-            return imagem;
+            if (imagem.startsWith('assets/')) return imagem;
+            if (imagem.startsWith('imagens/produtos/')) return 'assets/' + imagem;
+            if (imagem.startsWith('produtos/')) return 'assets/imagens/' + imagem;
+            return 'assets/imagens/produtos/' + imagem;
         }
 
         window.atualizarPreviewProdutoVila = () => {
@@ -2096,7 +2102,7 @@
                     </div>
 
                     <label>Caminho/URL da imagem</label>
-                    <input type="text" id="produtoVilaImagem" placeholder="assets/imagens/produtos/cozinha/COZ0001.png" oninput="atualizarPreviewProdutoVila()">
+                    <input type="text" id="produtoVilaImagem" placeholder="cozinha/COZ0001.png ou assets/imagens/produtos/cozinha/COZ0001.png" oninput="atualizarPreviewProdutoVila()">
 
                     <div class="produto-imagem-preview-grande" id="previewProdutoVila">
                         <div class="sem-img">🛒</div>
