@@ -33,6 +33,8 @@
         .status-inativo { color:#721c24; background:#f8d7da; padding:4px 8px; border-radius:999px; font-weight:700; }
         .status-transferido { color:#856404; background:#fff3cd; padding:4px 8px; border-radius:999px; font-weight:700; }
 
+        .status-congelado { color:#0c5460; background:#d1ecf1; padding:4px 8px; border-radius:999px; font-weight:700; display:inline-block; margin-top:4px; }
+
         .dashboard-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin:18px 0 24px; }
         .dashboard-card { background:white; border-radius:18px; padding:18px; box-shadow:0 4px 12px rgba(0,0,0,.08); border-left:6px solid var(--nu-roxo); }
         .dashboard-card small { color:#666; font-weight:700; text-transform:uppercase; letter-spacing:.3px; }
@@ -249,6 +251,7 @@
                 <div class="dashboard-card"><small>🛒 Produtos</small><div class="numero" id="dashProdutos">0</div><div class="sub">itens cadastrados</div></div>
                 <div class="dashboard-card"><small>💰 Saldo em circulação</small><div class="numero" id="dashSaldo">M$ 0,00</div><div class="sub">soma dos saldos dos alunos</div></div>
                 <div class="dashboard-card"><small>🏦 Poupança total</small><div class="numero" id="dashPoupanca">M$ 0,00</div><div class="sub">soma das poupanças</div></div>
+                <div class="dashboard-card"><small>🧊 Dinheiro congelado</small><div class="numero" id="dashCongelado">M$ 0,00</div><div class="sub">valores bloqueados até a data definida</div></div>
                 <div class="dashboard-card"><small>📋 Transações</small><div class="numero" id="dashTransacoes">0</div><div class="sub">movimentações registradas</div></div>
             </div>
 
@@ -331,6 +334,28 @@
             <div class="botoes-alunos">
                 <button onclick="document.getElementById('form').style.display='block'">+ Cadastrar Aluno</button>
                 <button onclick="document.getElementById('formCSV').style.display='block'" class="btn-csv">📂 Importar CSV</button>
+                <button onclick="abrirCongelamentoPorTurma()" class="btn-csv">🧊 Congelar por escola/série/turma</button>
+                <button onclick="descongelarVencidos()" class="btn-verde">🧊 Descongelar vencidos</button>
+            </div>
+
+            <div id="formCongelamentoLote" class="box" style="max-width:900px;">
+                <h4>🧊 Congelar saldo por escola, série e turma</h4>
+                <small>Esta ação congela <b>todo o saldo livre atual</b> dos estudantes selecionados. O dinheiro ficará bloqueado até a data escolhida e, depois, poderá ser descongelado e somado novamente ao saldo livre, junto com possíveis ganhos recebidos no período.</small>
+                <div class="grid-form" style="margin-top:10px;">
+                    <select id="congelaEscola" onchange="atualizarCongelamentoLoteSeries(); atualizarCongelamentoLoteTurmas();">
+                        <option value="">Selecione a escola</option>
+                    </select>
+                    <select id="congelaSerie" onchange="atualizarCongelamentoLoteTurmas()">
+                        <option value="">Selecione a série</option>
+                    </select>
+                    <select id="congelaTurma">
+                        <option value="">Selecione a turma</option>
+                    </select>
+                    <input type="date" id="congelaAte">
+                    <input type="text" id="congelaMotivo" placeholder="Motivo. Ex.: Fechamento do bimestre" value="Dinheiro congelado pelo ADM">
+                </div>
+                <button onclick="congelarSaldoPorTurma()" class="btn-csv" style="width:100%;margin-left:0;margin-right:0;">🧊 Congelar todo o saldo livre dos selecionados</button>
+                <button onclick="document.getElementById('formCongelamentoLote').style.display='none'" class="btn-cinza" style="width:100%;margin-left:0;margin-right:0;">Cancelar</button>
             </div>
 
             <div class="filtros-alunos">
@@ -370,7 +395,7 @@
             <div class="table-wrap">
                 <div class="info-rendimento" style="background:#fff3cd;color:#856404;border-color:#ffeeba;">💡 Alunos antigos importados pelo Excel podem aparecer como <b>Sem escola definida</b>. Eles continuam salvos; depois você pode recadastrar/atualizar a escola, série e turma.</div>
                 <table>
-                    <thead><tr><th>Nome</th><th>Escola</th><th>Série</th><th>Turma</th><th>Status</th><th>Conta</th><th>Saldo</th><th>Poupança</th><th>Senha</th><th>Ações</th></tr></thead>
+                    <thead><tr><th>Nome</th><th>Escola</th><th>Série</th><th>Turma</th><th>Status</th><th>Conta</th><th>Saldo livre</th><th>Congelado</th><th>Poupança</th><th>Senha</th><th>Ações</th></tr></thead>
                     <tbody id="tabela"></tbody>
                 </table>
             </div>
@@ -692,6 +717,7 @@
             const setTxt = (id, valor) => { const el = document.getElementById(id); if (el) el.innerText = valor; };
             const saldoTotal = listaAlunos.reduce((s, a) => s + parseFloat(a.saldo || 0), 0);
             const poupancaTotal = listaAlunos.reduce((s, a) => s + parseFloat(a.poupanca || 0), 0);
+            const congeladoTotal = listaAlunos.reduce((s, a) => s + parseFloat(a.saldoCongelado || 0), 0);
             setTxt('dashEscolas', escolas.length);
             setTxt('dashProfessores', professores.length);
             setTxt('dashAlunos', listaAlunos.length);
@@ -700,6 +726,7 @@
             setTxt('dashProdutos', produtos.length);
             setTxt('dashSaldo', formatarMoeda(saldoTotal));
             setTxt('dashPoupanca', formatarMoeda(poupancaTotal));
+            setTxt('dashCongelado', formatarMoeda(congeladoTotal));
             setTxt('dashTransacoes', listaTransacoes.length);
         }
 
@@ -796,6 +823,29 @@
             const filtradas = turmas.filter(t => (!escolaId || t.escolaId === escolaId) && (!serieId || t.serieId === serieId));
             preencherSelectTurmas('filtroTurma', filtradas, '👥 Todas as turmas');
         };
+
+        window.abrirCongelamentoPorTurma = () => {
+            const box = document.getElementById('formCongelamentoLote');
+            if (!box) return;
+            box.style.display = 'block';
+            const data = document.getElementById('congelaAte');
+            if (data && !data.value) data.value = hojeISO();
+            preencherSelect('congelaEscola', escolas, 'Selecione a escola');
+            atualizarCongelamentoLoteSeries();
+            atualizarCongelamentoLoteTurmas();
+        };
+
+        window.atualizarCongelamentoLoteSeries = () => {
+            const escolaId = document.getElementById('congelaEscola')?.value || '';
+            preencherSelect('congelaSerie', seriesDaEscola(escolaId), 'Selecione a série');
+        };
+
+        window.atualizarCongelamentoLoteTurmas = () => {
+            const escolaId = document.getElementById('congelaEscola')?.value || '';
+            const serieId = document.getElementById('congelaSerie')?.value || '';
+            const filtradas = turmas.filter(t => (!escolaId || t.escolaId === escolaId) && (!serieId || t.serieId === serieId));
+            preencherSelectTurmas('congelaTurma', filtradas, 'Selecione a turma');
+        };
         window.atualizarProfSeries = () => {
             const escolaId = document.getElementById('profEscola')?.value || '';
             preencherSelect('profSerie', seriesDaEscola(escolaId), 'Selecione a série do professor');
@@ -820,6 +870,9 @@
             preencherSelect('turmaEscola', escolas, 'Selecione a escola');
             preencherSelect('turmaSerie', series, 'Selecione a série');
             preencherSelect('relatorioAcessoEscola', escolas, 'Selecione a escola');
+            preencherSelect('congelaEscola', escolas, 'Selecione a escola');
+            atualizarCongelamentoLoteSeries();
+            atualizarCongelamentoLoteTurmas();
             atualizarRelatorioAcessoSeries();
             atualizarRelatorioAcessoTurmas();
             preencherSelect('alunoEscola', escolas, 'Selecione a escola');
@@ -1654,6 +1707,24 @@
         }
 
         function nomePorId(lista, id, fallback) { return lista.find(x => x.id === id)?.nome || fallback || ''; }
+
+        function hojeISO() {
+            return new Date().toISOString().slice(0, 10);
+        }
+
+        function dataBR(dataISO) {
+            if (!dataISO) return '-';
+            const partes = String(dataISO).split('-');
+            if (partes.length !== 3) return dataISO;
+            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+
+        function dinheiroCongeladoDisponivelParaDescongelar(aluno) {
+            const valor = parseFloat(aluno?.saldoCongelado || 0);
+            const ate = aluno?.congeladoAte || '';
+            return valor > 0 && ate && ate <= hojeISO();
+        }
+
         function renderizarAlunos() {
             const tbody = document.getElementById('tabela'); tbody.innerHTML='';
             listaAlunos.forEach(u => {
@@ -1663,8 +1734,15 @@
                 const turmaNome = u.turma || turmaObj?.nomeCompleto || turmaObj?.nome || 'Sem turma definida';
                 const status = u.status || 'Ativo';
                 const classeStatus = status === 'Ativo' ? 'status-ativo' : status === 'Transferido' ? 'status-transferido' : 'status-inativo';
+                const saldoCongelado = parseFloat(u.saldoCongelado || 0);
+                const textoCongelado = saldoCongelado > 0
+                    ? `<span class="status-congelado">🧊 M$ ${saldoCongelado.toFixed(2)}<br><small>até ${dataBR(u.congeladoAte)}</small></span>`
+                    : '<small>-</small>';
+                const botaoDescongelar = saldoCongelado > 0
+                    ? `<button onclick="descongelarDinheiro('${u.id}')" class="btn-verde btn-mini">Descongelar</button>`
+                    : '';
                 tbody.innerHTML += `<tr data-escolaid="${u.escolaId || ''}" data-serieid="${u.serieId || ''}" data-turmaid="${u.turmaId || ''}" data-escola="${escolaNome.toLowerCase()}" data-serie="${serieNome.toLowerCase()}" data-turma="${turmaNome.toLowerCase()}" data-status="${status}">
-                    <td>${u.nome || '-'} <button onclick="editarNome('${u.id}')" class="btn-mini">✎</button></td><td>${escolaNome}</td><td>${serieNome}</td><td>${turmaNome}</td><td><span class="${classeStatus}">${status}</span></td><td>${u.id}</td><td>M$ ${parseFloat(u.saldo || 0).toFixed(2)}</td><td>M$ ${parseFloat(u.poupanca || 0).toFixed(2)}</td><td><input type="password" id="pass-${u.id}" value="${u.senha || ''}" readonly style="width:70px;border:none;background:transparent"><button onclick="toggleSenha('${u.id}')" class="btn-mini">👁</button></td><td><button onclick="ajustarSaldo('${u.id}', ${u.saldo || 0})" class="btn-ajuste">+/-</button><button onclick="alterarStatus('${u.id}', '${status}')" class="btn-cinza btn-mini">Status</button><button onclick="excluir('${u.id}')" class="btn-excluir">X</button></td></tr>`;
+                    <td>${u.nome || '-'} <button onclick="editarNome('${u.id}')" class="btn-mini">✎</button></td><td>${escolaNome}</td><td>${serieNome}</td><td>${turmaNome}</td><td><span class="${classeStatus}">${status}</span></td><td>${u.id}</td><td>M$ ${parseFloat(u.saldo || 0).toFixed(2)}</td><td>${textoCongelado}</td><td>M$ ${parseFloat(u.poupanca || 0).toFixed(2)}</td><td><input type="password" id="pass-${u.id}" value="${u.senha || ''}" readonly style="width:70px;border:none;background:transparent"><button onclick="toggleSenha('${u.id}')" class="btn-mini">👁</button></td><td><button onclick="ajustarSaldo('${u.id}', ${u.saldo || 0})" class="btn-ajuste">+/-</button><button onclick="congelarDinheiro('${u.id}')" class="btn-csv btn-mini">🧊 Congelar</button>${botaoDescongelar}<button onclick="alterarStatus('${u.id}', '${status}')" class="btn-cinza btn-mini">Status</button><button onclick="excluir('${u.id}')" class="btn-excluir">X</button></td></tr>`;
             });
             filtrarTabela();
         }
@@ -1708,7 +1786,7 @@
             const turma = turmaObj?.nomeCompleto || turmaObj?.nome || '';
             if (!conta || !digito || !nome || !escolaId || !serieId || !turmaId || !senha || isNaN(saldo)) return alert('Preencha conta, dígito, nome, escola, série, turma, senha e saldo.');
             const id = `${conta}-${digito}`;
-            await setDoc(doc(db, 'usuarios', id), { nome, escolaId, escola, serieId, serie, turmaId, turma, status, senha, saldo, poupanca:0, dataCadastro:serverTimestamp() }, { merge:true });
+            await setDoc(doc(db, 'usuarios', id), { nome, escolaId, escola, serieId, serie, turmaId, turma, status, senha, saldo, poupanca:0, saldoCongelado:0, congeladoAte:'', dataCongelamento:null, dataCadastro:serverTimestamp() }, { merge:true });
             alert('Aluno gravado!'); ['conta','digito','nome','senhaC','saldo'].forEach(c=>document.getElementById(c).value=''); document.getElementById('statusAluno').value='Ativo'; document.getElementById('form').style.display='none';
         };
         window.editarNome = async (id) => { const n = prompt('Novo nome:'); if (n) await updateDoc(doc(db, 'usuarios', id), { nome:n }); };
@@ -1717,6 +1795,155 @@
         window.toggleSenhaProfessor = (id) => { const el = document.getElementById('pass-prof-'+id); if (el) el.type = el.type === 'password' ? 'text' : 'password'; };
         window.toggleSenhaCampo = (id) => { const el = document.getElementById(id); if (el) el.type = el.type === 'password' ? 'text' : 'password'; };
         window.excluir = async (id) => { if (confirm('Eliminar aluno?')) await deleteDoc(doc(db, 'usuarios', id)); };
+
+        window.congelarDinheiro = async (id) => {
+            const aluno = listaAlunos.find(a => a.id === id);
+            if (!aluno) return alert('Aluno não encontrado.');
+            const saldoLivre = parseFloat(aluno.saldo || 0);
+            if (saldoLivre <= 0) return alert('Este aluno não tem saldo livre para congelar.');
+
+            const dataLimite = prompt('Congelar TODO o saldo livre até qual data? Use o formato AAAA-MM-DD. Exemplo: 2026-08-30', hojeISO());
+            if (!dataLimite || !/^\d{4}-\d{2}-\d{2}$/.test(dataLimite)) return alert('Data inválida. Use AAAA-MM-DD.');
+
+            const motivo = prompt('Motivo do congelamento:', 'Dinheiro congelado pelo ADM') || 'Dinheiro congelado pelo ADM';
+            const congeladoAtual = parseFloat(aluno.saldoCongelado || 0);
+            const valor = saldoLivre;
+
+            if (!confirm(`Confirmar congelamento de TODO o saldo livre de ${aluno.nome || id}?\n\nValor: M$ ${valor.toFixed(2)}\nAté: ${dataBR(dataLimite)}`)) return;
+
+            await updateDoc(doc(db, 'usuarios', id), {
+                saldo: 0,
+                saldoCongelado: congeladoAtual + valor,
+                congeladoAte: dataLimite,
+                motivoCongelamento: motivo,
+                dataCongelamento: serverTimestamp()
+            });
+
+            await addDoc(collection(db, 'transacoes'), {
+                origem:'ADMIN',
+                tipo:'Congelamento',
+                nomeDestino:id,
+                valor:-valor,
+                obs:`${motivo}. Todo o saldo livre foi congelado até ${dataBR(dataLimite)}.`,
+                data:serverTimestamp()
+            });
+
+            alert('Todo o saldo livre foi congelado. Ganhos recebidos depois continuarão entrando como saldo livre.');
+        };
+
+        window.congelarSaldoPorTurma = async () => {
+            const escolaId = document.getElementById('congelaEscola')?.value || '';
+            const serieId = document.getElementById('congelaSerie')?.value || '';
+            const turmaId = document.getElementById('congelaTurma')?.value || '';
+            const dataLimite = document.getElementById('congelaAte')?.value || '';
+            const motivo = document.getElementById('congelaMotivo')?.value.trim() || 'Dinheiro congelado pelo ADM';
+
+            if (!escolaId) return alert('Selecione a escola.');
+            if (!serieId) return alert('Selecione a série.');
+            if (!turmaId) return alert('Selecione a turma.');
+            if (!dataLimite || !/^\d{4}-\d{2}-\d{2}$/.test(dataLimite)) return alert('Selecione uma data válida.');
+
+            const selecionados = listaAlunos.filter(aluno =>
+                String(aluno.escolaId || '') === String(escolaId) &&
+                String(aluno.serieId || '') === String(serieId) &&
+                String(aluno.turmaId || '') === String(turmaId) &&
+                parseFloat(aluno.saldo || 0) > 0
+            );
+
+            if (!selecionados.length) return alert('Nenhum aluno com saldo livre foi encontrado nessa escola, série e turma.');
+
+            const total = selecionados.reduce((s, aluno) => s + parseFloat(aluno.saldo || 0), 0);
+            const escolaNome = escolas.find(e => e.id === escolaId)?.nome || 'escola selecionada';
+            const serieNome = series.find(s => s.id === serieId)?.nome || 'série selecionada';
+            const turmaObj = turmas.find(t => t.id === turmaId);
+            const turmaNome = turmaObj?.nomeCompleto || turmaObj?.nome || 'turma selecionada';
+
+            if (!confirm(`Congelar TODO o saldo livre de ${selecionados.length} aluno(s)?\n\n${escolaNome}\n${serieNome}\n${turmaNome}\n\nTotal congelado: M$ ${total.toFixed(2)}\nAté: ${dataBR(dataLimite)}\n\nGanhos recebidos depois continuarão como saldo livre.`)) return;
+
+            for (const aluno of selecionados) {
+                const valor = parseFloat(aluno.saldo || 0);
+                const congeladoAtual = parseFloat(aluno.saldoCongelado || 0);
+                await updateDoc(doc(db, 'usuarios', aluno.id), {
+                    saldo: 0,
+                    saldoCongelado: congeladoAtual + valor,
+                    congeladoAte: dataLimite,
+                    motivoCongelamento: motivo,
+                    dataCongelamento: serverTimestamp()
+                });
+                await addDoc(collection(db, 'transacoes'), {
+                    origem:'ADMIN',
+                    tipo:'Congelamento em lote',
+                    nomeDestino:aluno.id,
+                    valor:-valor,
+                    obs:`${motivo}. Todo o saldo livre foi congelado até ${dataBR(dataLimite)}.`,
+                    data:serverTimestamp()
+                });
+            }
+
+            document.getElementById('formCongelamentoLote').style.display = 'none';
+            alert(`Congelamento concluído! ${selecionados.length} aluno(s) tiveram o saldo livre congelado.`);
+        };
+
+        window.descongelarDinheiro = async (id) => {
+            const aluno = listaAlunos.find(a => a.id === id);
+            if (!aluno) return alert('Aluno não encontrado.');
+            const valor = parseFloat(aluno.saldoCongelado || 0);
+            if (valor <= 0) return alert('Este aluno não tem dinheiro congelado.');
+
+            const dataLimite = aluno.congeladoAte || '';
+            if (dataLimite && dataLimite > hojeISO()) {
+                const confirma = confirm(`A data de descongelamento é ${dataBR(dataLimite)}. Deseja descongelar antes mesmo assim?`);
+                if (!confirma) return;
+            }
+
+            const saldoAtual = parseFloat(aluno.saldo || 0);
+            await updateDoc(doc(db, 'usuarios', id), {
+                saldo: saldoAtual + valor,
+                saldoCongelado: 0,
+                congeladoAte: '',
+                motivoCongelamento: '',
+                dataDescongelamento: serverTimestamp()
+            });
+
+            await addDoc(collection(db, 'transacoes'), {
+                origem:'ADMIN',
+                tipo:'Descongelamento',
+                nomeDestino:id,
+                valor:valor,
+                obs:'Valor descongelado e somado ao saldo livre do estudante.',
+                data:serverTimestamp()
+            });
+
+            alert('Dinheiro descongelado e somado ao saldo livre do estudante.');
+        };
+
+        window.descongelarVencidos = async () => {
+            const vencidos = listaAlunos.filter(dinheiroCongeladoDisponivelParaDescongelar);
+            if (!vencidos.length) return alert('Não há valores vencidos para descongelar hoje.');
+            if (!confirm(`Encontramos ${vencidos.length} aluno(s) com dinheiro congelado vencido. Deseja descongelar todos agora?`)) return;
+
+            for (const aluno of vencidos) {
+                const valor = parseFloat(aluno.saldoCongelado || 0);
+                const saldoAtual = parseFloat(aluno.saldo || 0);
+                await updateDoc(doc(db, 'usuarios', aluno.id), {
+                    saldo: saldoAtual + valor,
+                    saldoCongelado: 0,
+                    congeladoAte: '',
+                    motivoCongelamento: '',
+                    dataDescongelamento: serverTimestamp()
+                });
+                await addDoc(collection(db, 'transacoes'), {
+                    origem:'ADMIN',
+                    tipo:'Descongelamento automático',
+                    nomeDestino:aluno.id,
+                    valor:valor,
+                    obs:'Valor congelado vencido foi descongelado pelo ADM.',
+                    data:serverTimestamp()
+                });
+            }
+            alert('Valores vencidos descongelados com sucesso.');
+        };
+
         window.ajustarSaldo = async (id, saldoAtual) => { const v = parseFloat(prompt('Valor (+ ou -):')); if (isNaN(v)) return; const motivo = prompt('Motivo:'); await updateDoc(doc(db, 'usuarios', id), { saldo: saldoAtual + v }); await addDoc(collection(db, 'transacoes'), { origem:'ADMIN', nomeDestino:id, valor:v, obs:motivo || 'Ajuste', data:serverTimestamp() }); };
         async function carregarTaxa() { const snap = await getDoc(doc(db, 'config', 'taxas')); document.getElementById('bannerTaxa').innerText = snap.exists() ? `📈 Poupança: ${snap.data().descricao}` : '📈 Taxa não configurada.'; }
         window.gerarRelatorio = async () => {
@@ -2034,7 +2261,7 @@
     <div id="vilaAdmFull" class="vila-adm-full">
         <div class="vila-adm-page">
             <div class="vila-adm-wrap">
-                <img class="vila-adm-img" src="assets/vila/vila-merit.png" onerror="this.style.display='none'; document.getElementById('fallbackVilaAdm').style.display='flex';">
+                <img class="vila-adm-img" src="./assets/vila/vila-merit.png?v=2" onerror="this.style.display='none'; document.getElementById('fallbackVilaAdm').style.display='flex';">
                 <div id="fallbackVilaAdm" style="display:none;position:absolute;inset:0;background:linear-gradient(180deg,#0c56c7 0%,#27b7ff 25%,#43c94f 25%,#238a33 100%);align-items:center;justify-content:center;color:white;font-size:34px;font-weight:900;text-align:center;padding:40px;">
                     🏠 VILA MERIT<br><span style="font-size:18px;">Coloque a imagem oficial em: assets/vila/vila-merit.png</span>
                 </div>

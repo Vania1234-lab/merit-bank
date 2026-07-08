@@ -32,6 +32,7 @@
         .erro { background:#f8d7da; border:1px solid #f5c6cb; color:#721c24; padding:14px; border-radius:12px; margin:12px 0; display:none; }
         .status-ativo { color:#155724; background:#d4edda; padding:4px 8px; border-radius:999px; font-weight:700; }
         .status-inativo { color:#721c24; background:#f8d7da; padding:4px 8px; border-radius:999px; font-weight:700; }
+        .status-congelado { color:#0c5460; background:#d1ecf1; padding:4px 8px; border-radius:999px; font-weight:700; display:inline-block; line-height:1.5; }
         .muted { color:#666; }
         .btn-azul { background:var(--azul); }
         .btn-vermelho { background:var(--vermelho); }
@@ -83,8 +84,22 @@
 <div class="resumo"><small>Estudantes encontrados</small><h3 id="totalAlunos">0</h3></div>
 <div class="resumo"><small>Soma dos saldos</small><h3 id="somaSaldos">M$ 0,00</h3></div>
 <div class="resumo"><small>Soma das poupanças</small><h3 id="somaPoupancas">M$ 0,00</h3></div>
+<div class="resumo"><small>Dinheiro congelado</small><h3 id="somaCongelado">M$ 0,00</h3></div>
 <div class="resumo"><small>Aluno com maior saldo</small><h3 id="maiorSaldo" style="font-size:18px;">-</h3></div>
 </div>
+</div>
+<div class="card">
+<h3>🧊 Congelamento da Turma</h3>
+<p class="muted">Use esta ferramenta para congelar <b>todo o saldo livre atual</b> dos estudantes da sua turma até uma data. Ganhos recebidos depois continuam entrando como saldo livre.</p>
+<div class="grid-form">
+<input id="congelaProfessorAte" type="date"/>
+<input id="congelaProfessorMotivo" type="text" placeholder="Motivo. Ex.: Fechamento do bimestre" value="Dinheiro congelado pelo professor"/>
+</div>
+<div class="relatorio-acoes">
+<button class="btn-azul" onclick="congelarTurmaProfessor()">🧊 Congelar saldo livre da turma</button>
+<button class="btn-verde" onclick="descongelarVencidosProfessor()">🧊 Descongelar vencidos da turma</button>
+</div>
+<div class="aviso" id="avisoCongelamentoProfessor" style="display:none;"></div>
 </div>
 <div class="card">
 <h3>👨‍🎓 Meus Estudantes</h3>
@@ -108,7 +123,8 @@
 <th>Escola</th>
 <th>Série</th>
 <th>Turma</th>
-<th>Saldo</th>
+<th>Saldo livre</th>
+<th>Congelado</th>
 <th>Poupança</th>
 <th>Status</th>
 <th>Ações</th>
@@ -309,6 +325,22 @@
             return String(valor || '').trim().toLowerCase();
         }
 
+        function hojeISO() {
+            return new Date().toISOString().slice(0, 10);
+        }
+
+        function dataBR(valor) {
+            if (!valor) return '-';
+            const d = new Date(String(valor) + 'T00:00:00');
+            return isNaN(d.getTime()) ? String(valor) : d.toLocaleDateString('pt-BR');
+        }
+
+        function congeladoVencido(aluno) {
+            const valor = parseFloat(aluno?.saldoCongelado || 0);
+            const ate = aluno?.congeladoAte || '';
+            return valor > 0 && ate && ate <= hojeISO();
+        }
+
         function alunoPertenceAoProfessor(aluno, professor) {
             const porId = aluno.escolaId === professor.escolaId && aluno.serieId === professor.serieId && aluno.turmaId === professor.turmaId;
             const porNome = normalizar(aluno.escola) === normalizar(professor.escola) && normalizar(aluno.serie) === normalizar(professor.serie) && normalizar(aluno.turma) === normalizar(professor.turma);
@@ -428,17 +460,26 @@
             tbody.innerHTML = '';
             let somaSaldo = 0;
             let somaPoupanca = 0;
+            let somaCongelado = 0;
             let alunoMaior = null;
 
             alunosDaTurma.forEach(a => {
                 const saldo = parseFloat(a.saldo || 0);
                 const poupanca = parseFloat(a.poupanca || 0);
+                const saldoCongelado = parseFloat(a.saldoCongelado || 0);
                 somaSaldo += saldo;
                 somaPoupanca += poupanca;
+                somaCongelado += saldoCongelado;
                 if (!alunoMaior || saldo > parseFloat(alunoMaior.saldo || 0)) alunoMaior = a;
 
                 const status = a.status || 'Ativo';
                 const classeStatus = status === 'Ativo' ? 'status-ativo' : 'status-inativo';
+                const textoCongelado = saldoCongelado > 0
+                    ? `<span class="status-congelado">🧊 ${dinheiro(saldoCongelado)}<br><small>até ${dataBR(a.congeladoAte)}</small></span>`
+                    : '<small>-</small>';
+                const botaoDescongelar = saldoCongelado > 0
+                    ? `<button class="btn-verde" onclick="descongelarAlunoProfessor('${a.id}')">Descongelar</button>`
+                    : '';
                 tbody.innerHTML += `<tr data-status="${status}">
                     <td>${textoSeguro(a.nome)}</td>
                     <td>${textoSeguro(a.id)}</td>
@@ -446,18 +487,166 @@
                     <td>${textoSeguro(a.serie, 'Sem série')}</td>
                     <td>${textoSeguro(a.turma, 'Sem turma')}</td>
                     <td>${dinheiro(saldo)}</td>
+                    <td>${textoCongelado}</td>
                     <td>${dinheiro(poupanca)}</td>
                     <td><span class="${classeStatus}">${status}</span></td>
-                    <td><button class="btn-azul" onclick="abrirMovimento('${a.id}')">💰 Dar/Retirar</button></td>
+                    <td><button class="btn-azul" onclick="abrirMovimento('${a.id}')">💰 Dar/Retirar</button>${botaoDescongelar}</td>
                 </tr>`;
             });
 
             document.getElementById('totalAlunos').innerText = alunosDaTurma.length;
             document.getElementById('somaSaldos').innerText = dinheiro(somaSaldo);
             document.getElementById('somaPoupancas').innerText = dinheiro(somaPoupanca);
+            document.getElementById('somaCongelado').innerText = dinheiro(somaCongelado);
             document.getElementById('maiorSaldo').innerText = alunoMaior ? `${alunoMaior.nome || '-'} — ${dinheiro(alunoMaior.saldo || 0)}` : '-';
             filtrarAlunos();
         }
+
+
+        window.congelarTurmaProfessor = async () => {
+            if (!professorLogado) return alert('Sessão inválida. Entre novamente no painel.');
+
+            const aviso = document.getElementById('avisoCongelamentoProfessor');
+            if (aviso) { aviso.style.display = 'none'; aviso.innerText = ''; }
+
+            const dataLimite = document.getElementById('congelaProfessorAte')?.value || '';
+            const motivo = document.getElementById('congelaProfessorMotivo')?.value.trim() || 'Dinheiro congelado pelo professor';
+
+            if (!dataLimite || !/^\d{4}-\d{2}-\d{2}$/.test(dataLimite)) return alert('Selecione uma data válida.');
+
+            const selecionados = alunosDaTurma.filter(aluno => parseFloat(aluno.saldo || 0) > 0);
+            if (!selecionados.length) return alert('Nenhum estudante da sua turma tem saldo livre para congelar.');
+
+            const total = selecionados.reduce((s, aluno) => s + parseFloat(aluno.saldo || 0), 0);
+            if (!confirm(`Congelar TODO o saldo livre de ${selecionados.length} estudante(s) da sua turma?\n\nTurma: ${professorLogado.turma || '-'}\nTotal congelado: ${dinheiro(total)}\nAté: ${dataBR(dataLimite)}\n\nGanhos recebidos depois continuarão como saldo livre.`)) return;
+
+            try {
+                for (const aluno of selecionados) {
+                    const valor = parseFloat(aluno.saldo || 0);
+                    const congeladoAtual = parseFloat(aluno.saldoCongelado || 0);
+                    await updateDoc(doc(db, 'usuarios', aluno.id), {
+                        saldo: 0,
+                        saldoCongelado: congeladoAtual + valor,
+                        congeladoAte: dataLimite,
+                        motivoCongelamento: motivo,
+                        congeladoPor: `PROFESSOR:${professorLogado.id || professorLogado.email || ''}`,
+                        dataCongelamento: serverTimestamp()
+                    });
+                    await addDoc(collection(db, 'transacoes'), {
+                        origem: `PROFESSOR:${professorLogado.id || professorLogado.email}`,
+                        professorId: professorLogado.id || '',
+                        professorNome: professorLogado.nome || '',
+                        professorEmail: professorLogado.email || '',
+                        destino: aluno.id,
+                        nomeDestino: aluno.nome || '',
+                        valor: -valor,
+                        tipo: 'congelamento_professor',
+                        obs: `${motivo}. Todo o saldo livre foi congelado até ${dataBR(dataLimite)}.`,
+                        escolaId: professorLogado.escolaId || aluno.escolaId || '',
+                        serieId: professorLogado.serieId || aluno.serieId || '',
+                        turmaId: professorLogado.turmaId || aluno.turmaId || '',
+                        data: serverTimestamp()
+                    });
+                }
+
+                if (aviso) {
+                    aviso.innerText = `Congelamento concluído: ${selecionados.length} estudante(s), total ${dinheiro(total)}.`;
+                    aviso.style.display = 'block';
+                }
+                alert('Saldo livre da turma congelado com sucesso!');
+                await carregarAlunosDoProfessor();
+            } catch (e) {
+                console.error(e);
+                alert('Não foi possível congelar a turma. Se aparecer permission-denied, libere update em usuarios e create em transacoes para professores.');
+            }
+        };
+
+        window.descongelarAlunoProfessor = async (alunoId) => {
+            if (!professorLogado) return alert('Sessão inválida. Entre novamente no painel.');
+            const aluno = alunosDaTurma.find(a => a.id === alunoId);
+            if (!aluno) return alert('Estudante não encontrado na sua turma.');
+
+            const valor = parseFloat(aluno.saldoCongelado || 0);
+            if (valor <= 0) return alert('Este estudante não tem dinheiro congelado.');
+
+            const dataLimite = aluno.congeladoAte || '';
+            if (dataLimite && dataLimite > hojeISO()) {
+                const confirma = confirm(`A data de descongelamento é ${dataBR(dataLimite)}. Deseja descongelar antes mesmo assim?`);
+                if (!confirma) return;
+            }
+
+            const saldoAtual = parseFloat(aluno.saldo || 0);
+            try {
+                await updateDoc(doc(db, 'usuarios', aluno.id), {
+                    saldo: saldoAtual + valor,
+                    saldoCongelado: 0,
+                    congeladoAte: '',
+                    motivoCongelamento: '',
+                    dataDescongelamento: serverTimestamp()
+                });
+                await addDoc(collection(db, 'transacoes'), {
+                    origem: `PROFESSOR:${professorLogado.id || professorLogado.email}`,
+                    professorId: professorLogado.id || '',
+                    professorNome: professorLogado.nome || '',
+                    professorEmail: professorLogado.email || '',
+                    destino: aluno.id,
+                    nomeDestino: aluno.nome || '',
+                    valor: valor,
+                    tipo: 'descongelamento_professor',
+                    obs: 'Valor descongelado pelo professor e somado ao saldo livre do estudante.',
+                    escolaId: professorLogado.escolaId || aluno.escolaId || '',
+                    serieId: professorLogado.serieId || aluno.serieId || '',
+                    turmaId: professorLogado.turmaId || aluno.turmaId || '',
+                    data: serverTimestamp()
+                });
+                alert('Dinheiro descongelado e somado ao saldo livre do estudante.');
+                await carregarAlunosDoProfessor();
+            } catch (e) {
+                console.error(e);
+                alert('Não foi possível descongelar. Se aparecer permission-denied, ajuste as regras do Firestore.');
+            }
+        };
+
+        window.descongelarVencidosProfessor = async () => {
+            if (!professorLogado) return alert('Sessão inválida. Entre novamente no painel.');
+            const vencidos = alunosDaTurma.filter(congeladoVencido);
+            if (!vencidos.length) return alert('Não há valores vencidos para descongelar na sua turma.');
+            if (!confirm(`Encontramos ${vencidos.length} estudante(s) com dinheiro congelado vencido. Deseja descongelar todos agora?`)) return;
+
+            try {
+                for (const aluno of vencidos) {
+                    const valor = parseFloat(aluno.saldoCongelado || 0);
+                    const saldoAtual = parseFloat(aluno.saldo || 0);
+                    await updateDoc(doc(db, 'usuarios', aluno.id), {
+                        saldo: saldoAtual + valor,
+                        saldoCongelado: 0,
+                        congeladoAte: '',
+                        motivoCongelamento: '',
+                        dataDescongelamento: serverTimestamp()
+                    });
+                    await addDoc(collection(db, 'transacoes'), {
+                        origem: `PROFESSOR:${professorLogado.id || professorLogado.email}`,
+                        professorId: professorLogado.id || '',
+                        professorNome: professorLogado.nome || '',
+                        professorEmail: professorLogado.email || '',
+                        destino: aluno.id,
+                        nomeDestino: aluno.nome || '',
+                        valor: valor,
+                        tipo: 'descongelamento_vencido_professor',
+                        obs: 'Valor congelado vencido foi descongelado pelo professor.',
+                        escolaId: professorLogado.escolaId || aluno.escolaId || '',
+                        serieId: professorLogado.serieId || aluno.serieId || '',
+                        turmaId: professorLogado.turmaId || aluno.turmaId || '',
+                        data: serverTimestamp()
+                    });
+                }
+                alert('Valores vencidos da turma foram descongelados com sucesso.');
+                await carregarAlunosDoProfessor();
+            } catch (e) {
+                console.error(e);
+                alert('Não foi possível descongelar os vencidos. Verifique as regras do Firestore.');
+            }
+        };
 
 
         window.abrirMovimento = (alunoId) => {
@@ -535,6 +724,8 @@
 
         function tipoTransacaoLegivel(t) {
             const tipo = String(t.tipo || '').toLowerCase();
+            if (tipo.includes('congelamento_professor')) return 'Congelamento feito por professor';
+            if (tipo.includes('descongelamento')) return 'Descongelamento';
             if (tipo.includes('retirada_professor')) return 'Retirada feita por professor';
             if (tipo.includes('credito_professor')) return 'Recompensa dada por professor';
             if (tipo.includes('pix')) return 'PIX';
