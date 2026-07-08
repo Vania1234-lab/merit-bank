@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>EletivaBank - Painel Administrativo</title>
+    <title>MeritBank - Painel Administrativo</title>
     <style>
         :root { --nu-roxo:#820AD1; --nu-roxo-hover:#6a0ab0; --bg-gray:#f5f5f5; --verde:#28a745; --roxo-claro:#6f42c1; --azul:#17a2b8; --vermelho:#dc3545; --cinza:#6c757d; }
         * { box-sizing: border-box; }
@@ -224,7 +224,7 @@
 </head>
 <body>
     <div id="login">
-        <h2 style="color:var(--nu-roxo);">EletivaBank Admin</h2>
+        <h2 style="color:var(--nu-roxo);">MeritBank Admin</h2>
         <input type="email" id="email" placeholder="E-mail da administradora">
         <input type="password" id="senha" placeholder="Senha de acesso">
         <button onclick="acessar()" style="width:100%;">Entrar</button>
@@ -486,7 +486,7 @@
                         <option value="Sim">Permitir desconto? Sim</option>
                     </select>
                     <input type="number" id="produtoDesconto" placeholder="% desconto. Ex.: 10" min="0" max="100" step="1">
-                    <input type="text" id="produtoImagem" placeholder="URL da imagem do produto (opcional)">
+                    <input type="text" id="produtoImagem" placeholder="Caminho da imagem. Ex.: assets/imagens/produtos/cozinha/COZ0001.png">
                 </div>
                 <textarea id="produtoDescricao" placeholder="Descrição do produto" style="width:100%;min-height:80px;margin:8px 0;padding:12px;border:1px solid #ddd;border-radius:8px;font-family:inherit;"></textarea>
                 <div id="previewProduto" class="produto-preview-card" style="display:none;"></div>
@@ -1844,8 +1844,9 @@
         function imagemProdutoCorrigida(imagem) {
             imagem = String(imagem || '').trim();
             if (!imagem) return '';
-            if (imagem.startsWith('http') || imagem.startsWith('data:') || imagem.startsWith('../')) return imagem;
-            if (imagem.startsWith('assets/')) return '../' + imagem;
+            if (imagem.startsWith('http') || imagem.startsWith('data:')) return imagem;
+            while (imagem.startsWith('../')) imagem = imagem.slice(3);
+            if (imagem.startsWith('/')) imagem = imagem.slice(1);
             return imagem;
         }
 
@@ -2027,7 +2028,7 @@
     <div id="vilaAdmFull" class="vila-adm-full">
         <div class="vila-adm-page">
             <div class="vila-adm-wrap">
-                <img class="vila-adm-img" src="../assets/vila/vila-merit.png" onerror="this.style.display='none'; document.getElementById('fallbackVilaAdm').style.display='flex';">
+                <img class="vila-adm-img" src="assets/vila/vila-merit.png" onerror="this.style.display='none'; document.getElementById('fallbackVilaAdm').style.display='flex';">
                 <div id="fallbackVilaAdm" style="display:none;position:absolute;inset:0;background:linear-gradient(180deg,#0c56c7 0%,#27b7ff 25%,#43c94f 25%,#238a33 100%);align-items:center;justify-content:center;color:white;font-size:34px;font-weight:900;text-align:center;padding:40px;">
                     🏠 VILA MERIT<br><span style="font-size:18px;">Coloque a imagem oficial em: assets/vila/vila-merit.png</span>
                 </div>
@@ -2095,7 +2096,7 @@
                     </div>
 
                     <label>Caminho/URL da imagem</label>
-                    <input type="text" id="produtoVilaImagem" placeholder="../assets/produtos/sala/SAL001.png" oninput="atualizarPreviewProdutoVila()">
+                    <input type="text" id="produtoVilaImagem" placeholder="assets/imagens/produtos/cozinha/COZ0001.png" oninput="atualizarPreviewProdutoVila()">
 
                     <div class="produto-imagem-preview-grande" id="previewProdutoVila">
                         <div class="sem-img">🛒</div>
