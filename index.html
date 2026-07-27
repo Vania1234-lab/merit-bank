@@ -1753,13 +1753,63 @@
             return isNaN(data.getTime()) ? 'Data não registrada' : data.toLocaleString('pt-BR');
         }
 
+
+        function valorMonetarioAtividade(valor) {
+            if (typeof valor === 'number') return Number.isFinite(valor) ? valor : 0;
+            const texto = String(valor ?? '').trim();
+            if (!texto) return 0;
+
+            // Aceita tanto 1250.50 quanto formatos brasileiros como 1.250,50.
+            const normalizado = texto.includes(',')
+                ? texto.replace(/\./g, '').replace(',', '.')
+                : texto;
+            const numero = Number(normalizado.replace(/[^0-9.-]/g, ''));
+            return Number.isFinite(numero) ? numero : 0;
+        }
+
+        function obterAlternativasAtividade(atividade) {
+            const origem = atividade?.alternativas || {};
+            return {
+                A: origem.A ?? origem.a ?? atividade?.alternativaA ?? '',
+                B: origem.B ?? origem.b ?? atividade?.alternativaB ?? '',
+                C: origem.C ?? origem.c ?? atividade?.alternativaC ?? '',
+                D: origem.D ?? origem.d ?? atividade?.alternativaD ?? ''
+            };
+        }
+
+        function obterLetraCorretaAtividade(atividade) {
+            const alternativas = obterAlternativasAtividade(atividade);
+            const bruto = atividade?.correta ?? atividade?.alternativaCorreta ??
+                atividade?.respostaCorreta ?? atividade?.gabarito ?? atividade?.correctAnswer ?? '';
+            const texto = String(bruto ?? '').trim();
+            if (!texto) return '';
+
+            const maiusculo = texto.toUpperCase();
+            if (/^[A-D]$/.test(maiusculo)) return maiusculo;
+
+            const inicioComLetra = maiusculo.match(/^\s*([A-D])\s*[).:\-]/);
+            if (inicioComLetra) return inicioComLetra[1];
+
+            const numero = Number(texto);
+            if (Number.isInteger(numero)) {
+                if (numero >= 1 && numero <= 4) return ['A', 'B', 'C', 'D'][numero - 1];
+                if (numero >= 0 && numero <= 3) return ['A', 'B', 'C', 'D'][numero];
+            }
+
+            const normalizado = normalizar(texto);
+            for (const letra of ['A', 'B', 'C', 'D']) {
+                if (normalizar(alternativas[letra]) === normalizado) return letra;
+            }
+            return '';
+        }
+
         function htmlCardAtividade(a, encerrada) {
             const conclusao = dadosConclusaoAtividade(a.id);
             const tentativa = dadosTentativaAtividade(a.id);
             const acertou = !!conclusao;
             const tentativas = tentativasUsadas(a.id);
-            const recompensa = parseFloat((conclusao && conclusao.recompensa) || a.recompensa || 0);
-            const recompensaPossivel = parseFloat(a.recompensa || 0);
+            const recompensa = valorMonetarioAtividade(conclusao?.recompensa);
+            const recompensaPossivel = valorMonetarioAtividade(a.recompensa);
             const prazo = a.prazo ? new Date(a.prazo + 'T00:00:00').toLocaleDateString('pt-BR') : 'Sem prazo';
             const professor = a.professorNome || a.professorEmail || 'Professor';
             const dataLiberacaoMs = obterDataAtividade(a);
@@ -1770,7 +1820,7 @@
             const statusTexto = acertou ? '✅ Feita' : (encerrada ? '⛔ Encerrada' : '📥 A fazer');
             const badgeClasse = acertou ? 'concluida' : (encerrada ? 'pendente' : 'pendente');
             const textoBotao = encerrada ? (acertou ? 'Atividade já feita' : 'Tentativas encerradas') : 'Resolver';
-            const recompensaTexto = acertou ? dinheiro(recompensa) : dinheiro(recompensaPossivel);
+            const recompensaTexto = acertou ? dinheiro(recompensa) : (encerrada ? dinheiro(0) : dinheiro(recompensaPossivel));
 
             return `<div class="atividade-card">
                 <h4>${acertou ? '✅' : (encerrada ? '⛔' : '🎯')} ${a.titulo || 'Atividade sem título'}</h4>
@@ -1803,7 +1853,7 @@
             const atividadesFeitas = atividadesDaTurma.filter(a => atividadeEncerrada(a.id));
             const meritGanhos = atividadesFeitas.reduce((total, a) => {
                 const conclusao = dadosConclusaoAtividade(a.id);
-                return total + parseFloat((conclusao && conclusao.recompensa) || a.recompensa || 0);
+                return total + valorMonetarioAtividade(conclusao?.recompensa);
             }, 0);
 
             let html = `<div class="atividades-resumo">
@@ -1873,12 +1923,7 @@
             document.getElementById('modalAtividadeInfo').innerText = `Recompensa: M$ ${dinheiro(atividade.recompensa || 0)} • Tentativa ${tentativasUsadas(atividade.id) + 1} de 2 • Professor: ${atividade.professorNome || atividade.professorEmail || '-'}`;
             document.getElementById('modalAtividadeEnunciado').innerText = atividade.enunciado || 'Esta atividade ainda não possui enunciado.';
 
-            const alternativas = atividade.alternativas || {
-                A: atividade.alternativaA || '',
-                B: atividade.alternativaB || '',
-                C: atividade.alternativaC || '',
-                D: atividade.alternativaD || ''
-            };
+            const alternativas = obterAlternativasAtividade(atividade);
 
             let html = '';
             ['A','B','C','D'].forEach(letra => {
@@ -1914,8 +1959,14 @@
                 return;
             }
 
-            const correta = String(atividadeSelecionada.correta || atividadeSelecionada.alternativaCorreta || '').trim().toUpperCase();
-            if (!correta) return alert('Esta atividade ainda não possui alternativa correta cadastrada.');
+            const correta = obterLetraCorretaAtividade(atividadeSelecionada);
+            if (!correta) {
+                atualizarFeedbackResposta('Esta atividade não possui uma alternativa correta válida. Peça ao professor para revisar o gabarito.', 'feedback-erro');
+                return;
+            }
+
+            const atividadeEmResposta = atividadeSelecionada;
+            const respostaMarcada = String(alternativaSelecionada).trim().toUpperCase();
 
             processandoResposta = true;
             travarRespostaAtividade(true, '⏳ Verificando resposta...');
@@ -1926,120 +1977,130 @@
                 let recompensaRecebida = 0;
                 let tentativasDepois = 0;
                 let encerradaSemRecompensa = false;
+                let percentualRecompensa = 0;
 
                 await runTransaction(db, async (t) => {
                     const uRef = doc(db, 'usuarios', contaAtual);
                     const uSnap = await t.get(uRef);
+                    if (!uSnap.exists()) throw new Error('Conta do estudante não encontrada.');
+
                     const uData = uSnap.data();
-                    const concluidas = uData.atividadesConcluidas || {};
-                    const tentativasMap = uData.tentativasAtividades || {};
-                    const tentativaAtual = tentativasMap[atividadeSelecionada.id] || {};
+                    const concluidas = { ...(uData.atividadesConcluidas || {}) };
+                    const tentativasMap = { ...(uData.tentativasAtividades || {}) };
+                    const tentativaAtual = tentativasMap[atividadeEmResposta.id] || {};
                     const tentativasAntes = Number(tentativaAtual.tentativas || 0);
 
-                    if (concluidas[atividadeSelecionada.id]) throw new Error('Atividade já concluída.');
-                    if (tentativaAtual.encerrada || tentativasAntes >= 2) throw new Error('Você já usou as duas tentativas desta atividade.');
+                    if (concluidas[atividadeEmResposta.id]) throw new Error('Atividade já concluída.');
+                    if (tentativaAtual.encerrada || tentativasAntes >= 2) {
+                        throw new Error('Você já usou as duas tentativas desta atividade.');
+                    }
 
-                    const acertou = alternativaSelecionada === correta;
                     tentativasDepois = tentativasAntes + 1;
+                    const acertou = respostaMarcada === correta;
 
                     if (!acertou) {
                         const encerrada = tentativasDepois >= 2;
-                        t.update(uRef, {
-                            [`tentativasAtividades.${atividadeSelecionada.id}`]: {
-                                titulo: atividadeSelecionada.titulo || '',
-                                tentativas: tentativasDepois,
-                                ultimaResposta: alternativaSelecionada,
-                                correta: correta,
-                                acertou: false,
-                                encerrada: encerrada,
-                                atualizadaEm: serverTimestamp()
-                            }
-                        });
+                        tentativasMap[atividadeEmResposta.id] = {
+                            titulo: atividadeEmResposta.titulo || '',
+                            tentativas: tentativasDepois,
+                            ultimaResposta: respostaMarcada,
+                            correta,
+                            acertou: false,
+                            encerrada,
+                            recompensa: 0,
+                            percentualRecompensa: 0,
+                            atualizadaEm: serverTimestamp()
+                        };
+                        t.update(uRef, { tentativasAtividades: tentativasMap });
                         encerradaSemRecompensa = encerrada;
                         return;
                     }
 
-                    const recompensaBase = parseFloat(atividadeSelecionada.recompensa || 0);
-                    const percentualRecompensa = tentativasAntes === 0 ? 100 : 25;
-                    const recompensa = recompensaBase * (percentualRecompensa / 100);
+                    const recompensaBase = valorMonetarioAtividade(atividadeEmResposta.recompensa);
+                    percentualRecompensa = tentativasAntes === 0 ? 100 : 25;
+                    const recompensa = Number((recompensaBase * percentualRecompensa / 100).toFixed(2));
+                    const saldoAtual = numeroSeguro(uData.saldo);
 
                     acertouAgora = true;
                     recompensaRecebida = recompensa;
 
+                    tentativasMap[atividadeEmResposta.id] = {
+                        titulo: atividadeEmResposta.titulo || '',
+                        tentativas: tentativasDepois,
+                        ultimaResposta: respostaMarcada,
+                        correta,
+                        acertou: true,
+                        encerrada: true,
+                        recompensa,
+                        percentualRecompensa,
+                        atualizadaEm: serverTimestamp()
+                    };
+
+                    concluidas[atividadeEmResposta.id] = {
+                        titulo: atividadeEmResposta.titulo || '',
+                        resposta: respostaMarcada,
+                        correta,
+                        tentativas: tentativasDepois,
+                        recompensa,
+                        recompensaOriginal: recompensaBase,
+                        percentualRecompensa,
+                        concluidaEm: serverTimestamp()
+                    };
+
                     t.update(uRef, {
-                        saldo: (uData.saldo || 0) + recompensa,
-                        [`tentativasAtividades.${atividadeSelecionada.id}`]: {
-                            titulo: atividadeSelecionada.titulo || '',
-                            tentativas: tentativasDepois,
-                            ultimaResposta: alternativaSelecionada,
-                            correta: correta,
-                            acertou: true,
-                            encerrada: true,
-                            recompensa: recompensa,
-                            percentualRecompensa: percentualRecompensa,
-                            atualizadaEm: serverTimestamp()
-                        },
-                        [`atividadesConcluidas.${atividadeSelecionada.id}`]: {
-                            titulo: atividadeSelecionada.titulo || '',
-                            resposta: alternativaSelecionada,
-                            correta: correta,
-                            tentativas: tentativasDepois,
-                            recompensa: recompensa,
-                            recompensaOriginal: recompensaBase,
-                            percentualRecompensa: percentualRecompensa,
-                            concluidaEm: serverTimestamp()
-                        }
+                        saldo: saldoAtual + recompensa,
+                        tentativasAtividades: tentativasMap,
+                        atividadesConcluidas: concluidas
                     });
 
-                    t.set(doc(collection(db, 'transacoes')), {
+                    const transacaoRef = doc(collection(db, 'transacoes'));
+                    t.set(transacaoRef, {
                         origem: 'ATIVIDADE',
-                        nomeOrigem: atividadeSelecionada.titulo || 'Atividade',
+                        nomeOrigem: atividadeEmResposta.titulo || 'Atividade',
                         destino: contaAtual,
                         nomeDestino: uData.nome || contaAtual,
                         valor: recompensa,
                         tipo: 'recompensa_atividade',
-                        obs: `Recompensa por atividade: ${atividadeSelecionada.titulo || 'Atividade'} (${percentualRecompensa}% da recompensa)`,
-                        atividadeId: atividadeSelecionada.id,
-                        professorId: atividadeSelecionada.professorId || '',
-                        professorNome: atividadeSelecionada.professorNome || '',
-                        escolaId: uData.escolaId || atividadeSelecionada.escolaId || '',
-                        serieId: uData.serieId || atividadeSelecionada.serieId || '',
-                        turmaId: uData.turmaId || atividadeSelecionada.turmaId || '',
+                        obs: `Recompensa por atividade: ${atividadeEmResposta.titulo || 'Atividade'} (${percentualRecompensa}% da recompensa)`,
+                        atividadeId: atividadeEmResposta.id,
+                        professorId: atividadeEmResposta.professorId || '',
+                        professorNome: atividadeEmResposta.professorNome || '',
+                        escolaId: uData.escolaId || atividadeEmResposta.escolaId || '',
+                        serieId: uData.serieId || atividadeEmResposta.serieId || '',
+                        turmaId: uData.turmaId || atividadeEmResposta.turmaId || '',
                         data: serverTimestamp()
                     });
                 });
 
+                await atualizarTudo();
+                await carregarAtividades();
+
                 if (acertouAgora) {
-                    atualizarFeedbackResposta(`🎉 Resposta correta! Você acertou na ${tentativasDepois}ª tentativa e ganhou M$ ${dinheiro(recompensaRecebida)}.`, 'feedback-correta');
-                    await atualizarTudo();
-                    await carregarAtividades();
+                    atualizarFeedbackResposta(`🎉 Resposta correta! Você acertou na ${tentativasDepois}ª tentativa e ganhou M$ ${dinheiro(recompensaRecebida)} (${percentualRecompensa}% da recompensa).`, 'feedback-correta');
                     setTimeout(() => {
                         processandoResposta = false;
                         travarRespostaAtividade(false);
                         fecharModalAtividade();
-                    }, 1200);
+                    }, 1400);
                     return;
                 }
 
                 if (encerradaSemRecompensa) {
                     atualizarFeedbackResposta('❌ Resposta incorreta. Você usou as 2 tentativas. A atividade foi encerrada sem recompensa.', 'feedback-erro');
-                    await atualizarTudo();
-                    await carregarAtividades();
                     setTimeout(() => {
                         processandoResposta = false;
                         travarRespostaAtividade(false);
                         fecharModalAtividade();
-                    }, 1600);
+                    }, 1700);
                     return;
                 }
 
-                atualizarFeedbackResposta('⚠️ Resposta incorreta. Você ainda tem mais 1 tentativa. Revise com atenção.', 'feedback-incorreta');
-                await atualizarTudo();
-                await carregarAtividades();
+                atualizarFeedbackResposta('⚠️ Resposta incorreta. Você ainda tem mais 1 tentativa, agora valendo 25% da recompensa.', 'feedback-incorreta');
                 processandoResposta = false;
                 travarRespostaAtividade(false);
                 alternativaSelecionada = '';
                 document.querySelectorAll('input[name="respostaAtividade"]').forEach(input => input.checked = false);
+                document.getElementById('modalAtividadeInfo').innerText = `Recompensa na 2ª tentativa: M$ ${dinheiro(valorMonetarioAtividade(atividadeEmResposta.recompensa) * 0.25)} • Tentativa 2 de 2 • Professor: ${atividadeEmResposta.professorNome || atividadeEmResposta.professorEmail || '-'}`;
             } catch (e) {
                 console.error(e);
                 atualizarFeedbackResposta(e.message || 'Não foi possível registrar a tentativa. Verifique as regras do Firestore para usuarios e transacoes.', 'feedback-erro');
