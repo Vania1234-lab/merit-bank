@@ -1,1379 +1,665 @@
 <!DOCTYPE html>
-
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Merit Bank - Painel Professor</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel do Professor — Ocorrências Escolares</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-        :root { --nu-roxo:#820AD1; --nu-roxo-hover:#6a0ab0; --bg-gray:#f5f5f5; --verde:#28a745; --azul:#17a2b8; --vermelho:#dc3545; --cinza:#6c757d; }
-        * { box-sizing:border-box; }
-        body { font-family:'Segoe UI', Roboto, sans-serif; background:var(--bg-gray); margin:0; padding:20px; min-height:100vh; color:#333; }
-        .container { width:100%; max-width:1150px; margin:0 auto; }
-        .card { background:white; border-radius:18px; padding:22px; box-shadow:0 4px 14px rgba(0,0,0,.08); margin-bottom:18px; }
-        #login { max-width:370px; margin:60px auto; text-align:center; }
-        input, select { width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; margin:8px 0; background:white; }
-        button { background:var(--nu-roxo); color:white; border:none; padding:12px 18px; border-radius:12px; cursor:pointer; font-weight:700; margin:5px; }
-        button:hover { background:var(--nu-roxo-hover); }
-        .btn-cinza { background:var(--cinza); }
-        .btn-verde { background:var(--verde); }
-        .topo { display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap; }
-        .badge { display:inline-block; padding:5px 10px; border-radius:999px; font-weight:700; background:#f0f8ff; color:var(--nu-roxo); margin:3px 4px 3px 0; }
-        .grid-resumo { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; margin-top:15px; }
-        .resumo { background:#fafafa; border:1px solid #eee; border-radius:14px; padding:16px; }
-        .resumo h3 { margin:0; color:var(--nu-roxo); font-size:24px; }
-        .resumo small { color:#666; }
-        .filtros { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; align-items:end; }
-        .table-wrap { overflow-x:auto; width:100%; }
-        table { width:100%; border-collapse:separate; border-spacing:0; background:white; border-radius:16px; overflow:hidden; margin-top:15px; box-shadow:0 4px 12px rgba(0,0,0,.05); }
-        th, td { padding:12px; border-bottom:1px solid #eee; text-align:left; white-space:nowrap; }
-        th { background:#fafafa; font-weight:700; }
-        .aviso { background:#fff3cd; border:1px solid #ffeeba; color:#856404; padding:14px; border-radius:12px; margin:12px 0; }
-        .erro { background:#f8d7da; border:1px solid #f5c6cb; color:#721c24; padding:14px; border-radius:12px; margin:12px 0; display:none; }
-        .status-ativo { color:#155724; background:#d4edda; padding:4px 8px; border-radius:999px; font-weight:700; }
-        .status-inativo { color:#721c24; background:#f8d7da; padding:4px 8px; border-radius:999px; font-weight:700; }
-        .status-congelado { color:#0c5460; background:#d1ecf1; padding:4px 8px; border-radius:999px; font-weight:700; display:inline-block; line-height:1.5; }
-        .muted { color:#666; }
-        .btn-azul { background:var(--azul); }
-        .btn-vermelho { background:var(--vermelho); }
-        .modal-fundo { position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; padding:18px; z-index:999; }
-        .modal { background:white; width:100%; max-width:430px; border-radius:18px; padding:22px; box-shadow:0 12px 30px rgba(0,0,0,.25); }
-        .modal h3 { margin-top:0; color:var(--nu-roxo); }
-        #painel { display:none; }
-        .secao-painel { display:block; }
-        #secaoAtividades { display:none; }
-        textarea { width:100%; min-height:90px; padding:12px; border:1px solid #ddd; border-radius:10px; margin:8px 0; resize:vertical; font-family:inherit; }
-        .grid-form { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:10px; align-items:end; }
+:root{
+  --azul:#2157d5;--azul2:#1746b3;--bg:#f3f6fb;--card:#fff;--texto:#1d2a3a;
+  --muted:#687587;--borda:#dce4ef;--verde:#16845b;--vermelho:#c33e4d;--amarelo:#9a6500;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--texto)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.topo{background:#fff;border-bottom:1px solid var(--borda);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}
+.marca{display:flex;align-items:center;gap:12px}
+.logo{width:58px;height:58px;border-radius:12px;background:#fff;border:1px solid var(--borda);display:grid;place-items:center;overflow:hidden;flex:0 0 auto}.logo img{width:100%;height:100%;object-fit:contain}
+.marca h1{font-size:18px;margin:0}.nome-escola{font-size:13px;font-weight:800;color:#294364;margin-top:3px}.marca p{font-size:12px;color:var(--muted);margin:3px 0 0}
+.usuario{display:flex;align-items:center;gap:12px}.usuario strong{display:block}.usuario small{color:var(--muted)}
+.container{max-width:1240px;margin:0 auto;padding:24px}
+.grid-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.card{background:#fff;border:1px solid var(--borda);border-radius:16px;padding:18px;box-shadow:0 8px 24px rgba(32,52,78,.05)}
+.card h2,.card h3{margin-top:0}.numero{font-size:30px;font-weight:900;margin-top:6px}
+.rotulo{font-size:12px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.duas-colunas{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.btn{border:0;border-radius:10px;padding:11px 15px;font-weight:800}
+.btn-primario{background:var(--azul);color:#fff}.btn-primario:hover{background:var(--azul2)}
+.btn-secundario{background:#eaf0fb;color:#23406b}.btn-perigo{background:#fff0f1;color:#a62f3d}
+.acoes{display:flex;gap:8px;flex-wrap:wrap}
+.cabecalho-secao{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.cabecalho-secao h2{margin:0;font-size:19px}
+.tabela-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:12px 10px;border-bottom:1px solid #e8edf4;font-size:13px;vertical-align:top}
+th{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.04em}
+.badge{display:inline-block;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900}
+.pendente{background:#fff4d8;color:#8b5c00}.em-analise{background:#e8f0ff;color:#1746b3}.aguardando-responsavel{background:#fff0df;color:#9a4f00}.finalizada{background:#e7f7ef;color:#126842}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.campo{display:flex;flex-direction:column;gap:6px}.campo.full{grid-column:1/-1}
+label{font-size:12px;font-weight:800;color:#425166}
+input,select,textarea{width:100%;border:1px solid #cfd9e6;border-radius:10px;padding:11px;background:#fff;color:#182536}
+textarea{min-height:105px;resize:vertical}
+.vazio{padding:28px;text-align:center;color:var(--muted);border:1px dashed #cbd6e4;border-radius:12px;background:#fafcff}
+.login-page{min-height:100vh;display:grid;place-items:center;padding:20px}
+.login-card{width:min(430px,100%);background:#fff;border:1px solid var(--borda);border-radius:18px;padding:28px;box-shadow:0 20px 60px rgba(32,52,78,.12)}
+.login-card h1{margin:12px 0 6px}.login-card p{color:var(--muted);margin:0 0 20px}
+.erro{color:#a52f3c;background:#fff1f2;border:1px solid #f2c9ce;padding:10px;border-radius:9px;margin-top:12px;font-size:13px}
+.toast{position:fixed;right:20px;bottom:20px;background:#1d2a3a;color:white;padding:14px 17px;border-radius:12px;box-shadow:0 15px 35px rgba(0,0,0,.2);z-index:100}
+.modal{position:fixed;inset:0;background:rgba(12,20,32,.5);display:grid;place-items:center;padding:18px;z-index:50}
+.modal-box{width:min(620px,100%);max-height:90vh;overflow:auto;background:white;border-radius:18px;padding:22px}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.modal-head h2{margin:0}
+.detalhe{background:#f7f9fc;border:1px solid #e1e7f0;border-radius:10px;padding:12px;margin-bottom:10px}
+.detalhe strong{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:5px}
+.link-painel{color:var(--azul);font-weight:800;text-decoration:none}
+.busca-linha{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.busca-linha input{min-width:220px;flex:1}
+.busca-status{font-size:12px;color:var(--muted);margin-bottom:10px}
+.filtros-grid{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end}
+.filtros-grid .campo{min-width:0}
+.abas-ocorrencias{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}.aba-ocorrencia.ativa{background:var(--azul);color:#fff}.aba-ocorrencia:not(.ativa){background:#eaf0fb;color:#23406b}
+@media(max-width:900px){.filtros-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.filtros-grid{grid-template-columns:1fr}}
 
-        .relatorio-acoes { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
-        .relatorio-acoes button { width:auto; }
-        .tabela-relatorio-vazia { text-align:center; color:#666; padding:18px; }
-    </style>
+@media(max-width:900px){.grid-cards{grid-template-columns:1fr 1fr}.duas-colunas{grid-template-columns:1fr}}
+@media(max-width:620px){.grid-cards{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.topo{padding:12px}.container{padding:14px}.usuario small{display:none}}
+
+.rodape{max-width:1240px;margin:0 auto;padding:6px 24px 24px;text-align:center;color:var(--muted);font-size:12px;font-weight:700}
+.login-brasao{width:112px;height:112px;object-fit:contain;display:block;margin:0 auto 12px}
+.login-escola{text-align:center;font-size:13px;font-weight:800;color:#294364;margin:-2px 0 16px}
+.sessao-info{text-align:center;font-size:11px;color:var(--muted);margin-top:12px;line-height:1.45}
+</style>
 </head>
 <body>
-<div class="card" id="login">
-<h2 style="color:var(--nu-roxo); margin-bottom:5px;">👩‍🏫 Painel Professor</h2>
-<p class="muted">Acesse com o e-mail e a senha criados no Firebase Authentication e cadastrados no Painel Administrativo.</p>
-<input id="emailProfessor" placeholder="E-mail do professor" type="email"/>
-<div style="display:flex; gap:6px; align-items:center;">
-<input id="senhaProfessor" placeholder="Senha" style="margin:8px 0;" type="password"/>
-<button onclick="toggleSenhaLogin()" style="padding:12px 14px; margin:0;" type="button">👁</button>
-</div>
-<button onclick="entrarProfessor()" style="width:100%; margin-left:0; margin-right:0;">Entrar</button>
-<div class="erro" id="erroLogin"></div>
-</div>
-<div class="container" id="painel">
-<div class="card topo">
-<div>
-<h2 style="color:var(--nu-roxo); margin:0;">👩‍🏫 Painel Professor</h2>
-<div class="muted" id="dadosProfessor" style="margin-top:6px;"></div>
-<div id="vinculoProfessor" style="margin-top:8px;"></div>
-</div>
-<div>
-<button class="btn-verde" onclick="mostrarSecaoProfessor('secaoDashboard')">🏠 Dashboard</button>
-<button class="btn-azul" onclick="mostrarSecaoProfessor('secaoAtividades')">📝 Atividades</button>
-<button class="btn-verde" onclick="carregarAlunosDoProfessor()">🔄 Atualizar</button>
-<button class="btn-azul" onclick="mostrarSecaoProfessor('secaoRelatorios')">📊 Relatórios</button>
-<button class="btn-verde" onclick="abrirVilaMerit()">🏠 Vila Merit</button><button class="btn-cinza" onclick="sairProfessor()">Sair</button>
-</div>
-</div>
-<div class="secao-painel" id="secaoDashboard">
-<div class="card">
-<h3>📊 Resumo da Turma</h3>
-<div class="grid-resumo">
-<div class="resumo"><small>Estudantes encontrados</small><h3 id="totalAlunos">0</h3></div>
-<div class="resumo"><small>Soma dos saldos</small><h3 id="somaSaldos">M$ 0,00</h3></div>
-<div class="resumo"><small>Soma das poupanças</small><h3 id="somaPoupancas">M$ 0,00</h3></div>
-<div class="resumo"><small>Dinheiro congelado</small><h3 id="somaCongelado">M$ 0,00</h3></div>
-<div class="resumo"><small>Aluno com maior saldo</small><h3 id="maiorSaldo" style="font-size:18px;">-</h3></div>
-</div>
-</div>
-<div class="card">
-<h3>🧊 Congelamento da Turma</h3>
-<p class="muted">Use esta ferramenta para congelar <b>todo o saldo livre atual</b> dos estudantes da sua turma até uma data. Ganhos recebidos depois continuam entrando como saldo livre.</p>
-<div class="grid-form">
-<input id="congelaProfessorAte" type="date"/>
-<input id="congelaProfessorMotivo" type="text" placeholder="Motivo. Ex.: Fechamento do bimestre" value="Dinheiro congelado pelo professor"/>
-</div>
-<div class="relatorio-acoes">
-<button class="btn-azul" onclick="congelarTurmaProfessor()">🧊 Congelar saldo livre da turma</button>
-<button class="btn-verde" onclick="descongelarVencidosProfessor()">🧊 Descongelar vencidos da turma</button>
-</div>
-<div class="aviso" id="avisoCongelamentoProfessor" style="display:none;"></div>
-</div>
-<div class="card">
-<h3>👨‍🎓 Meus Estudantes</h3>
-<p class="muted">A lista abaixo mostra apenas estudantes vinculados à mesma escola, série e turma do professor.</p>
-<div class="filtros">
-<input id="buscaAluno" onkeyup="filtrarAlunos()" placeholder="🔍 Buscar estudante..." type="text"/>
-<select id="filtroStatus" onchange="filtrarAlunos()">
-<option value="">Todos os status</option>
-<option value="Ativo">Ativo</option>
-<option value="Inativo">Inativo</option>
-<option value="Transferido">Transferido</option>
-</select>
-</div>
-<div class="aviso" id="avisoAlunos" style="display:none;"></div>
-<div class="table-wrap">
-<table>
-<thead>
-<tr>
-<th>Nome</th>
-<th>Conta</th>
-<th>Escola</th>
-<th>Série</th>
-<th>Turma</th>
-<th>Saldo livre</th>
-<th>Congelado</th>
-<th>Poupança</th>
-<th>Status</th>
-<th>Ações</th>
-</tr>
-</thead>
-<tbody id="tabelaAlunos"></tbody>
-</table>
-</div>
-</div>
-</div>
-<div class="secao-painel" id="secaoVila" style="display:none;"><div class="card"><h2>🏠 Vila Merit</h2><p>Bem-vindo à futura Vila Merit!</p><div class="aviso">🚧 Em desenvolvimento.</div><button class="btn-cinza" onclick="mostrarSecaoProfessor('secaoDashboard')">← Voltar ao Dashboard</button></div></div></div>
 
-<div class="secao-painel" id="secaoRelatorios" style="display:none;">
-<div class="card">
-<div class="topo">
-<div>
-<h3>📊 Relatórios da Turma</h3>
-<p class="muted">Escolha o tipo de relatório, visualize na tela ou baixe em formato compatível com Excel.</p>
-</div>
-<button class="btn-cinza" onclick="mostrarSecaoProfessor('secaoDashboard')">← Voltar ao Dashboard</button>
-</div>
-</div>
-<div class="card">
-<h3>Gerar relatório</h3>
-<div class="grid-form">
-<select id="tipoRelatorioProfessor">
-<option value="geral">Movimentações gerais</option>
-<option value="atividades">Recompensas por realização de atividades</option>
-</select>
-<input id="relatorioDataInicio" type="date"/>
-<input id="relatorioDataFim" type="date"/>
-</div>
-<p class="muted">As datas são opcionais. Se não preencher, o sistema busca todas as movimentações da turma.</p>
-<div class="relatorio-acoes">
-<button class="btn-azul" onclick="visualizarRelatorioProfessor()">👁 Visualizar na tela</button>
-<button class="btn-verde" onclick="baixarRelatorioProfessor()">📥 Baixar Excel/CSV</button>
-</div>
-<div id="avisoRelatorioProfessor" class="aviso" style="display:none;"></div>
-</div>
-<div class="card">
-<h3 id="tituloResultadoRelatorio">Resultado do relatório</h3>
-<div class="table-wrap">
-<table id="tabelaResultadoRelatorio">
-<thead><tr><th>Relatório</th></tr></thead>
-<tbody><tr><td class="tabela-relatorio-vazia">Escolha um tipo de relatório e clique em “Visualizar na tela”.</td></tr></tbody>
-</table>
-</div>
-</div>
+<section id="loginArea" class="login-page">
+  <div class="login-card">
+    <img class="login-brasao" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEARQBFAAD/4QAqRXhpZgAATU0AKgAAAAgAAQExAAIAAAAHAAAAGgAAAABHb29nbGUAAP/bAEMADQkKCwoIDQsLCw8ODRAUIRUUEhIUKB0eGCEwKjIxLyouLTQ7S0A0OEc5LS5CWUJHTlBUVVQzP11jXFJiS1NUUf/bAEMBDg8PFBEUJxUVJ1E2LjZRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUf/AABEIARgBkAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APQrS1tjaQk28RJRf4B6VN9ktv8An2i/74FFp/x5wf8AXNf5VNQBD9ktv+faL/vgUfZLb/n2i/74FTUUAQ/ZLb/n2i/74FH2S2/59ov++BU1FAEP2S2/59ov++BR9ktv+faL/vgVNRQBD9ktv+faL/vgUfZLb/n2i/74FTUUAQ/ZLb/n2i/74FH2S2/59ov++BU1FAEP2S2/59ov++BR9ktv+faL/vgVNRQBD9ktv+faL/vgUfZLb/n2i/74FTUUAQ/ZLb/n2i/74FH2S2/59ov++BU1FAEP2S2/59ov++BR9ktv+faL/vgVNRQBD9ktv+faL/vgUfZLb/n2i/74FTUUAQ/ZLb/n2i/74FH2S2/59ov++BU1FAEP2S2/59ov++BR9ktv+faL/vgVNRQBD9ktv+faL/vgUfZLb/n2i/74FTUUAQ/ZLb/n2i/74FH2S2/59ov++BU1FAEP2S2/59ov++BR9ktv+faL/vgVNRQBD9ktv+faL/vgUfZLb/n2i/74FTUUAQ/ZLb/n2i/74FH2S2/59ov++BU1FAEP2S2/59ov++BR9ktv+faL/vgVNRQBD9ktv+faL/vgUfZLb/n2i/74FTUUAQ/ZLb/n2i/74FH2S2/59ov++BU1FAEP2S2/59ov++BR9ktv+faL/vgVNRQBD9ktv+faL/vgUfZLb/n2i/74FTUUAQ/ZLb/n2i/74FH2S2/59ov++BU1FAEP2S2/59ov++BUV3a2wtJiLeIHY38A9Kt1Dd/8ec//AFzb+VABaf8AHnB/1zX+VTVDaf8AHnB/1zX+VTUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAVDd/8ec//AFzb+VTVDd/8ec//AFzb+VABaf8AHnB/1zX+VTVDaf8AHnB/1zX+VTUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFMlljhAMsiICcZYgc0APoorlNV8f6Ppt+9n5dzcvG212gVSqkdRkkZI9qAOroqpY6hBqOmpfWLCaKRSydsn0Poc8Vl6D4rsNatLy4EclqLMZmWfAKrgnPB6cH8qAN+isvQ9esdegkmsDKUjYKxkjK84zjnr/8AXqxZ6pp1+SLO+t52XgrHICR9RQBcooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKhu/wDjzn/65t/Kpqhu/wDjzn/65t/KgAtP+POD/rmv8qmqG0/484P+ua/yqagAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKr3lyLW0nnEbTNDGZPKTG5sA8D64oAsVzfiXxjp/h6ZbeSOSe5K7jHHgBQehYnp096oeEPGv9uahNZ3kccEknz2wQkhlxyuT1IxnPfngYrLvBFp/xcWa+RWiutpiZ+QpKBAfruUj8aAOp8NeKrDxEjrAHhuIxuaGTGcf3gR1H+T1Fch8RbSTU/F1jYQrumazZkXuSPMbH47cVL4pgTw3440vVrMLFHdN+9ReAcEB+PdWH4jNM8afb3+IlgmluI777KoiY4wDmXPUEdCaAOo8G66db8OpKz7ryAeVL6swHDfiMH659K5f4ZabYalpmove28dxK7LGxkG4hSueM9MnPPsPSk8P2GveGfFkS3Ns9zFfD/SHtlZ0XJPJOAAQfwwxxUl54d8TaFrF5N4bG+1vMn5WjBTkkAh8dCTgjt1oA7XQLLTNP04W+kurW4YklZfMy3fnJ9K808S6feWfi+90nTmwurFG2A4yGbJyew3BvwruvA/h6Xw/pDx3JU3U8nmSBTkLxgDPfp+tUrzQ9Rn+JFnq/kA2ES7TJvXIwj9s5+81AGlLDB4U8GTrbH/j1t2IY8F5COp+rGvKrez0b/hGJbmW+ddVjlHkwKOCvyjnj/eOQfT6V6N8SjdN4aFva200/mzL5nlRltqr82TjpyFrk9b0i20LWvDivbQurxRLco6ArIwYByR3JDfoKAO+8FyXc3hOwkvXd5mQnc5ySu47Dnv8ALitykACgADArmvHmsyaZov2a1JN9fN5EKr97n7xHvzge7CgDes721vofOs7iKePJXdGwYA+lWK8o8J3EHhq01XVZMSyBxZW0an/XSDlsf7P3efTPc4rrvA/iO/8AEFvP9stY0MBC+fGSFcnttPQgY796AOpooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACobv/jzn/65t/Kpqhu/+POf/rm38qAC0/484P8Armv8qmqG0/484P8Armv8qmoAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAEIJBAJB9R2ryOQa54d8aTBLiS4vH+dPMJIvE7L9cA4HYjA7A+u1z/jDw+Ne0vEOEvrc+ZbyZwQf7uewOB9CAe1AHm1vFDqGoXCaOzxXKt9tsE6MrDl4fqMZXt8v+0a697e1+IfhuGYSLb6la/K3GQrEcgj+62AR6fgRVTR9Bn16Sx10CTTNRt7jF1vhIE5Xq6jjk9G7Z3fj3lpYWdk0zWttHC07mSQouC7HuaAOG0/wRrN1qltc+INSWeK1I2IsrSMwBzjLAYBIGepP613LafZPfLfPaQtdKu1ZmQF1HoD26mpZ54baFpp5UiiQZZ3YKqj3JrnJfGMVzK0Gg6dc6tKvBaMbIlPu7UAdPRXL/Z/GeoZMl9YaTGeghiM8g+pbj8qqan4Q1q4g3QeK75p+6yMURvwQjH5GgDs6K8vazGkkDxHa6xCmdv2y1vmliJ9SOq/qakml8Po4XTPEfiOabG5YrOR5CfwK/pn60AemVVvdOsdQVReWkNxsOVMiAlT6g9vwrgIL3xskgbTotRuYP7mpW0UZ/PcD/KtKfxlq2jWynxBoP2dpARHJDMjB2x3XcSB05yaAOlg17SZ9Rl06O+i+1xtsaJjtYn0Gev4ZrkPENvfw61qfiHUYxHb2EGzTxuDBnb5UbA9GJJzjt6Zqbwppfh7XPDUdveG2vr5y01yekqOxyfRh2HHBxV2XTde0GNhYTHW9NPD2V2QZVX0V+/0P4CgDgIbSe10SzmkV2ubrMGmwdCFY/NLj1JIVT7g9hjutQvIPAfhCCzhKPfOpCejOeWc+wz/IVNpY0PXtbj1qAzi/sovKNjJhWiIyB8p6YyR1xk+orH0fTLzxD4mudc1+Fre2s2wsEwwBt5C8/wAK9SehJ9MigDd8EWuoafoDXOr3kpMxM2ydv9SvUkk8gnqR0HoDmt+wvrXUrSO7s51mgf7rr/ng+1eY+LfFY169XS7S5FvpfmKsk7A/Pz94gc7R1A74z9JdDuBoHjaLTNGvxqOn3ZUSBWDDJBycjjK4zkduDyKAPUqKKKACiiigAooooAKKKKACiiigAooooAKKKKACobv/AI85/wDrm38qmqG7/wCPOf8A65t/KgAtP+POD/rmv8qmqG0/484P+ua/yqagAooooAKKKKACiiigAooooAKKKKACiiigArA1bxLHp+vafpccIuHuH2S7HG6HONuV98k/QHrWDffEy1gv5IrbT2uLWM4M/nbd3OMgYPHpkjNVbqx0XxpI1/ol01jrC4kaKQ7SxGMNx0I4+Zc4780AdjrviHTtASBr+Rh577VCLuOO7Y9BkZrShmiuIEngkWSKQBldDkMPUGuS0N9Q16C60TxTpBb7OFJnYbQ57Yx36/Mpx9O/XxokUaxxqERAFVVGAAOgFADq5/WPEotbv+zNLtm1HVG/5YocLF7u3QfT6dM1X1nV73UdSfQNAcLOo/0u8xlbZT2Hq59P/rlYo/BR0799oWs3dlclR5hkxKkxHdlPc889snAoAS18NjUb4yeJr8ajeRgSCzQlYIQc4wv8XQjJ645q3d+DdLeb7TpzTaVc9pLJ/LH0K9MfhXHa5qGu6X4ngur1rdb+KFVzb58uWPc3UH15yPYEV13/AAm2k/2St2GZ7p8KtknzSs57Adxnv/XitJU2kpEqV3YrXF74o8OQNNfG01exj+9MGFvMo9SD8p+g5NZt58QJL8+RpEaWZ8ve014Rux/sID8x/HtWtZ+H7vWrhNS8UFX2ndDpynMUP+9/eb9Ov0G/f6XZahb+Tc20ThRhCUBMfGMqe34VmUcPbWmnTSrdaxZa7rFz1Dzw4jH+6gbAHtzVi+t9Auyskfh7VrGdRhJrK38ll/75OPzBro/Cc8k3h+3WX/WQ7oW9tpwP0xWjf3AtLC4uSM+VGz/kM0Aefw+Ita014YbW8/tUSzGCO0vItl0CAO6kggZ5Le/1DtIu9MW+uJPFLzQa3cK0atexbIo1IIxGeQBg9cjqfU52PA9npYSS+ju4rrUpBiX5gWhH93HUc8k9z9BXUXVrb3kBhuoI54m6pIoYH8DQB55pXhxNf8D6df2mLXV7dWVJkO0vtYgBiOeg69RU+g+LdWsraQ6xA93bW7+VcSov7+1bP/LRe6/7Q9D1PFJ4Y8PzT2N1c6Zq11p11FdzQ4TDxMFbjch4PFR6mviXRdZj1y5sIZxGuy7nsz8s8X+2h5DAD73TpngUAdLqOj6d4jhh1XTroQ3qjMF/bnkezf3h2IPuPWsu4uLjWrWbwtrznT9UYZimjP7q6A7jpn3X+XQU7e7s4bp9T8HXUTs3zXWjudnmjuUU9G+gI6Y9D0LppPjbQVdCwwcq4+WW2lH8iP1+lAHF+K9OgspNK8J6XHukdxNLIy/NJI2UVifQDdn0GPSu1sNC8P8AhcSXyhLckbTPcS52j0BY8fh1rKtZru7mk0jUDDD4lsY2ayvWQESqQRvXPqOCPxxwQOS17SNT0y/sb7xMX1G3kb95smJ2+qA8YOOeMA4I7ZoA7K4+Iuix38VvEJpYWbbJcbdqIPXB5P5dOma7AHPIrzfwbog1vU/7cubSK306BitnbIuFJB6++D1J5LewxXoxZVZVLAFugJ60AOooooAKKKKACiiigAooooAKKKKACiiigAqG7/485/8Arm38qmqG7/485/8Arm38qAC0/wCPOD/rmv8AKpqhtP8Ajzg/65r/ACqagAooooAKKKKACiiigAooooAKKKKACqWsWc9/pNzZ29z9mkmQoJduduevGR2q7RQB5XYXGs+AZJYb7TI7iwmfLSx9G7cP2/3WA749ap6tc6XceIdKvPCqPDdSyAvEFKBJNwAGOgz82ccY+pz686JIjRyKrowwysMgj3FYdl4R0ew1sapaQGKQKQsQP7tSeNwHY4yOOOelAG9XOeLtZubKCPTtKjM2rXgIhRcZRQPmfnge2e/0rfnmjt4JJ5nCRRqXdj0UAZJrmvB8EmoTXXie8Qia+O23RusUAPyj8ep/A96AKvhfWtB0i0TSZhNpt396QX6eW0rnq5boc/WuyVldQykMp5BHINQXlnaahAYLy3iuIj/DIoYfrXOyeEf7OLT6Bq1zpeOTCzebB6klW6fXNF0wOZ+I3/IzJ/16p/6E9cxGY1lRpI/MVWyV3FSfoRyD71c1fVLzWLtby88osY9kbxKVWRFZgGAPPJz/AIVRr0aaTgkzmk7SPQtJj1safHeeH9ZGpWp4NrqQzIh7r5g5z9ePwq/H4yitZFh1/T7nSJWO0PIu+Fj6B14rg/D+uXGhXwnjy8L8TRZ4cf4jtXrNpdWeraek8JSe2mXoRkH1BH9K46tNwfkbRlcy/B7rJYXjowZGvJSpHIIOCCKu+Iv+Rev/APri38qpeEUEdhexxqqqt5KqqBgADGB9Kp6wfEp0e7F2umCDyj5nleZuxjnGayLJR4U0bU9Ns7iS2MF15KEXNs3lyA7RzkdT9c1H9j8V6NzZXsWs2w/5Y3f7ubHoJBwT7tU+geJ9HubeCw+2LDdxRrG0M37tiQB0z1/CujoA8/8AB/ibTdPS8tdTkNjPcX00q+aDs5Iyu/pkHg5xXYtqFvNewWcTxzCaNpGIIYbOg/M/yNYHgxbS58Hyz3ccUltPcTysJVBUjeeoP0qzHp4msBa6LcrpxUb4pIUDBQTn7p6g80nK3QLX2Zi6Z4f0o6xf+GdTs45Vj/0qxl+7IIWPKhhz8re/PNPm0G98HXMmuaXczXtr/wAvdrLy7R92DdyOvIz1561W12XxHpOoadrGq21vPHYSFWu7Rsb4nwpVkPf07Z/Out0rxNo2sHy7W8QzdDBJ8kgPcbT1/CmBV1qwi8S6Nbajpc4W8iHn2VwOCD/dPsehB/EcYrGv4YPGei2d/dXbWKWEjDUIDnCED5+OzccHsGPfirumD/hGPE50c/LpeolpbP0il/ij+h6j8O5NGqRroPiyHUcD+ztXxa3iH7qy4+R8e/IP4mgDLu/G7NH/AGd4V04skMePOkXCRoB128YGO7EfSsnwhb6jrviFdbvr6TybFt8lw7YGcfcHYAjrjt9ateOrtbDyfC2kWRt4XVZJFiTmbPRRjk9DnuSPrS6T4L1rU7OCHVrlrHT4/u2qY3HvkjoCTzk5PsKBnpFtcQXVuk9tKksLjKuhyCPY1LVLSdNtNHsY7CzDLEuSAzlicnJPPuau0CCiiigAooooAKKKKACiiigAooooAKhu/wDjzn/65t/Kpqhu/wDjzn/65t/KgAtP+POD/rmv8qmqG0/484P+ua/yqagAooooAKKKKACiiigAooooAKKKKAGu6xxtI5CqoySewFRWd5bX1stzaTxzwv8AdeNgQaS/tUvrC5s5CyxzxNExXqAwwcfnXmV74L8R2N7ZQWM5u4IGLwzZCJCxOSCpJIzgE4yD+dAHeeIPElh4eFsb0SkXDEL5YBIxjJIJHHI6etalrcJdWsNzFny5UDrkYOCMjjtXDPdeM/MS21Xw/Z39szBWYorDBOM8MeP+A13iqqIFUBVUYAHagDmfHcs02n2ui2rbbjVJxBn+7GOXb6AYz7GoodU17QYY7fU9DF1ZxKEW40z5tqjgAxnnp+FSuDe/EmMEAxadYll9pJGx/wCgiuooAwLLXNN1fM2m3YkYffTlXQ+6nmm67Fd6po82nw3CweeVR5CMnyyfmA9yM/55rVl0+1e4a6W3iW6K7fNCgMR6E9xWDd65Z28JMLG5l3MiRQjO516jPQY7k187i44jD4nno3s/uOiFpKzOU8d20NnrdtbW6BIYrKNEUdgGfFc9FE800cMY3SSMEUdMknAH5mtzX7e9uo4r24k86aOIJLgdBknI9hux9AKy9I/5DWn/APX1F/6GK+uw1aNSknF7HFWpSpztIqujRu0bqVdSQysMEEdiK0tH16/0WO5WzcFZkI2tyFfHDj3H69+1dv4z8LDUUbUbGP8A0xR86D/lsB/7MP16eleakEZBBBrWMo1YkNOLO00DxINFsGtPI+0/vC/m+ZjdwBnkZ7Zq1qPjAX2nXFp9gKebGU3ebnGR9K5RPuL9KXnB6V4znLnaufSRwtH6upuLbaPTF0jTtW0Ozj1CziuF+zoAXX5l+UdD1H4Vj32g3vh7T7i80TW54bWCJpGtLoedHtUZwp6r07Vf0DxNo91bwWIvEiu4o1jaGb5GJA7Z6/hR49uHh8I3kcQzNcbbeNf7xdgMflmug8M5bTr68tPBtrpUumSQQyIJIbnzAyyox39OoPPSt7wRGC11MXBb5UC55A9cenT8qz/E7JFcW2nxkeXZwKgA7HA/oBWjbeENOvtMtLiYTW9+E3C5t5DHIuecenGcciu2XuYdLqzzov2mKb6RNnxJZf2j4c1C0wC0kDbc/wB4DK/qBWVp2l6V4p8L6dc6lZxXEr26BpcYfcBg/MOeopvkeLtHz5E8Gu2o/wCWc+IZwPQN0P1NZXgbxJpWm6LDpF/c/ZJ4pJFXzxtUjeTjd0yM89K4j0SXXPB+rLY7dM1maeKBhNFb3eHdHXkFJMZB7AdPWtc+T4z8DdFBvIPwSUf4MK6FHWRA6MGU8gg5BrmPC4Ona/rujciNZhdwZ/uyDkD2BGKAKY8TSweCrbXhYxz30eLW4Mh2shB2kk4J5YA44+9WXbz+O/E1us1vNDZWkg+V0YRqw9j8z/yrVtNOhm1rxP4cn+W3vAt5FjqC4wzD6MB+VZNr4R8UxQGzsdfhWw3EgxTuvX0AHH0DYoAp6bb3Ph34jWVvPfG9llUJNJkk/ODhSSSeCFNerVyvhrwTaaJci+nna8vecSMu1UJ6kDnnnqSfwrqqACiiigAooooAKKKKACiiigAooooAKhu/+POf/rm38qmqG7/485/+ubfyoALT/jzg/wCua/yqaobT/jzg/wCua/yqagAooooAKKKKACiiigAooooAKKKKACuG8SarrN74rTw9pV5HYARh2lfguSM4Bwe2OBz1rua4/wASWHhrXtei0m9llh1Up8jRKQWXBbBJBU8Ann8KAM+21DxD4c8S2Gm6rqEeowXrBBjlkyQAegI5I65GM16BXL6B4G0nQ7xbyMzXE6/caUjCdsgADn65rqKAODhj1yTxh4gvdGmtd0ckMckNyp2yARjow5Ujn8+a008YCycReINLudKfp5uPNgJ9nWn+GmC+KfE8R+8LiJ/wKcfyrpHRXQo6hlPBBGQaAM681i1XQLvVLS4iuI4YXkDRuGBIHTI96zvC+kRDwXp9tOrFniEzMfvBn+Yn684rG8c+GtLstFnvdOtja3UjpFtgYokm5gMMo4xz6VaGo694emis7yWx1S3GFDrmGVB6soBH0o5Of3bXE6ip+83YivbY2d41s7qzhQ3HdTnBx+B/KubudIaLVLWS1YxRyXEa7lGTCxYAED0zWh4juGvtfW+t5RbSxxLH5cnU8k8j0ORVm3mZ1UsAkg5wDnB9Qa5ZYetgX7WGsXuddPF0MavZydpdC9qmp+KfDenyyXn2PUrfGxLpP3UiseFLJ0PJHArj5rTTX0qAW126arBHi8tboFJHbqSu7qRnoOSMd+vZXUlxr+p6JZyRE28Exubl+zFB8g/Enmui1mw0m8s3bV4Ld4IwSZJsDYPUN1H4GumjWulOBzVKbi+WR5Un3F+lL2P0qvPfWq3MsdpHLNErkIVBPy545PPSmLqEYIEsbxE/3lNc7g5TufQQxdOGFUHvY9XXR9N1fQ7OPULKK4H2dAC6/Mvyjo3Ufga5DWdBmtNf0vSdIvpZEBN6tveSF4oDH90+uCcjFS+DPFQglXS7+XMDNiCYn7mTwpPp6enTp0sC5+0ah4i1zOVTGm2x74H3yP8AgRz+Fdvs3zJdz5uU0ouXYyLi8E9013qEgRWYNMyg4Ve+B14Fei6bqen6nAJNPu4biMdfLYHb7EdR+NcJol9Zabem7vCT5aHYijLMx4/lnrT9RGkXs32uPw/qVlP1F1ZqYnHvxwfqa1xdSPMoJ7GWX4StKm6ltz0WuT8H2ltfaHfRXdvFcQtfznZIoYfe96zNN1vXIEY2l7BrMSAsYLkCC4UD0blWx3PNO8D+JNLstFgsdRufst1Izy7p1KJIGYnKseMc+tcqd9jqlCUHaSsasng5bN2m8P6nc6TITnywfNhY+6NWbZnV7T4hWDaylt5t1aS2yS2xO2UKd+SD0I//AFV3COrqGRgynkEHINc34lUL4p8MSj7wuJU/Bk5/lTJG6ji1+I2jzAYN5aTW5+iYcVxHi3w7aeH9csfIupY4rx2aSQ43RDcMkYA4Ab9K7nxIAvijwxJ/ELiVfwMf/wBaq9x4DsL7XLrUr+4mmWZ9wgU7ABjoWHJ/DFAHC/b9QivhbaBr+q6i/ZRG4GPUKzE/moFesaCb46JaHU1Zb3yx5u7Gc+vHFT2On2enQeTZW0VvH/djUDJ9T6mrNABRRRQAUUUUAFFFFABRRRQAUUUUAFQ3f/HnP/1zb+VTVDd/8ec//XNv5UAFp/x5wf8AXNf5VNUNp/x5wf8AXNf5VNQAUUUUAFFFFABRRRQAUUUUAFFFFABXJ+KfCE/iHU4rpNU+ypHGFCeUXwwJO4HcMdR+VdWc44614xGJNcS/vdZ8QLa3ULHy7eVvvP6KM/KARjgH/EA7Oy8ALBe211PrN1cNBKkoUjglSCOpPpXa15toXxBt9O8Pwwait1dXcZK7hjlc/LlifTjv0rvdIv01XSbW/jUotxGH2k5256jPtQByN4NXtPiFfroz23m3VpFcvFcg7ZQp2YBHQj+taMfjFbN1h8Q6Zc6TITjzCPMhJ9nWjxSTp2v6FrOSI1mNpPgfwyDgn2BGa6d0WRCjqGU8EEZBoA5nxTPaapo9qbS6jmRrlHVomDBivOM/XFamlaRFZqJpgJbpuXkbnB9q47xpYWeiJLNptqloXQO5hGOjdQOgwK2hP4t0f/XQQa5aj/lpBiGcD1K9D9BW0nywSXU5Yr2lSUpdNEc18Rv+RmT/AK9U/wDQnrF0m5mW8gtkJZZZFjVSehJwPp1q54u1SLV9ZW5ihngKwLG8VxHsdGBYkEfiKh8O6feXmqW81tDujgmR3duFGCDjPrx0FdCqRpUuabsgnT53Y6a3eeM+cqujRNtLY6N6VHAZfHWuNFduY9IsMZhRsefJ6/T+Qxjk5F/w9by28d7aTzJcnyh5koHyk8nP61nad4fii0VEs7xbyEksJ4TtbOeoIJ5HTr2rwq1SlhajcdnZ+Wp6FCbxNNRnurq/exh3cUcN5cRRIqRrK6qqjAADHFQsoZSrAMMdDVi7t5LecrIWYk53tyW9ST6+tQc84xVKSnLmT0Poov2eEUWuhjuohmKjPls2PpW5p9/dDSTYlgbZJd0abQCGOc89+vequuWEUMTz2sjSQhI2bKn5HPUZ9M9D/wDrNm1iWOCE5z/F9civVdRKOn/DHx6qU3JOeq1+dtTo/DOoaDpk+zU5BBfSHMctwhVCuP4WPHrk8V3kbRyoHjZXRhkMpyDXH+GtVttRthomr20LMBiHeoKSqO2D/EB+fX1q3J4OjtHabw/qVzpMrHOxD5kJPujVhJJPQ3VZ1UpN3G+OLKwh0iXUpIylxGVVWjHLliFwfXrUvhpbLU/Dy6Zd2cTiz/cPDKoYDb0OD/nOa5zW9Q1k6vYaXrFql4tnIt9L/ZqszSIpIUlD0561reGNRtLrxPqM1rJiC6VWQONrEjrwec5LVk9JJnZBupSlGX2dUWX8Hiycy+HtUudLc8+UD5sB+qNWZNJrknjDw/ZazDa7o5JpUmtmO2QCM9VPII4/Piu8rl0JvfiTIQQYtOsQre0kjZ/9BFaHIL4hbf4y8LwDvJcSH22x/wD16018RaKbqS2OqWqzxuY2jeQKQwOCMH3FZjE3fxJQAZjsLAkn0d26f98is3xh4R0aDSNR1WGCVLlVaUlZWILE5JIOeMnPFAHbo6SKGRlZT3U5FOrwxbS0tNBi1Oz1vyr9m2vaR5Vx8x5yCCBjnpXsHhtZ18Oad9pkkkna3RpGkYsxJGTkn60AadFFFABRRRQAUUUUAFFFFABRRRQAVDd/8ec//XNv5VNUN3/x5z/9c2/lQAWn/HnB/wBc1/lU1Q2n/HnB/wBc1/lU1ABRRRQAUUUUAFFFFABRRRQAUUUUAFcm3w/0SbULi8uTcTGeVpTH5m1FJOcDaAe/rXWUUAZlj4f0bTyGtNMtonH8flgt/wB9HmtOiuZvbrxN/wAJZFDb28K6RFteSVuA6kEHJPcHJAA7DJwaANXxBpaazod3pz4HnIQpP8LDlT+BArldD8Y6stju1PRpp4oGMMtxaYd0deCHjzkHuT09K7lWV0DKQysMgg5BFcnqZPhjxONYHy6XqJWK89Ipf4ZPoeh/xIoAh1q90nxRpW/TryOdkVg8YOJAp6naeeMV0mh3BudHtWd1aURKsm3++Bz+tV9V8NaNrB8y6s0M3UTx/JID67h1/GuW0e31a21fU9PtbjdPZOMBzhpYmGVbptY9j0rZNTjyvSxzSUqc3OKunuiDxtaPf+NrWzjOGlt0GfQbnJP4AE1T1u8LSf2BpWYbSD5JCv8AGf4sn0B6+pzWzazPceMVfUInhv0tigQrgbcnkdc9TyDiuSutQKNLHbxeSWY+Yx+8TnmojTjVxHJU1UEnbzf/AAxMqkuS8FqzqdI1m38ORiO8srg2sqIq3Me2RQAMAMoOR/X0qLwTqthp97d6C9yjWbyGWymY4BB/hOeQcY4Pfd7Z4nAznAzSOiyLhhkV0VsOql79S6T9nFRPQtVFpqFi90CFVJGjc56EHAOfy/MVy8fyoZCBntSacutrol4LWS3lsuPME2dw+nv+NQXKXEtpCBIsRx+82/Tt+teFQoeynKF9n9x6tTEylh1S1tJ6+lrk17ZQTy22n219K8zxG4v2839yo+8q7ehYA4+pHqcSXQTygCdo+6Px7Vn6VAguCVGQgzn3/wA5qbVZOY4x2+Y/0/rX0dPDpUWn1PC9vyYqHJshltK8UogkZgMjYwOCp7EHtzXoXh/xZDPZTxapKsd1aIXkfoJEAzuA9cdR+Xt5vHPuwsi7+eD3qa8WBpiJ+WxyAMiuOSalaS+4744en7TmpTST6PRnd+Hpxbaff+KdT/dzaiweND1WIcRqPcjn8qTSfDlrrtlPfazbeY93J5kfzFWjHYgjBH+AFc/p+uaXdX6y+IZrgxp/qx5eYVHoQvT8sepr0qyvLS+txNZXEU8XTdEwYfpWHK7+9odUpQpwcIO7e7/Q5qbSte0GGS40zXBdWcSl2t9T+bao5JEg56fhUvgWOWXTrrW7sBZ9TnM/ptjHCL9AM49jSeMJ5NQmtfDFm5E18d1w69YrcH5j+PQevI70/wAXXJsdCh0fTVCXV8RZ2yL/AALjDH2AXv2yKo5jL0m7vf7I13xPYWhurq+ucWyBS26JDsU4HPA3cD0qO3+I1szNZ63pM1uzDa6j5hg9dytgge3NaOtW/iHRbLTo/DcUctpZxbJIiAzSdMZXg44z8pzk1Ts/GWh6wpsfENglrMDhluUDxg/UjKn6gY9aAG6bo/gLVrpZLNo2kY5Fs0zpn/tmxBx7dPwrugAowBgVztl4Q0GDU7bVrCNo2iJdBHJujbIIzg59cjGK6OgAooooAKKKKACiiigAooooAKKKKACobv8A485/+ubfyqaobv8A485/+ubfyoALT/jzg/65r/KpqhtP+POD/rmv8qmoAKKKKACiiigAooooAKKKKACiiigAooooAgkvLaK7itJLiNbiUExxFgGYDrgVyEurW/jCw1jRbhW025gyyiWTHCnq2OMAjBHIwRg96b8QdHlXyfEmnZS8syDKV6lAchvw7+xOelYNvoGreNdTbVrmCKwtZgMyBD+8A6bQfvHGPmPHTGcYoA2vhrr5ntjol04M1upaA5zuj7rnvtzx7Eeldre2kF/ZzWl1GJIZlKOp7g1yup2EvhPQgnhnTTNdTMInuCA8gz0Y8c8/8BGemK6TTrqSaGOG7aBNQWNWnhifdsJ/pwf/AK/WgDkIdevfB1zHomqW017a9LS6i5do+yle5HTg56cciman4g0r+2LDxNpl5HKsf+i30X3ZBCx4Yqeflb254rsNZ0i01qwazvEJU/Mjrw0bdmU9j/npXGXFrZw3SaZ4xtInZvlttYQbPN9A7DkN9ePX1IB0d/4fN74ht9aivthijCCMR7g4+bPOe4auT8TeGkt7gXkUzD7VdpE0fl5Ee84LZz0z29+tSaa3iXRdZk0O2v4ZxGu+1gvB8s8P+w45DADG3p1xwKvar4uubWKJL7RZ7C781FfzfniZCfm2yDgkDmsKntYzVWlutLd0NKLVmYOo+DdX0+TeIDe2o6vacyAf7hxk+wJpdK0LRtUk+zxa68F2PvW1xbeXKDjOMFuT9M16PbTfaoFms7uK4hPR0YMD+IrF8Rai9rcRWFii3WtXK7YkA/1a93c9lH64o+vYiWkYO/nawvZQMZtNMPkeGNMk86aV/Pu52XAjjz1IB6nAwM847ZzTNa8Lvp1vF5l20luzYeVIsGP8M89607XwrrOkA3Ok65vupcNcpdxBo5nx6j5lH5mppPE1zYoYfE2iS28RGGuYB58BHqccqPY5qqVN01q7t6t+ZFWPtI8q0tsZtr4EDwCaz1zKuMgiDIP1+asXU/DGsWVw0t7ay3Ntj/W2IErD/gB2n/PWursrK3mR7vw3riLF1ZAwdV+vp+IzWda6prms372Nhei5hT5ZruEBYk/4HgEn/d9fxHT9YqWtc57Wd3DUwY9KsZXtzp19NeSu+PLa3MW0+hyeufw6810Unw985zI+qkM3UCDOP/Hq2j4Q0mazeC8je5aQ7mkZyGz6gg8f5zmqv9ieIdJ50XWvtUA6WupDf+Ug5+g6UlUne9y6dLVznuU7TwFJZ3KXFvrLJIvT/RwQfUEbuQfSneJtE0PSLJtVjabTr3hUOnsYzM/ZQnIOT+lTyeNTp37nXdHu7K5IPliPEqTEdlYdzxx2yMmpdG0m91HUl1/X0CzqP9Es+q2ynufVz/nsFUpOW5uklsP8LaXNpllPq2tT7tSuVD3EshH7pFHC+gwBzj+lQeHY5Ne1mbxNOhWBVMGnI46J/FJj1b+Wfaor+d/GGptpNlIw0a2YfbblDjzmH/LJT6ep/wDrZb4ql8R6Nd29/pKI+lW8QRraNcgDuWX0wBgjpj0zmRnMeIdJ8X6dNNcyXl5cwMxcy2s8m1cnugOVH6D1qppelWPiKRPO8VOl23yhLuAlj7KxkIP0zn2r0Tw/4v0vW7YsJFtp40LyQyMOABkkHoy+/wCYFUYtM8J+MT9uto1MscgaXYPLY85w69wcdceuDQBqeFfDy+HNNe1FyblpJC7OV2jp0C5OOn61t0AY4FFABRRRQAUUUUAFFFFABRRRQAUUUUAFQ3f/AB5z/wDXNv5VNUN3/wAec/8A1zb+VABaf8ecH/XNf5VNUNp/x5wf9c1/lU1ABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFACMAykEAg8EHvS0UUAZXiLXIPD+nC8nhllUuECxr6+p6D8a8/8StbaZqFr4p0HVFLXrFjGzFiT/Fwf4eMFT0OMdsWNTu9Y8KaheQ6oDq+l3+4jzjwzEdOnynpkAYxyOlL4F8Gi5ZNX1SECE/NBAR9/wBGbP8AD6A9e/HUA73Q7+XU9Itr2a1e1eVdxjft7j2PUZqxeWltfWr213Ck0LjDI4yDU9eV6t441K18WXctlKslnG3kiB+UYLwT7EndyO2M5xQBpa94S1aytoxo873dtbv5tvE7fv7Vv+mbd1/2T6Dqeag1XxGmv+B9RsLzFrq9uqs8LjYX2sCSoPPQHjqPpXRaJ450fVQscsn2G5PHlzsACf8AZbof0PtUfxBgsW8PvJLZRXF7IywWhIw/mMcDB6+px0OKAMPV7TTFvreLwqk0GtzqsjLZS7Io1IzmQdAMHpx29Rm7p9j4g8MXdzeSafDrX2lg01zC5Fx9MN1HoB/+p8HgzVtGtmGga95DyAGVJoUIdsdm2kgdeMGs2ex8bJIV1KXUrmD+/ptzFGfy2g/yoA6ux8X6Jdlo5Lr7DOgy8N6PJZf++uPyNV7jxlZyyta6Naz6xcjjbbqRGp7bnPAHvzXMwxeH1YnU/DniOabG0y3kbvn8Q364+lRpeDSiT4butYhTO77Hc2LSxE+gPVf1NAGmngabWLqS+1n7Pp7SKQLfTkC4z/fYg7j68Vet7LxR4cgWGxFpq9jH92EqIJlHoCPlP1PJqPTPF+tXEBWfwpfNOOjRqURvxcDH5mrX2jxnqGBHY2GkxnqZpTPIPoF4/OgCa08ZaY832fUVm0q57x3qeWPqG6Y/GobjxXJqEzWfhi0Oozg7WuWytvF9W/i+g69qdH4OiuZVn17UbrVpV5CyN5cKn2Rf8aj1XxloOgwfZbMR3EkY2rb2uAiexYcL9Bk+1AFjTPD8OnzPrOtXgvNQCktczYWOAeiDooHr9emTVGe+vvGEr2WktJa6MDtuL/GGn9UjB7ep/wD1GnoKSeOfMvdYuibWCXaunQ5WPOAQXPVuv6H6V3UUaQxLHEipGowqqMAAdgKAPOT4j1GG8fRvCGlxm1scqf3Zctg4J6jGTn1J61v+FPGEetStYXkP2TUUzmPkK+OuM8gjup5+uDjnZZJ/AnjCe5khaTS79idy9Rk5wPdSTx3B/Kp411HTbnW9O1Pw/Ost+TlvLBG5gV2ZHHzdRjrjg9qAHfELSrZNftINM06RLm65YoMRyuTgBR03dyRjqM133hnQ4tA0iO0Qh5j880n99z1/AdB7CtUqrFSyglTkZ7H/ACadQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAVDd/8AHnP/ANc2/lU1Q3f/AB5z/wDXNv5UAFp/x5wf9c1/lU1Q2n/HnB/1zX+VTUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFAEN1aW17AYLqCOeIkEpIoYEg5HBqaiigDG8War/Y3h26u0OJivlxf77cA/h1/CvDgAoAHQV3PxT1bzdQg0yNspbL5soH99hwPqF/9DoHw3uWRSmsW/mOm9Y2iIz+p/PFAzh+tW7XUr21ktmjuHK20gkhjkO5EYdwp4Fb+keCJ9SsJLqbUYbPypnhkSSPO1lODzkd6g1DwbqVnrtrpUbxztdKWjlXKrgfeLdcY/HqMc8UAbNj8TbxAq32nQzerwuU/Q5/mK2rf4k6JL/robyA/7UYYf+Okn9K5fW/AV5pWmS30V9FdrCMzIsZQoO5HJzj8OKpX/hSey8Kw699qSWOSON/JWMhl34xznnqO1AHoS+PvDLDJv3X620v/AMTQ3j7wyoyL92+ltL/8TXE6j4FudPuNPhk1CJ2vZvJGIiNhwTnrz09qr2/g+ebXdR05r6GKHT1V57t1wqhl3DjP179jQB2Nx8SdEi/1MN5cH/ZjCj/x4isW++Jt44K2OnQw+jzOXP5DH8zWLqXhC9s9S0+0triG9j1D/j3nThTxkk9cDBzwTkZxU+seC5dN0ue+t9Ut75bVttwka4MZ79zyMjIOOKAMjVPEOr6tlb6/leM/8slOxPoVGAfxzWbXc+F9PuJ/B91dw2FhI0XnNG00W6SRgvBBzwByuPaue8M+HLvxFcvHbyJDDEoMkzjIXPQAdycH0/xANP4cap9g8SC2c4ivV8s+gcZKn/0If8CFevV4t4i8M33hh7a6W6SaJnHlXEa7drj5hkZPpkcnoa9c0bUY9V0i1v48BZowxH909x+ByPwoES3tlbX9q1teQJNC3VHGR9frWTpng/QtKvReWtmfOX7jSSM+z6Anr79a3qKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAqG7/485/8Arm38qmqG7/485/8Arm38qAC0/wCPOD/rmv8AKpqhtP8Ajzg/65r/ACqagAooooAKKKKACiiigAooooAKKKKACiiigAooooAKiuriO0tZbmZtsUSF3b0AGTUtcX8TdU+yaHHp8bYlvG+bHXy1wT+Z2j6E0AeX6rey6jd3d9OMSTszkdcZ6D8BgfhXrWs6hoWkXumajqbzC8it2Fukak5BADdOM89zXj7AFSD0IxWv4g1+fXntWngjiNvGUXZnkHHXP0oGdxosmnan4LvJdXRhaXeoszqrEYLyjHI7ZIrTjmkX4hQWLwLFb2+mv9nOc7sugP5bcY9s968zXXZ18LS6B5EZglfzDJk7vvBsfpV298Y6jdz6bdeXFHeWGdsy5PmAgBgw6YOP8MUCNzwQs6L4qa9DCMKfO39N/wC83Z98dfwroNLijvvD+j6XLgrNp0M2D/0zMZ/qK4vW/Heo6vprWPkQ20cg2ylCSXHpz0B79ahs/GV7aS6a8dtCfsNqbVQSfnUheT7/ACCgZ2uqXX2y58Pzdv7XmjH0RpFH/oNUHvbjTvFvia4k0x73SmWMXe0qdgEQOdrEbhgnI/wrkofFF3Fb6bCYInNjcPcqxJy7MWJB/wC+jU9r4zv7XXb7U1ghZb3b51u2dp2rgYPY/wCJoA6TU7TyrvQNc8NJLco7ny7JpSExsOdoY4T5dw446cccv1YaVr2ga1c2KT2F9Z72u4QxQM6g7g4U7XztIzya5bUvGOpX2pWV5GkVqLI5ghjyVGRg59cjjtx09asax44vNUsJLMWUFvHMR9oMZO6UdxntnGO5xQB3XhywvNP0nQraOFRB5Lvd5blWYbgMd/mJFc5p9i+n+DfFthCrCSG5kTA5Ji2rj81zWBf+M9VvNYtr9JHt1h2f6PFMwjfaxPzDPOc4PtUlv40v7bxBc6tDbwr9qVRPBklX2jAOeoOP60AaEwZfhBAJsgm5/c7vTzD09sZ/CtH4Wapuhu9JkPMZ8+L6HhgPocH/AIEa5XxL4pvvERiSeOOC3iO5YoyT82MZJPU4z6dTVPw9qZ0bXbS+JIjjfEvuh4b9Dn6gUAe8UUgIYAggg0tAgooooAKKKKACiiigAooooAKKKKACiiigAooooAKhu/8Ajzn/AOubfyqaobv/AI85/wDrm38qAC0/484P+ua/yqaobT/jzg/65r/KpqACiiigAooooAKKKKACiiigAooooAKKKKACiiigArD1rwppeuXi3V8J2kVAi7JCoAznp+NblFAHJ/8ACu/D3/PO5/7/ABo/4V34e/553P8A3+NdZRQByf8Awrvw9/zzuf8Av8aP+Fd+Hv8Annc/9/jXWUUAcn/wrvw9/wA87n/v8aP+Fd+Hv+edz/3+NdZRQByf/Cu/D3/PO5/7/Gj/AIV34e/553P/AH+NdZRQByf/AArvw9/zzuf+/wAaP+Fd+Hv+edz/AN/jXWUUAcn/AMK78Pf887n/AL/Gj/hXfh7/AJ53P/f411lFAHJ/8K78Pf8APO5/7/Gj/hXfh7/nnc/9/jXWUUAQ2lulnZw2sbOyQoEUucnAGBk1NRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFQ3f8Ax5z/APXNv5VNUN3/AMec/wD1zb+VABaf8ecH/XNf5VNUNp/x5wf9c1/lU1ABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFQ3f8Ax5z/APXNv5VNUN3/AMec/wD1zb+VAENpdWwtIQbiIEIv8Y9Km+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYo+123/PzF/32KKKAD7Xbf8/MX/fYqK7urY2kwFxETsb+MelFFAH/2Q==" alt="Brasão oficial da escola">
+    <h1 style="text-align:center">Painel do Professor</h1>
+    <div class="login-escola">E. E. Prof. Dr. Moacyr Miranda Pinto</div>
+    <p>Entre com o usuário professor cadastrado no Firebase.</p>
+    <form id="formLogin" class="form-grid">
+      <div class="campo full"><label>E-mail</label><input id="email" type="email" required></div>
+      <div class="campo full"><label>Senha</label><input id="senha" type="password" required></div>
+      <button class="btn btn-primario campo full" type="submit">Entrar</button>
+    </form>
+    <div id="erroLogin" class="erro hidden"></div>
+    <p style="margin-top:18px;font-size:13px">Direção: <a class="link-painel" href="index.html">abrir painel do diretor</a></p>
+    <div class="sessao-info">Após o primeiro acesso, a sessão ficará salva neste dispositivo. Use “Sair” somente quando desejar encerrar o acesso.</div>
+    <div class="sessao-info">Criado e desenvolvido por Vania Oliveira</div>
+  </div>
+</section>
+
+<div id="app" class="hidden">
+  <header class="topo">
+    <div class="marca"><div class="logo"><img src="data:image/jpeg;base64,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" alt="Brasão oficial da escola"></div><div><h1>Painel do Professor</h1><div class="nome-escola">E. E. Prof. Dr. Moacyr Miranda Pinto</div><p>Registro e acompanhamento de ocorrências</p></div></div>
+    <div class="usuario"><div><strong id="nomeUsuario">Professor</strong><small id="emailUsuario"></small></div><button id="sair" class="btn btn-secundario">Sair</button></div>
+  </header>
+
+  <main class="container">
+    <section class="grid-cards">
+      <div class="card"><span class="rotulo">Minhas ocorrências</span><div id="qtdTotal" class="numero">0</div></div>
+      <div class="card"><span class="rotulo">Pendentes</span><div id="qtdPendentes" class="numero">0</div></div>
+      <div class="card"><span class="rotulo">Finalizadas</span><div id="qtdFinalizadas" class="numero">0</div></div>
+      <div class="card"><span class="rotulo">Estudantes disponíveis</span><div id="qtdEstudantes" class="numero">0</div></div>
+    </section>
+
+    <section class="card">
+      <div class="cabecalho-secao">
+        <h2>Registrar nova ocorrência</h2>
+        <button id="alternarFormularioOcorrencia" type="button" class="btn btn-primario" aria-expanded="false">+ Fazer ocorrência</button>
+      </div>
+      <div id="areaFormularioOcorrencia" class="hidden">
+      <div class="busca-linha">
+        <input id="buscaEstudante" placeholder="Digite o nome, turma ou RA do estudante">
+        <button id="localizarEstudante" type="button" class="btn btn-secundario">Localizar estudante</button>
+        <button id="limparBuscaEstudante" type="button" class="btn btn-secundario hidden">Limpar</button>
+      </div>
+      <div id="statusBuscaEstudante" class="busca-status"></div>
+      <form id="formOcorrencia" class="form-grid">
+        <div class="campo"><label>Sala / turma</label><select id="turmaOcorrencia" required><option value="">Selecione a sala...</option></select></div>
+        <div class="campo"><label>Aluno</label><select id="aluno" required disabled><option value="">Selecione primeiro a sala...</option></select></div>
+        <div class="campo"><label>Tipo da ocorrência</label>
+          <select id="tipo" required>
+            <option value="">Selecione...</option><option>Indisciplina</option><option>Agressão verbal</option>
+            <option>Agressão física</option><option>Bullying</option><option>Uso indevido de celular</option>
+            <option>Falta recorrente</option><option>Desrespeito</option><option>Outro</option>
+          </select>
+        </div>
+        <div class="campo full"><label>Descrição do ocorrido</label><textarea id="descricao" required placeholder="Relate objetivamente o que aconteceu."></textarea></div>
+        <div class="campo full"><label>Providência inicial tomada pelo professor</label><textarea id="providenciaProfessor" required placeholder="Ex.: orientação ao aluno, mudança de lugar, conversa individual..."></textarea></div>
+        <button class="btn btn-primario campo full" type="submit">Registrar e enviar à direção</button>
+      </form>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px">
+      <div class="cabecalho-secao"><h2 id="tituloListaOcorrencias">Minhas ocorrências</h2></div>
+      <div class="abas-ocorrencias">
+        <button id="btnMinhasOcorrencias" type="button" class="btn aba-ocorrencia ativa">Minhas ocorrências</button>
+        <button id="btnOcorrenciasAluno" type="button" class="btn aba-ocorrencia">Ocorrências por aluno</button>
+      </div>
+      <div class="filtros-grid">
+        <div class="campo"><label>Aluno</label><select id="filtroAlunoOcorrencia"><option value="">Todos os alunos</option></select></div>
+        <div class="campo"><label>Série / turma</label><select id="filtroSerieOcorrencia"><option value="">Todas as séries</option></select></div>
+        <div class="campo"><label>Data</label><input id="filtroDataOcorrencia" type="date"></div>
+        <button id="limparFiltrosOcorrencia" type="button" class="btn btn-secundario">Limpar filtros</button>
+      </div>
+      <div id="statusBuscaOcorrencia" class="busca-status" style="margin-top:10px"></div>
+      <div id="listaOcorrencias"></div>
+    </section>
+  </main>
+  <footer class="rodape">Criado e desenvolvido por Vania Oliveira</footer>
 </div>
 
-<div class="secao-painel" id="secaoAtividades">
-<div class="card">
-<div class="topo">
-<div>
-<h3>📝 Área de Atividades</h3>
-<p class="muted">Crie atividades para sua turma. Depois conectaremos este módulo ao Banco de Questões e ao Painel do Estudante.</p>
+<div id="modal" class="modal hidden">
+  <div class="modal-box">
+    <div class="modal-head"><h2>Detalhes da ocorrência</h2><button id="fecharModal" class="btn btn-secundario">Fechar</button></div>
+    <div id="detalhesOcorrencia"></div>
+  </div>
 </div>
-<button class="btn-cinza" onclick="mostrarSecaoProfessor('secaoDashboard')">← Voltar ao Dashboard</button>
-</div>
-</div>
-<div class="card">
-<h3>➕ Criar atividade</h3>
-<input id="atividadeQuestaoOficialId" type="hidden"/>
-<div class="aviso" id="avisoQuestaoSelecionada" style="display:none;"></div>
-<div class="grid-form">
-<input id="atividadeTitulo" placeholder="Título da atividade. Ex.: Sistema monetário" type="text"/>
-<input id="atividadeRecompensa" min="0" placeholder="Recompensa em Merit$" step="0.01" type="number"/>
-<input id="atividadePrazo" type="date"/>
-<select id="atividadeStatus">
-<option value="Ativa">Ativa</option>
-<option value="Rascunho">Rascunho</option>
-<option value="Encerrada">Encerrada</option>
-</select>
-</div>
-<textarea id="atividadeDescricao" placeholder="Descrição da atividade / orientações para os estudantes"></textarea>
-<textarea id="atividadeEnunciado" placeholder="Enunciado da questão que o estudante deverá responder"></textarea>
-<div class="grid-form">
-<input id="alternativaA" placeholder="Alternativa A" type="text"/>
-<input id="alternativaB" placeholder="Alternativa B" type="text"/>
-<input id="alternativaC" placeholder="Alternativa C" type="text"/>
-<input id="alternativaD" placeholder="Alternativa D" type="text"/>
-<select id="alternativaCorreta">
-<option value="">Selecione a alternativa correta</option>
-<option value="A">Alternativa A</option>
-<option value="B">Alternativa B</option>
-<option value="C">Alternativa C</option>
-<option value="D">Alternativa D</option>
-</select>
-</div>
-<small class="muted">Você pode criar uma questão própria ou escolher uma questão do Banco Oficial abaixo. O Painel Estudante usará esses dados para corrigir automaticamente e liberar a recompensa.</small>
-<button class="btn-verde" onclick="salvarAtividade()" style="width:100%; margin-left:0; margin-right:0;">Salvar atividade</button>
-<div class="aviso" id="avisoAtividades" style="display:none;"></div>
-</div>
-<div class="card">
-<h3>📚 Usar Banco Oficial de Questões</h3>
-<p class="muted">Escolha uma questão cadastrada pelo ADM. <b>Usar</b> preenche o formulário para edição. <b>Liberar</b> já transforma a questão em atividade ativa da sua turma.</p>
-<div class="filtros">
-<input id="buscaQuestaoOficial" onkeyup="filtrarQuestoesOficiais()" placeholder="🔍 Buscar por tema, código, enunciado..." type="text"/>
-<select id="filtroQuestaoOficialDificuldade" onchange="filtrarQuestoesOficiais()">
-<option value="">Todos os níveis</option>
-<option value="Fácil">Fácil</option>
-<option value="Médio">Médio</option>
-<option value="Difícil">Difícil</option>
-</select>
-<button class="btn-verde" onclick="carregarQuestoesOficiais()">🔄 Carregar Banco Oficial</button>
-</div>
-<div class="aviso" id="avisoQuestoesOficiais" style="display:none;"></div>
-<div class="table-wrap">
-<table>
-<thead>
-<tr>
-<th>Código</th>
-<th>Disciplina</th>
-<th>Série</th>
-<th>Tema</th>
-<th>Dificuldade</th>
-<th>Enunciado</th>
-<th>Correta</th>
-<th>Ação</th>
-</tr>
-</thead>
-<tbody id="tabelaQuestoesOficiais"><tr><td colspan="8">Clique em “Carregar Banco Oficial”.</td></tr></tbody>
-</table>
-</div>
-</div>
-<div class="card">
-<h3>📋 Minhas atividades</h3>
-<p class="muted">A tabela mostra as atividades criadas para a escola, série e turma vinculadas ao seu cadastro.</p>
-<div class="table-wrap">
-<table>
-<thead>
-<tr>
-<th>Título</th>
-<th>Turma</th>
-<th>Recompensa</th>
-<th>Prazo</th>
-<th>Status</th>
-<th>Enunciado</th>
-<th>Correta</th>
-<th>Descrição</th>
-<th>Origem</th>
-<th>Ações</th>
-</tr>
-</thead>
-<tbody id="tabelaAtividades"><tr><td colspan="10">Nenhuma atividade carregada ainda.</td></tr></tbody>
-</table>
-</div>
-</div>
-</div>
-<div class="modal-fundo" id="modalMovimento">
-<div class="modal">
-<h3>💰 Movimentar dinheiro</h3>
-<p class="muted" id="alunoMovimentoInfo"></p>
-<input id="valorMovimento" min="0" placeholder="Valor em Merit$" step="0.01" type="number"/>
-<select id="tipoMovimento">
-<option value="dar">Dar dinheiro ao estudante</option>
-<option value="retirar">Retirar dinheiro do estudante</option>
-</select>
-<input id="obsMovimento" placeholder="Observação / motivo da movimentação" type="text"/>
-<button class="btn-verde" onclick="confirmarMovimento()" style="width:100%;">Confirmar movimentação</button>
-<button class="btn-cinza" onclick="fecharModalMovimento()" style="width:100%;">Cancelar</button>
-</div>
-</div>
+<div id="toast" class="toast hidden"></div>
+
 <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, updateDoc, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey:"AIzaSyCG_jh9lDlTj8mAKKm6sYhI9XNSP_OLjFY",
-            authDomain:"banco-sandra.firebaseapp.com",
-            projectId:"banco-sandra",
-            storageBucket:"banco-sandra.firebasestorage.app",
-            messagingSenderId:"506761695598",
-            appId:"1:506761695598:web:783a6bfa6d5ff0b143317f"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        let professorLogado = null;
-        let alunosDaTurma = [];
-        let atividadesDaTurma = [];
-        let questoesOficiais = [];
-        let alunoSelecionadoMovimento = null;
-
-        function dinheiro(valor) {
-            return `M$ ${parseFloat(valor || 0).toFixed(2).replace('.', ',')}`;
-        }
-
-        function textoSeguro(valor, padrao='-') {
-            const v = String(valor ?? '').trim();
-            return v || padrao;
-        }
-
-        function normalizar(valor) {
-            return String(valor || '').trim().toLowerCase();
-        }
-
-        function hojeISO() {
-            return new Date().toISOString().slice(0, 10);
-        }
-
-        function dataBR(valor) {
-            if (!valor) return '-';
-            const d = new Date(String(valor) + 'T00:00:00');
-            return isNaN(d.getTime()) ? String(valor) : d.toLocaleDateString('pt-BR');
-        }
-
-        function congeladoVencido(aluno) {
-            const valor = parseFloat(aluno?.saldoCongelado || 0);
-            const ate = aluno?.congeladoAte || '';
-            return valor > 0 && ate && ate <= hojeISO();
-        }
-
-        function alunoPertenceAoProfessor(aluno, professor) {
-            const porId = aluno.escolaId === professor.escolaId && aluno.serieId === professor.serieId && aluno.turmaId === professor.turmaId;
-            const porNome = normalizar(aluno.escola) === normalizar(professor.escola) && normalizar(aluno.serie) === normalizar(professor.serie) && normalizar(aluno.turma) === normalizar(professor.turma);
-            return porId || porNome;
-        }
-
-        window.toggleSenhaLogin = () => {
-            const campo = document.getElementById('senhaProfessor');
-            campo.type = campo.type === 'password' ? 'text' : 'password';
-        };
-
-        async function localizarProfessorPorEmail(email) {
-            const snap = await getDocs(collection(db, 'professores'));
-            let encontrado = null;
-            snap.forEach(docSnap => {
-                const p = { id: docSnap.id, ...docSnap.data() };
-                if (normalizar(p.email) === normalizar(email)) encontrado = p;
-            });
-            return encontrado;
-        }
-
-        window.entrarProfessor = async () => {
-            const email = document.getElementById('emailProfessor').value.trim().toLowerCase();
-            const senha = document.getElementById('senhaProfessor').value.trim();
-            const erro = document.getElementById('erroLogin');
-            erro.style.display = 'none';
-            erro.innerText = '';
-
-            if (!email || !senha) {
-                erro.innerText = 'Digite o e-mail e a senha do professor.';
-                erro.style.display = 'block';
-                return;
-            }
-
-            try {
-                await signInWithEmailAndPassword(auth, email, senha);
-                const encontrado = await localizarProfessorPorEmail(email);
-
-                if (!encontrado) {
-                    await signOut(auth);
-                    erro.innerText = 'Login existe no Firebase Authentication, mas este e-mail não está cadastrado na coleção professores.';
-                    erro.style.display = 'block';
-                    return;
-                }
-
-                if ((encontrado.status || 'Ativo') !== 'Ativo') {
-                    await signOut(auth);
-                    erro.innerText = 'Este professor está inativo. Verifique o cadastro no Painel Administrativo.';
-                    erro.style.display = 'block';
-                    return;
-                }
-
-                professorLogado = encontrado;
-                localStorage.setItem('professorLogadoEletivaBank', JSON.stringify(professorLogado));
-                abrirPainelProfessor();
-                await carregarAlunosDoProfessor();
-                await carregarAtividadesDoProfessor();
-            } catch (e) {
-                console.error(e);
-                if (e.code === 'auth/invalid-email') erro.innerText = 'O login precisa ser um e-mail válido, por exemplo: professor@email.com.';
-                else if (e.code === 'auth/invalid-credential' || e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password') erro.innerText = 'E-mail ou senha incorretos no Firebase Authentication.';
-                else if (e.code === 'permission-denied') erro.innerText = 'Login feito, mas o Firestore bloqueou a leitura. Publique as regras atualizadas para professores e usuarios.';
-                else erro.innerText = 'Não foi possível acessar. Confira se o professor existe no Authentication e na coleção professores.';
-                erro.style.display = 'block';
-            }
-        };
-
-        function abrirPainelProfessor() {
-            document.getElementById('login').style.display = 'none';
-            document.getElementById('painel').style.display = 'block';
-            document.getElementById('secaoDashboard').style.display = 'block';
-            document.getElementById('secaoAtividades').style.display = 'none';
-            document.getElementById('dadosProfessor').innerHTML = `<b>${textoSeguro(professorLogado.nome)}</b> • ${textoSeguro(professorLogado.email)} • ${textoSeguro(professorLogado.disciplina)}`;
-            document.getElementById('vinculoProfessor').innerHTML = `
-                <span class="badge">🏫 ${textoSeguro(professorLogado.escola, 'Sem escola')}</span>
-                <span class="badge">📚 ${textoSeguro(professorLogado.serie, 'Sem série')}</span>
-                <span class="badge">👥 ${textoSeguro(professorLogado.turma, 'Sem turma')}</span>
-            `;
-        }
-
-        window.sairProfessor = async () => {
-            localStorage.removeItem('professorLogadoEletivaBank');
-            professorLogado = null;
-            try { await signOut(auth); } catch(e) { console.warn(e); }
-            window.location.reload();
-        };
-
-        window.carregarAlunosDoProfessor = async () => {
-            if (!professorLogado) return;
-            const aviso = document.getElementById('avisoAlunos');
-            aviso.style.display = 'none';
-            aviso.innerText = '';
-
-            try {
-                const snap = await getDocs(collection(db, 'usuarios'));
-                alunosDaTurma = [];
-                snap.forEach(docSnap => {
-                    const aluno = { id: docSnap.id, ...docSnap.data() };
-                    if (alunoPertenceAoProfessor(aluno, professorLogado)) alunosDaTurma.push(aluno);
-                });
-                alunosDaTurma.sort((a,b)=>(a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
-                renderizarAlunos();
-
-                if (alunosDaTurma.length === 0) {
-                    aviso.innerText = 'Nenhum estudante encontrado para essa escola, série e turma. Verifique se os alunos foram vinculados aos mesmos cadastros mestres usados no professor.';
-                    aviso.style.display = 'block';
-                }
-            } catch (e) {
-                console.error(e);
-                aviso.innerText = 'Não foi possível carregar os estudantes. Se aparecer permission-denied, ajuste as regras do Firestore para permitir leitura da coleção usuarios pelo Painel Professor.';
-                aviso.style.display = 'block';
-            }
-        };
-
-        function renderizarAlunos() {
-            const tbody = document.getElementById('tabelaAlunos');
-            tbody.innerHTML = '';
-            let somaSaldo = 0;
-            let somaPoupanca = 0;
-            let somaCongelado = 0;
-            let alunoMaior = null;
-
-            alunosDaTurma.forEach(a => {
-                const saldo = parseFloat(a.saldo || 0);
-                const poupanca = parseFloat(a.poupanca || 0);
-                const saldoCongelado = parseFloat(a.saldoCongelado || 0);
-                somaSaldo += saldo;
-                somaPoupanca += poupanca;
-                somaCongelado += saldoCongelado;
-                if (!alunoMaior || saldo > parseFloat(alunoMaior.saldo || 0)) alunoMaior = a;
-
-                const status = a.status || 'Ativo';
-                const classeStatus = status === 'Ativo' ? 'status-ativo' : 'status-inativo';
-                const textoCongelado = saldoCongelado > 0
-                    ? `<span class="status-congelado">🧊 ${dinheiro(saldoCongelado)}<br><small>até ${dataBR(a.congeladoAte)}</small></span>`
-                    : '<small>-</small>';
-                const botaoDescongelar = saldoCongelado > 0
-                    ? `<button class="btn-verde" onclick="descongelarAlunoProfessor('${a.id}')">Descongelar</button>`
-                    : '';
-                tbody.innerHTML += `<tr data-status="${status}">
-                    <td>${textoSeguro(a.nome)}</td>
-                    <td>${textoSeguro(a.id)}</td>
-                    <td>${textoSeguro(a.escola, 'Sem escola')}</td>
-                    <td>${textoSeguro(a.serie, 'Sem série')}</td>
-                    <td>${textoSeguro(a.turma, 'Sem turma')}</td>
-                    <td>${dinheiro(saldo)}</td>
-                    <td>${textoCongelado}</td>
-                    <td>${dinheiro(poupanca)}</td>
-                    <td><span class="${classeStatus}">${status}</span></td>
-                    <td><button class="btn-azul" onclick="abrirMovimento('${a.id}')">💰 Dar/Retirar</button>${botaoDescongelar}</td>
-                </tr>`;
-            });
-
-            document.getElementById('totalAlunos').innerText = alunosDaTurma.length;
-            document.getElementById('somaSaldos').innerText = dinheiro(somaSaldo);
-            document.getElementById('somaPoupancas').innerText = dinheiro(somaPoupanca);
-            document.getElementById('somaCongelado').innerText = dinheiro(somaCongelado);
-            document.getElementById('maiorSaldo').innerText = alunoMaior ? `${alunoMaior.nome || '-'} — ${dinheiro(alunoMaior.saldo || 0)}` : '-';
-            filtrarAlunos();
-        }
-
-
-        window.congelarTurmaProfessor = async () => {
-            if (!professorLogado) return alert('Sessão inválida. Entre novamente no painel.');
-
-            const aviso = document.getElementById('avisoCongelamentoProfessor');
-            if (aviso) { aviso.style.display = 'none'; aviso.innerText = ''; }
-
-            const dataLimite = document.getElementById('congelaProfessorAte')?.value || '';
-            const motivo = document.getElementById('congelaProfessorMotivo')?.value.trim() || 'Dinheiro congelado pelo professor';
-
-            if (!dataLimite || !/^\d{4}-\d{2}-\d{2}$/.test(dataLimite)) return alert('Selecione uma data válida.');
-
-            const selecionados = alunosDaTurma.filter(aluno => parseFloat(aluno.saldo || 0) > 0);
-            if (!selecionados.length) return alert('Nenhum estudante da sua turma tem saldo livre para congelar.');
-
-            const total = selecionados.reduce((s, aluno) => s + parseFloat(aluno.saldo || 0), 0);
-            if (!confirm(`Congelar TODO o saldo livre de ${selecionados.length} estudante(s) da sua turma?\n\nTurma: ${professorLogado.turma || '-'}\nTotal congelado: ${dinheiro(total)}\nAté: ${dataBR(dataLimite)}\n\nGanhos recebidos depois continuarão como saldo livre.`)) return;
-
-            try {
-                for (const aluno of selecionados) {
-                    const valor = parseFloat(aluno.saldo || 0);
-                    const congeladoAtual = parseFloat(aluno.saldoCongelado || 0);
-                    await updateDoc(doc(db, 'usuarios', aluno.id), {
-                        saldo: 0,
-                        saldoCongelado: congeladoAtual + valor,
-                        congeladoAte: dataLimite,
-                        motivoCongelamento: motivo,
-                        congeladoPor: `PROFESSOR:${professorLogado.id || professorLogado.email || ''}`,
-                        dataCongelamento: serverTimestamp()
-                    });
-                    await addDoc(collection(db, 'transacoes'), {
-                        origem: `PROFESSOR:${professorLogado.id || professorLogado.email}`,
-                        professorId: professorLogado.id || '',
-                        professorNome: professorLogado.nome || '',
-                        professorEmail: professorLogado.email || '',
-                        destino: aluno.id,
-                        nomeDestino: aluno.nome || '',
-                        valor: -valor,
-                        tipo: 'congelamento_professor',
-                        obs: `${motivo}. Todo o saldo livre foi congelado até ${dataBR(dataLimite)}.`,
-                        escolaId: professorLogado.escolaId || aluno.escolaId || '',
-                        serieId: professorLogado.serieId || aluno.serieId || '',
-                        turmaId: professorLogado.turmaId || aluno.turmaId || '',
-                        data: serverTimestamp()
-                    });
-                }
-
-                if (aviso) {
-                    aviso.innerText = `Congelamento concluído: ${selecionados.length} estudante(s), total ${dinheiro(total)}.`;
-                    aviso.style.display = 'block';
-                }
-                alert('Saldo livre da turma congelado com sucesso!');
-                await carregarAlunosDoProfessor();
-            } catch (e) {
-                console.error(e);
-                alert('Não foi possível congelar a turma. Se aparecer permission-denied, libere update em usuarios e create em transacoes para professores.');
-            }
-        };
-
-        window.descongelarAlunoProfessor = async (alunoId) => {
-            if (!professorLogado) return alert('Sessão inválida. Entre novamente no painel.');
-            const aluno = alunosDaTurma.find(a => a.id === alunoId);
-            if (!aluno) return alert('Estudante não encontrado na sua turma.');
-
-            const valor = parseFloat(aluno.saldoCongelado || 0);
-            if (valor <= 0) return alert('Este estudante não tem dinheiro congelado.');
-
-            const dataLimite = aluno.congeladoAte || '';
-            if (dataLimite && dataLimite > hojeISO()) {
-                const confirma = confirm(`A data de descongelamento é ${dataBR(dataLimite)}. Deseja descongelar antes mesmo assim?`);
-                if (!confirma) return;
-            }
-
-            const saldoAtual = parseFloat(aluno.saldo || 0);
-            try {
-                await updateDoc(doc(db, 'usuarios', aluno.id), {
-                    saldo: saldoAtual + valor,
-                    saldoCongelado: 0,
-                    congeladoAte: '',
-                    motivoCongelamento: '',
-                    dataDescongelamento: serverTimestamp()
-                });
-                await addDoc(collection(db, 'transacoes'), {
-                    origem: `PROFESSOR:${professorLogado.id || professorLogado.email}`,
-                    professorId: professorLogado.id || '',
-                    professorNome: professorLogado.nome || '',
-                    professorEmail: professorLogado.email || '',
-                    destino: aluno.id,
-                    nomeDestino: aluno.nome || '',
-                    valor: valor,
-                    tipo: 'descongelamento_professor',
-                    obs: 'Valor descongelado pelo professor e somado ao saldo livre do estudante.',
-                    escolaId: professorLogado.escolaId || aluno.escolaId || '',
-                    serieId: professorLogado.serieId || aluno.serieId || '',
-                    turmaId: professorLogado.turmaId || aluno.turmaId || '',
-                    data: serverTimestamp()
-                });
-                alert('Dinheiro descongelado e somado ao saldo livre do estudante.');
-                await carregarAlunosDoProfessor();
-            } catch (e) {
-                console.error(e);
-                alert('Não foi possível descongelar. Se aparecer permission-denied, ajuste as regras do Firestore.');
-            }
-        };
-
-        window.descongelarVencidosProfessor = async () => {
-            if (!professorLogado) return alert('Sessão inválida. Entre novamente no painel.');
-            const vencidos = alunosDaTurma.filter(congeladoVencido);
-            if (!vencidos.length) return alert('Não há valores vencidos para descongelar na sua turma.');
-            if (!confirm(`Encontramos ${vencidos.length} estudante(s) com dinheiro congelado vencido. Deseja descongelar todos agora?`)) return;
-
-            try {
-                for (const aluno of vencidos) {
-                    const valor = parseFloat(aluno.saldoCongelado || 0);
-                    const saldoAtual = parseFloat(aluno.saldo || 0);
-                    await updateDoc(doc(db, 'usuarios', aluno.id), {
-                        saldo: saldoAtual + valor,
-                        saldoCongelado: 0,
-                        congeladoAte: '',
-                        motivoCongelamento: '',
-                        dataDescongelamento: serverTimestamp()
-                    });
-                    await addDoc(collection(db, 'transacoes'), {
-                        origem: `PROFESSOR:${professorLogado.id || professorLogado.email}`,
-                        professorId: professorLogado.id || '',
-                        professorNome: professorLogado.nome || '',
-                        professorEmail: professorLogado.email || '',
-                        destino: aluno.id,
-                        nomeDestino: aluno.nome || '',
-                        valor: valor,
-                        tipo: 'descongelamento_vencido_professor',
-                        obs: 'Valor congelado vencido foi descongelado pelo professor.',
-                        escolaId: professorLogado.escolaId || aluno.escolaId || '',
-                        serieId: professorLogado.serieId || aluno.serieId || '',
-                        turmaId: professorLogado.turmaId || aluno.turmaId || '',
-                        data: serverTimestamp()
-                    });
-                }
-                alert('Valores vencidos da turma foram descongelados com sucesso.');
-                await carregarAlunosDoProfessor();
-            } catch (e) {
-                console.error(e);
-                alert('Não foi possível descongelar os vencidos. Verifique as regras do Firestore.');
-            }
-        };
-
-
-        window.abrirMovimento = (alunoId) => {
-            alunoSelecionadoMovimento = alunosDaTurma.find(a => a.id === alunoId);
-            if (!alunoSelecionadoMovimento) return alert('Estudante não encontrado na lista do professor.');
-
-            document.getElementById('alunoMovimentoInfo').innerText = `${alunoSelecionadoMovimento.nome || 'Estudante'} • Saldo atual: ${dinheiro(alunoSelecionadoMovimento.saldo || 0)}`;
-            document.getElementById('valorMovimento').value = '';
-            document.getElementById('tipoMovimento').value = 'dar';
-            document.getElementById('obsMovimento').value = '';
-            document.getElementById('modalMovimento').style.display = 'flex';
-        };
-
-        window.fecharModalMovimento = () => {
-            document.getElementById('modalMovimento').style.display = 'none';
-            alunoSelecionadoMovimento = null;
-        };
-
-        window.confirmarMovimento = async () => {
-            if (!professorLogado || !alunoSelecionadoMovimento) return alert('Sessão inválida. Entre novamente no painel.');
-
-            const valorDigitado = parseFloat(document.getElementById('valorMovimento').value);
-            const tipo = document.getElementById('tipoMovimento').value;
-            const obs = document.getElementById('obsMovimento').value.trim();
-
-            if (isNaN(valorDigitado) || valorDigitado <= 0) return alert('Digite um valor maior que zero.');
-            if (!obs) return alert('Digite uma observação para registrar o motivo.');
-
-            const valorFinal = tipo === 'retirar' ? -Math.abs(valorDigitado) : Math.abs(valorDigitado);
-            const saldoAtual = parseFloat(alunoSelecionadoMovimento.saldo || 0);
-            const novoSaldo = saldoAtual + valorFinal;
-
-            if (novoSaldo < 0 && !confirm('O saldo ficará negativo. Deseja continuar?')) return;
-
-            try {
-                await updateDoc(doc(db, 'usuarios', alunoSelecionadoMovimento.id), { saldo: novoSaldo });
-
-                await addDoc(collection(db, 'transacoes'), {
-                    origem: `PROFESSOR:${professorLogado.id || professorLogado.email}`,
-                    professorId: professorLogado.id || '',
-                    professorNome: professorLogado.nome || '',
-                    professorEmail: professorLogado.email || '',
-                    destino: alunoSelecionadoMovimento.id,
-                    nomeDestino: alunoSelecionadoMovimento.nome || '',
-                    valor: valorFinal,
-                    tipo: tipo === 'retirar' ? 'retirada_professor' : 'credito_professor',
-                    obs: obs,
-                    escolaId: professorLogado.escolaId || alunoSelecionadoMovimento.escolaId || '',
-                    serieId: professorLogado.serieId || alunoSelecionadoMovimento.serieId || '',
-                    turmaId: professorLogado.turmaId || alunoSelecionadoMovimento.turmaId || '',
-                    data: serverTimestamp()
-                });
-
-                alert('Movimentação registrada com sucesso!');
-                fecharModalMovimento();
-                await carregarAlunosDoProfessor();
-            } catch (e) {
-                console.error(e);
-                alert('Não foi possível movimentar o dinheiro. Se aparecer permission-denied, libere escrita em usuarios e transacoes para professores nas regras do Firestore.');
-            }
-        };
-
-
-        function dataDaTransacao(t) {
-            if (t.data && t.data.toDate) return t.data.toDate();
-            if (t.criadaEm && t.criadaEm.toDate) return t.criadaEm.toDate();
-            if (t.dataCadastro && t.dataCadastro.toDate) return t.dataCadastro.toDate();
-            return null;
-        }
-
-        function escaparCSV(valor) {
-            const texto = String(valor ?? '').replace(/"/g, '""');
-            return `"${texto}"`;
-        }
-
-        function tipoTransacaoLegivel(t) {
-            const tipo = String(t.tipo || '').toLowerCase();
-            if (tipo.includes('congelamento_professor')) return 'Congelamento feito por professor';
-            if (tipo.includes('descongelamento')) return 'Descongelamento';
-            if (tipo.includes('retirada_professor')) return 'Retirada feita por professor';
-            if (tipo.includes('credito_professor')) return 'Recompensa dada por professor';
-            if (tipo.includes('pix')) return 'PIX';
-            if (String(t.origem || '').startsWith('PROFESSOR:')) return parseFloat(t.valor || 0) < 0 ? 'Retirada feita por professor' : 'Recompensa dada por professor';
-            if (String(t.origem || '').toUpperCase() === 'ADMIN') return 'Ajuste administrativo';
-            return tipo ? t.tipo : 'Movimentação';
-        }
-
-        function transacaoPertenceATurma(t, idsAlunosTurma, nomesAlunosTurma) {
-            const porVinculo =
-                String(t.escolaId || '') === String(professorLogado.escolaId || '') &&
-                String(t.serieId || '') === String(professorLogado.serieId || '') &&
-                String(t.turmaId || '') === String(professorLogado.turmaId || '');
-
-            const origemLimpa = String(t.origem || '').replace('PROFESSOR:', '');
-            const destinoLimpo = String(t.destino || t.nomeDestino || '').trim();
-            const nomeDestino = normalizar(t.nomeDestino || '');
-
-            const porAluno = idsAlunosTurma.has(origemLimpa) || idsAlunosTurma.has(destinoLimpo) || nomesAlunosTurma.has(nomeDestino);
-            return porVinculo || porAluno;
-        }
-
-        function dataDentroDoFiltro(dataObj) {
-            const inicio = document.getElementById('relatorioDataInicio')?.value || '';
-            const fim = document.getElementById('relatorioDataFim')?.value || '';
-            if (!dataObj) return true;
-            if (inicio) {
-                const di = new Date(inicio + 'T00:00:00');
-                if (dataObj < di) return false;
-            }
-            if (fim) {
-                const df = new Date(fim + 'T23:59:59');
-                if (dataObj > df) return false;
-            }
-            return true;
-        }
-
-        function ehRecompensaPorAtividade(t) {
-            const tipo = String(t.tipo || '').toLowerCase();
-            const origem = String(t.origem || '').toLowerCase();
-            return tipo.includes('recompensa_atividade') || origem === 'atividade' || !!t.atividadeId;
-        }
-
-        async function montarDadosRelatorioProfessor(tipoRelatorio) {
-            if (!professorLogado) throw new Error('Sessão inválida. Entre novamente no painel.');
-
-            const usuariosSnap = await getDocs(collection(db, 'usuarios'));
-            const mapaUsuarios = {};
-            const idsAlunosTurma = new Set(alunosDaTurma.map(a => a.id));
-            const nomesAlunosTurma = new Set(alunosDaTurma.map(a => normalizar(a.nome || '')));
-
-            usuariosSnap.forEach(docSnap => {
-                const u = { id: docSnap.id, ...docSnap.data() };
-                mapaUsuarios[u.id] = u.nome || u.id;
-                if (alunoPertenceAoProfessor(u, professorLogado)) {
-                    idsAlunosTurma.add(u.id);
-                    nomesAlunosTurma.add(normalizar(u.nome || ''));
-                }
-            });
-
-            const transSnap = await getDocs(collection(db, 'transacoes'));
-            const linhas = [];
-
-            transSnap.forEach(docSnap => {
-                const t = { id: docSnap.id, ...docSnap.data() };
-                if (!transacaoPertenceATurma(t, idsAlunosTurma, nomesAlunosTurma)) return;
-                if (tipoRelatorio === 'atividades' && !ehRecompensaPorAtividade(t)) return;
-
-                const dataObj = dataDaTransacao(t);
-                if (!dataDentroDoFiltro(dataObj)) return;
-
-                const origemBruta = String(t.origem || '').replace('PROFESSOR:', '');
-                const destinoBruto = String(t.destino || '').trim();
-                const origemNome = t.professorNome || t.nomeOrigem || mapaUsuarios[origemBruta] || origemBruta || 'Sistema/Administração';
-                const destinoNome = t.nomeDestino || mapaUsuarios[destinoBruto] || destinoBruto || 'Não informado';
-                const valor = parseFloat(t.valor || 0);
-
-                if (tipoRelatorio === 'atividades') {
-                    linhas.push({
-                        dataOrdenacao: dataObj ? dataObj.getTime() : 0,
-                        colunas: [
-                            dataObj ? dataObj.toLocaleDateString('pt-BR') : '-',
-                            dataObj ? dataObj.toLocaleTimeString('pt-BR') : '-',
-                            t.nomeOrigem || t.obs?.replace('Recompensa por atividade: ', '') || 'Atividade',
-                            destinoNome,
-                            dinheiro(valor),
-                            t.professorNome || t.professorEmail || professorLogado.nome || '-',
-                            t.obs || ''
-                        ]
-                    });
-                } else {
-                    linhas.push({
-                        dataOrdenacao: dataObj ? dataObj.getTime() : 0,
-                        colunas: [
-                            dataObj ? dataObj.toLocaleDateString('pt-BR') : '-',
-                            dataObj ? dataObj.toLocaleTimeString('pt-BR') : '-',
-                            tipoTransacaoLegivel(t),
-                            origemNome,
-                            destinoNome,
-                            t.obs || ''
-                        ]
-                    });
-                }
-            });
-
-            linhas.sort((a, b) => b.dataOrdenacao - a.dataOrdenacao);
-
-            const cabecalho = tipoRelatorio === 'atividades'
-                ? ['Data', 'Hora', 'Atividade', 'Estudante', 'Recompensa', 'Professor', 'Observação']
-                : ['Data', 'Hora', 'Tipo de movimentação', 'Nome de origem', 'Nome destino', 'Observação'];
-
-            return { cabecalho, linhas };
-        }
-
-        function renderizarRelatorioNaTela(cabecalho, linhas, tipoRelatorio) {
-            const tabela = document.getElementById('tabelaResultadoRelatorio');
-            const titulo = document.getElementById('tituloResultadoRelatorio');
-            if (!tabela) return;
-
-            titulo.innerText = tipoRelatorio === 'atividades'
-                ? 'Resultado — Recompensas por realização de atividades'
-                : 'Resultado — Movimentações gerais';
-
-            let html = '<thead><tr>' + cabecalho.map(c => `<th>${c}</th>`).join('') + '</tr></thead><tbody>';
-
-            if (!linhas.length) {
-                html += `<tr><td colspan="${cabecalho.length}" class="tabela-relatorio-vazia">Nenhum registro encontrado para este relatório.</td></tr>`;
-            } else {
-                linhas.forEach(l => {
-                    html += '<tr>' + l.colunas.map(c => `<td>${c || '-'}</td>`).join('') + '</tr>';
-                });
-            }
-
-            html += '</tbody>';
-            tabela.innerHTML = html;
-        }
-
-        window.visualizarRelatorioProfessor = async () => {
-            const tipoRelatorio = document.getElementById('tipoRelatorioProfessor').value;
-            const aviso = document.getElementById('avisoRelatorioProfessor');
-            if (aviso) { aviso.style.display = 'none'; aviso.innerText = ''; }
-
-            try {
-                const { cabecalho, linhas } = await montarDadosRelatorioProfessor(tipoRelatorio);
-                renderizarRelatorioNaTela(cabecalho, linhas, tipoRelatorio);
-                if (!linhas.length && aviso) {
-                    aviso.innerText = 'Nenhum registro encontrado para os filtros escolhidos.';
-                    aviso.style.display = 'block';
-                }
-            } catch (e) {
-                console.error(e);
-                if (aviso) {
-                    aviso.innerText = 'Não foi possível visualizar o relatório. Verifique as regras do Firestore para leitura de usuarios e transacoes.';
-                    aviso.style.display = 'block';
-                } else {
-                    alert('Não foi possível visualizar o relatório.');
-                }
-            }
-        };
-
-        window.baixarRelatorioProfessor = async () => {
-            const tipoRelatorio = document.getElementById('tipoRelatorioProfessor').value;
-            const aviso = document.getElementById('avisoRelatorioProfessor');
-            if (aviso) { aviso.style.display = 'none'; aviso.innerText = ''; }
-
-            try {
-                const { cabecalho, linhas } = await montarDadosRelatorioProfessor(tipoRelatorio);
-                if (!linhas.length) {
-                    if (aviso) {
-                        aviso.innerText = 'Nenhum registro encontrado para baixar.';
-                        aviso.style.display = 'block';
-                    } else {
-                        alert('Nenhum registro encontrado para baixar.');
-                    }
-                    return;
-                }
-
-                const csv = [cabecalho, ...linhas.map(l => l.colunas)]
-                    .map(linha => linha.map(escaparCSV).join(';'))
-                    .join('\n');
-
-                const blob = new Blob(['\ufeff', csv], { type: 'text/csv;charset=utf-8;' });
-                const a = document.createElement('a');
-                const turmaArquivo = String(professorLogado.turma || 'turma')
-                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-                    .replace(/[^a-zA-Z0-9]+/g, '_');
-                const nomeRelatorio = tipoRelatorio === 'atividades' ? 'recompensas_atividades' : 'movimentacoes_gerais';
-                a.href = URL.createObjectURL(blob);
-                a.download = `relatorio_${nomeRelatorio}_${turmaArquivo}.csv`;
-                a.click();
-                URL.revokeObjectURL(a.href);
-            } catch (e) {
-                console.error(e);
-                if (aviso) {
-                    aviso.innerText = 'Não foi possível baixar o relatório. Verifique as regras do Firestore para leitura de usuarios e transacoes.';
-                    aviso.style.display = 'block';
-                } else {
-                    alert('Não foi possível baixar o relatório.');
-                }
-            }
-        };
-
-        window.gerarRelatorioMovimentacoesTurma = async () => {
-            document.getElementById('tipoRelatorioProfessor').value = 'geral';
-            await mostrarSecaoProfessor('secaoRelatorios');
-            await visualizarRelatorioProfessor();
-        };
-
-        window.mostrarSecaoProfessor = async (id) => {
-            document.querySelectorAll('.secao-painel').forEach(secao => secao.style.display = 'none');
-            const alvo = document.getElementById(id);
-            if (alvo) alvo.style.display = 'block';
-            if (id === 'secaoAtividades') { await carregarAtividadesDoProfessor(); await carregarQuestoesOficiais(); }
-        };
-
-
-        function resumoTexto(valor, limite=90) {
-            const txt = String(valor || '').trim();
-            return txt.length > limite ? txt.slice(0, limite) + '...' : (txt || '-');
-        }
-
-        function questaoOficialPertenceASerie(q) {
-            if (!professorLogado) return false;
-            const mesmaSerieId = String(q.serieId || '') === String(professorLogado.serieId || '');
-            const mesmaSerieNome = normalizar(q.serie || '') === normalizar(professorLogado.serie || '');
-            return mesmaSerieId || mesmaSerieNome || !q.serieId;
-        }
-
-        window.carregarQuestoesOficiais = async () => {
-            const tbody = document.getElementById('tabelaQuestoesOficiais');
-            const aviso = document.getElementById('avisoQuestoesOficiais');
-            if (!tbody) return;
-            if (aviso) { aviso.style.display = 'none'; aviso.innerText = ''; }
-            try {
-                const snap = await getDocs(collection(db, 'questoes'));
-                questoesOficiais = [];
-                snap.forEach(docSnap => {
-                    const q = { id: docSnap.id, ...docSnap.data() };
-                    const status = q.status || 'Ativa';
-                    if (status === 'Ativa' && questaoOficialPertenceASerie(q)) questoesOficiais.push(q);
-                });
-                questoesOficiais.sort((a,b) => String(a.codigo || a.tema || '').localeCompare(String(b.codigo || b.tema || ''), 'pt-BR'));
-                renderizarQuestoesOficiais();
-                if (!questoesOficiais.length && aviso) {
-                    aviso.innerText = 'Nenhuma questão ativa do Banco Oficial encontrada para esta série. Confira o cadastro no Painel Administrativo.';
-                    aviso.style.display = 'block';
-                }
-            } catch (e) {
-                console.error(e);
-                tbody.innerHTML = '<tr><td colspan="8">⚠️ Não foi possível carregar o Banco Oficial. Verifique a leitura da coleção questoes nas regras do Firestore.</td></tr>';
-            }
-        };
-
-        function renderizarQuestoesOficiais() {
-            const tbody = document.getElementById('tabelaQuestoesOficiais');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-            if (!questoesOficiais.length) {
-                tbody.innerHTML = '<tr><td colspan="8">Nenhuma questão oficial disponível.</td></tr>';
-                return;
-            }
-            questoesOficiais.forEach(q => {
-                tbody.innerHTML += `<tr data-dificuldade="${q.dificuldade || ''}">
-                    <td>${textoSeguro(q.codigo || q.id)}</td>
-                    <td>${textoSeguro(q.disciplina)}</td>
-                    <td>${textoSeguro(q.serie, textoSeguro(professorLogado?.serie, ''))}</td>
-                    <td>${textoSeguro(q.tema)}</td>
-                    <td>${textoSeguro(q.dificuldade)}</td>
-                    <td>${resumoTexto(q.enunciado, 110)}</td>
-                    <td><b>${textoSeguro(q.correta)}</b></td>
-                    <td><button onclick="usarQuestaoOficial('${q.id}')" class="btn-verde">Usar</button><button onclick="liberarQuestaoOficial('${q.id}')" class="btn-azul">Liberar</button></td>
-                </tr>`;
-            });
-            filtrarQuestoesOficiais();
-        }
-
-        window.filtrarQuestoesOficiais = () => {
-            const busca = normalizar(document.getElementById('buscaQuestaoOficial')?.value || '');
-            const dificuldade = document.getElementById('filtroQuestaoOficialDificuldade')?.value || '';
-            document.querySelectorAll('#tabelaQuestoesOficiais tr').forEach(linha => {
-                const okBusca = normalizar(linha.innerText).includes(busca);
-                const okDif = !dificuldade || linha.dataset.dificuldade === dificuldade;
-                linha.style.display = (okBusca && okDif) ? '' : 'none';
-            });
-        };
-
-        window.usarQuestaoOficial = (questaoId) => {
-            const q = questoesOficiais.find(item => item.id === questaoId);
-            if (!q) return alert('Questão oficial não encontrada. Clique em carregar e tente novamente.');
-            const alternativas = q.alternativas || {};
-            document.getElementById('atividadeQuestaoOficialId').value = q.id;
-            document.getElementById('atividadeTitulo').value = q.tema ? `${q.tema} - ${q.codigo || 'Banco Oficial'}` : `Atividade - ${q.codigo || 'Banco Oficial'}`;
-            document.getElementById('atividadeDescricao').value = `Atividade criada a partir do Banco Oficial de Questões. Tema: ${q.tema || 'não informado'}.`;
-            document.getElementById('atividadeEnunciado').value = q.enunciado || '';
-            document.getElementById('alternativaA').value = q.alternativaA || alternativas.A || '';
-            document.getElementById('alternativaB').value = q.alternativaB || alternativas.B || '';
-            document.getElementById('alternativaC').value = q.alternativaC || alternativas.C || '';
-            document.getElementById('alternativaD').value = q.alternativaD || alternativas.D || '';
-            document.getElementById('alternativaCorreta').value = q.correta || q.alternativaCorreta || '';
-            const aviso = document.getElementById('avisoQuestaoSelecionada');
-            if (aviso) {
-                aviso.innerHTML = `📚 Questão oficial selecionada: <b>${q.codigo || q.id}</b> — ${q.tema || 'sem tema'}. Agora defina recompensa, prazo e salve a atividade.`;
-                aviso.style.display = 'block';
-            }
-            document.getElementById('atividadeTitulo').scrollIntoView({behavior:'smooth', block:'center'});
-        };
-
-        window.liberarQuestaoOficial = async (questaoId) => {
-            if (!professorLogado) return alert('Sessão inválida. Entre novamente no painel.');
-            const q = questoesOficiais.find(item => item.id === questaoId);
-            if (!q) return alert('Questão oficial não encontrada. Clique em carregar e tente novamente.');
-
-            const recompensaTexto = prompt('Recompensa em Merit$ para esta atividade:', '10');
-            if (recompensaTexto === null) return;
-            const recompensa = parseFloat(String(recompensaTexto).replace(',', '.'));
-            if (isNaN(recompensa) || recompensa < 0) return alert('Recompensa inválida.');
-
-            const prazo = prompt('Prazo da atividade no formato AAAA-MM-DD. Pode deixar em branco:', '');
-            if (prazo === null) return;
-
-            const alternativas = q.alternativas || {};
-            const alternativaA = q.alternativaA || alternativas.A || '';
-            const alternativaB = q.alternativaB || alternativas.B || '';
-            const alternativaC = q.alternativaC || alternativas.C || '';
-            const alternativaD = q.alternativaD || alternativas.D || '';
-            const correta = (q.correta || q.alternativaCorreta || '').trim().toUpperCase();
-
-            if (!q.enunciado || !alternativaA || !alternativaB || !alternativaC || !alternativaD || !correta) {
-                return alert('Essa questão oficial está incompleta. Confira enunciado, alternativas e alternativa correta no Painel Administrativo.');
-            }
-
-            const titulo = q.tema ? `${q.tema} - ${q.codigo || 'Banco Oficial'}` : `Atividade - ${q.codigo || 'Banco Oficial'}`;
-            const descricao = `Atividade liberada a partir do Banco Oficial de Questões. Tema: ${q.tema || 'não informado'}.`;
-
-            try {
-                await addDoc(collection(db, 'atividades'), {
-                    titulo,
-                    descricao,
-                    enunciado: q.enunciado || '',
-                    alternativas: { A: alternativaA, B: alternativaB, C: alternativaC, D: alternativaD },
-                    alternativaA,
-                    alternativaB,
-                    alternativaC,
-                    alternativaD,
-                    correta,
-                    alternativaCorreta: correta,
-                    recompensa,
-                    prazo: (prazo || '').trim(),
-                    status: 'Ativa',
-                    publicada: true,
-                    liberada: true,
-                    origemQuestao: 'Banco Oficial',
-                    questaoOficialId: q.id,
-                    codigoQuestao: q.codigo || q.id,
-                    disciplina: q.disciplina || '',
-                    tema: q.tema || '',
-                    habilidade: q.habilidade || '',
-                    dificuldade: q.dificuldade || '',
-                    professorId: professorLogado.id || '',
-                    professorNome: professorLogado.nome || '',
-                    professorEmail: professorLogado.email || '',
-                    escolaId: professorLogado.escolaId || '',
-                    escola: professorLogado.escola || '',
-                    escolaNome: professorLogado.escola || '',
-                    serieId: professorLogado.serieId || '',
-                    serie: professorLogado.serie || '',
-                    serieNome: professorLogado.serie || '',
-                    turmaId: professorLogado.turmaId || '',
-                    turma: professorLogado.turma || '',
-                    turmaNome: professorLogado.turma || '',
-                    turmaCompleta: professorLogado.turma || '',
-                    criadaEm: serverTimestamp()
-                });
-
-                alert('Questão liberada como atividade para a turma! Agora ela deve aparecer no Painel do Estudante.');
-                await carregarAtividadesDoProfessor();
-            } catch (e) {
-                console.error(e);
-                alert('Não foi possível liberar a questão. Se aparecer permission-denied, libere create na coleção atividades para professores.');
-            }
-        };
-
-        function atividadePertenceAoProfessor(atividade, professor) {
-            const porId = String(atividade.escolaId || '') === String(professor.escolaId || '') &&
-                String(atividade.serieId || '') === String(professor.serieId || '') &&
-                String(atividade.turmaId || '') === String(professor.turmaId || '');
-
-            const porNome = normalizar(atividade.escola) === normalizar(professor.escola) &&
-                normalizar(atividade.serie) === normalizar(professor.serie) &&
-                normalizar(atividade.turma) === normalizar(professor.turma);
-
-            const porProfessor = normalizar(atividade.professorEmail) === normalizar(professor.email) ||
-                String(atividade.professorId || '') === String(professor.id || '');
-
-            return (porId || porNome) && (porProfessor || !atividade.professorEmail);
-        }
-
-        function dataPrazoLegivel(valor) {
-            if (!valor) return '-';
-            if (valor.toDate) return valor.toDate().toLocaleDateString('pt-BR');
-            const data = new Date(valor + 'T00:00:00');
-            return isNaN(data.getTime()) ? String(valor) : data.toLocaleDateString('pt-BR');
-        }
-
-        window.carregarAtividadesDoProfessor = async () => {
-            if (!professorLogado) return;
-            const aviso = document.getElementById('avisoAtividades');
-            if (aviso) { aviso.style.display = 'none'; aviso.innerText = ''; }
-
-            try {
-                const snap = await getDocs(collection(db, 'atividades'));
-                atividadesDaTurma = [];
-                snap.forEach(docSnap => {
-                    const atividade = { id: docSnap.id, ...docSnap.data() };
-                    if (atividadePertenceAoProfessor(atividade, professorLogado)) atividadesDaTurma.push(atividade);
-                });
-                atividadesDaTurma.sort((a, b) => String(a.titulo || '').localeCompare(String(b.titulo || ''), 'pt-BR'));
-                renderizarAtividades();
-            } catch (e) {
-                console.error(e);
-                const tbody = document.getElementById('tabelaAtividades');
-                if (tbody) tbody.innerHTML = '<tr><td colspan="10">⚠️ Não foi possível carregar atividades. Se aparecer permission-denied, libere leitura da coleção atividades para professores.</td></tr>';
-                if (aviso) {
-                    aviso.innerText = 'Não foi possível carregar atividades. Verifique as regras do Firestore para a coleção atividades.';
-                    aviso.style.display = 'block';
-                }
-            }
-        };
-
-        function renderizarAtividades() {
-            const tbody = document.getElementById('tabelaAtividades');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-            if (!atividadesDaTurma.length) {
-                tbody.innerHTML = '<tr><td colspan="10">Nenhuma atividade criada para esta turma ainda.</td></tr>';
-                return;
-            }
-            atividadesDaTurma.forEach(a => {
-                tbody.innerHTML += `<tr>
-                    <td>${textoSeguro(a.titulo)}</td>
-                    <td>${textoSeguro(a.turma, textoSeguro(professorLogado.turma))}</td>
-                    <td>${dinheiro(a.recompensa || 0)}</td>
-                    <td>${dataPrazoLegivel(a.prazo)}</td>
-                    <td>${textoSeguro(a.status, 'Ativa')}</td>
-                    <td>${textoSeguro(a.enunciado)}</td>
-                    <td>${textoSeguro(a.correta || a.alternativaCorreta)}</td>
-                    <td>${textoSeguro(a.descricao)}</td>
-                    <td>${textoSeguro(a.origemQuestao || (a.questaoOficialId ? 'Banco Oficial' : 'Questão do Professor'))}</td>
-                    <td>
-                        <button onclick="editarAtividade('${a.id}')" class="btn-azul">Editar</button>
-                        <button onclick="excluirAtividade('${a.id}')" class="btn-vermelho">Excluir</button>
-                    </td>
-                </tr>`;
-            });
-        }
-
-
-        window.editarAtividade = async (atividadeId) => {
-            const atividade = atividadesDaTurma.find(a => a.id === atividadeId);
-            if (!atividade) return alert('Atividade não encontrada. Atualize a página e tente novamente.');
-
-            const titulo = prompt('Título da atividade:', atividade.titulo || '');
-            if (titulo === null) return;
-
-            const descricao = prompt('Descrição / orientações:', atividade.descricao || '');
-            if (descricao === null) return;
-
-            const enunciado = prompt('Enunciado da questão:', atividade.enunciado || '');
-            if (enunciado === null) return;
-
-            const alternativasAtuais = atividade.alternativas || {};
-            const alternativaA = prompt('Alternativa A:', atividade.alternativaA || alternativasAtuais.A || '');
-            if (alternativaA === null) return;
-            const alternativaB = prompt('Alternativa B:', atividade.alternativaB || alternativasAtuais.B || '');
-            if (alternativaB === null) return;
-            const alternativaC = prompt('Alternativa C:', atividade.alternativaC || alternativasAtuais.C || '');
-            if (alternativaC === null) return;
-            const alternativaD = prompt('Alternativa D:', atividade.alternativaD || alternativasAtuais.D || '');
-            if (alternativaD === null) return;
-
-            const alternativaCorreta = (prompt('Alternativa correta: A, B, C ou D', atividade.correta || atividade.alternativaCorreta || '') || '').trim().toUpperCase();
-            if (!['A','B','C','D'].includes(alternativaCorreta)) return alert('Alternativa correta inválida. Use A, B, C ou D.');
-
-            const recompensaTexto = prompt('Recompensa em Merit$:', atividade.recompensa ?? 0);
-            if (recompensaTexto === null) return;
-            const recompensa = parseFloat(String(recompensaTexto).replace(',', '.'));
-            if (isNaN(recompensa) || recompensa < 0) return alert('Recompensa inválida.');
-
-            const prazo = prompt('Prazo no formato AAAA-MM-DD:', atividade.prazo || '');
-            if (prazo === null) return;
-
-            const status = prompt('Status: Ativa, Rascunho ou Encerrada', atividade.status || 'Ativa');
-            if (status === null) return;
-            if (!['Ativa','Rascunho','Encerrada'].includes(status)) return alert('Status inválido. Use Ativa, Rascunho ou Encerrada.');
-
-            if (!titulo.trim() || !descricao.trim() || !enunciado.trim() || !alternativaA.trim() || !alternativaB.trim() || !alternativaC.trim() || !alternativaD.trim()) {
-                return alert('Nenhum campo principal pode ficar vazio.');
-            }
-
-            try {
-                await updateDoc(doc(db, 'atividades', atividadeId), {
-                    titulo: titulo.trim(),
-                    descricao: descricao.trim(),
-                    enunciado: enunciado.trim(),
-                    alternativas: {
-                        A: alternativaA.trim(),
-                        B: alternativaB.trim(),
-                        C: alternativaC.trim(),
-                        D: alternativaD.trim()
-                    },
-                    alternativaA: alternativaA.trim(),
-                    alternativaB: alternativaB.trim(),
-                    alternativaC: alternativaC.trim(),
-                    alternativaD: alternativaD.trim(),
-                    correta: alternativaCorreta,
-                    alternativaCorreta,
-                    recompensa,
-                    prazo: prazo.trim(),
-                    status,
-                    atualizadaEm: serverTimestamp()
-                });
-                alert('Atividade atualizada com sucesso!');
-                await carregarAtividadesDoProfessor();
-            } catch (e) {
-                console.error(e);
-                alert('Não foi possível editar a atividade. Se aparecer permission-denied, libere update na coleção atividades para professores.');
-            }
-        };
-
-        window.excluirAtividade = async (atividadeId) => {
-            const atividade = atividadesDaTurma.find(a => a.id === atividadeId);
-            if (!atividade) return alert('Atividade não encontrada. Atualize a página e tente novamente.');
-            if (!confirm(`Excluir a atividade "${atividade.titulo || 'sem título'}"? Essa ação não pode ser desfeita.`)) return;
-
-            try {
-                await deleteDoc(doc(db, 'atividades', atividadeId));
-                alert('Atividade excluída com sucesso!');
-                await carregarAtividadesDoProfessor();
-            } catch (e) {
-                console.error(e);
-                alert('Não foi possível excluir a atividade. Se aparecer permission-denied, libere delete na coleção atividades para professores.');
-            }
-        };
-
-        window.salvarAtividade = async () => {
-            if (!professorLogado) return alert('Sessão inválida. Entre novamente no painel.');
-
-            const titulo = document.getElementById('atividadeTitulo').value.trim();
-            const descricao = document.getElementById('atividadeDescricao').value.trim();
-            const enunciado = document.getElementById('atividadeEnunciado').value.trim();
-            const alternativaA = document.getElementById('alternativaA').value.trim();
-            const alternativaB = document.getElementById('alternativaB').value.trim();
-            const alternativaC = document.getElementById('alternativaC').value.trim();
-            const alternativaD = document.getElementById('alternativaD').value.trim();
-            const alternativaCorreta = document.getElementById('alternativaCorreta').value;
-            const recompensa = parseFloat(document.getElementById('atividadeRecompensa').value);
-            const prazo = document.getElementById('atividadePrazo').value;
-            const status = document.getElementById('atividadeStatus').value;
-
-            if (!titulo) return alert('Digite o título da atividade.');
-            if (!descricao) return alert('Digite a descrição da atividade.');
-            if (!enunciado) return alert('Digite o enunciado da questão.');
-            if (!alternativaA || !alternativaB || !alternativaC || !alternativaD) return alert('Preencha as quatro alternativas: A, B, C e D.');
-            if (!alternativaCorreta) return alert('Selecione a alternativa correta.');
-            if (isNaN(recompensa) || recompensa < 0) return alert('Digite uma recompensa válida.');
-
-            try {
-                await addDoc(collection(db, 'atividades'), {
-                    titulo,
-                    descricao,
-                    enunciado,
-                    alternativas: {
-                        A: alternativaA,
-                        B: alternativaB,
-                        C: alternativaC,
-                        D: alternativaD
-                    },
-                    alternativaA,
-                    alternativaB,
-                    alternativaC,
-                    alternativaD,
-                    correta: alternativaCorreta,
-                    alternativaCorreta,
-                    recompensa,
-                    prazo: prazo || '',
-                    status,
-                    questaoOficialId: document.getElementById('atividadeQuestaoOficialId').value || '',
-                    origemQuestao: document.getElementById('atividadeQuestaoOficialId').value ? 'Banco Oficial' : 'Questão do Professor',
-                    professorId: professorLogado.id || '',
-                    professorNome: professorLogado.nome || '',
-                    professorEmail: professorLogado.email || '',
-                    escolaId: professorLogado.escolaId || '',
-                    escola: professorLogado.escola || '',
-                    serieId: professorLogado.serieId || '',
-                    serie: professorLogado.serie || '',
-                    turmaId: professorLogado.turmaId || '',
-                    turma: professorLogado.turma || '',
-                    criadaEm: serverTimestamp()
-                });
-
-                document.getElementById('atividadeTitulo').value = '';
-                document.getElementById('atividadeDescricao').value = '';
-                document.getElementById('atividadeEnunciado').value = '';
-                document.getElementById('alternativaA').value = '';
-                document.getElementById('alternativaB').value = '';
-                document.getElementById('alternativaC').value = '';
-                document.getElementById('alternativaD').value = '';
-                document.getElementById('alternativaCorreta').value = '';
-                document.getElementById('atividadeQuestaoOficialId').value = '';
-                const avisoQuestao = document.getElementById('avisoQuestaoSelecionada');
-                if (avisoQuestao) { avisoQuestao.style.display = 'none'; avisoQuestao.innerText = ''; }
-                document.getElementById('atividadeRecompensa').value = '';
-                document.getElementById('atividadePrazo').value = '';
-                document.getElementById('atividadeStatus').value = 'Ativa';
-
-                alert('Atividade criada com sucesso!');
-                await carregarAtividadesDoProfessor();
-            } catch (e) {
-                console.error(e);
-                alert('Não foi possível salvar a atividade. Se aparecer permission-denied, libere escrita na coleção atividades para professores nas regras do Firestore.');
-            }
-        };
-
-        window.filtrarAlunos = () => {
-            const busca = normalizar(document.getElementById('buscaAluno').value);
-            const status = document.getElementById('filtroStatus').value;
-            document.querySelectorAll('#tabelaAlunos tr').forEach(linha => {
-                const okBusca = normalizar(linha.innerText).includes(busca);
-                const okStatus = !status || linha.dataset.status === status;
-                linha.style.display = okBusca && okStatus ? '' : 'none';
-            });
-        };
-
-        window.abrirVilaMerit=()=>{mostrarSecaoProfessor('secaoVila');};
-
-        onAuthStateChanged(auth, async (user) => {
-            const salvo = localStorage.getItem('professorLogadoEletivaBank');
-            if (user && salvo) {
-                try {
-                    professorLogado = JSON.parse(salvo);
-                    abrirPainelProfessor();
-                    await carregarAlunosDoProfessor();
-                    await carregarAtividadesDoProfessor();
-                } catch (e) {
-                    localStorage.removeItem('professorLogadoEletivaBank');
-                }
-            }
-        });
-    </script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getFirestore, doc, getDoc, collection, addDoc, onSnapshot, updateDoc, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCsfa0QzC0Nj4Zq9vG0BOd1rWcpYyWVBnU",
+  authDomain: "sistema-ocorrencia.firebaseapp.com",
+  projectId: "sistema-ocorrencia",
+  storageBucket: "sistema-ocorrencia.firebasestorage.app",
+  messagingSenderId: "728625275484",
+  appId: "1:728625275484:web:572e27749d6e53d308bc99"
+};
+
+const appFirebase=initializeApp(firebaseConfig, "professorApp");
+const auth=getAuth(appFirebase);
+setPersistence(auth, browserLocalPersistence).catch(erro => console.warn("Persistência da sessão não disponível:", erro));
+const db=getFirestore(appFirebase);
+const $=s=>document.querySelector(s);
+
+window.addEventListener("error", evento => {
+  console.error("Erro no Painel do Professor:", evento.error || evento.message);
+  const erro = document.querySelector("#erroLogin");
+  const login = document.querySelector("#loginArea");
+  const app = document.querySelector("#app");
+  if(app) app.classList.add("hidden");
+  if(login) login.classList.remove("hidden");
+  if(erro){
+    erro.textContent = "Erro ao iniciar o painel: " + (evento.error?.message || evento.message || "erro desconhecido");
+    erro.classList.remove("hidden");
+  }
+});
+
+window.addEventListener("unhandledrejection", evento => {
+  console.error("Falha no Painel do Professor:", evento.reason);
+  const erro = document.querySelector("#erroLogin");
+  const login = document.querySelector("#loginArea");
+  const app = document.querySelector("#app");
+  if(app) app.classList.add("hidden");
+  if(login) login.classList.remove("hidden");
+  if(erro){
+    erro.textContent = "Erro ao conectar ao Firebase: " + (evento.reason?.message || evento.reason?.code || "falha desconhecida");
+    erro.classList.remove("hidden");
+  }
+});
+
+let usuarioAtual=null, estudantes=[], ocorrencias=[];
+let filtroEstudante="";
+let filtroAlunoOcorrencia="";
+let filtroSerieOcorrencia="";
+let filtroDataOcorrencia="";
+let modoOcorrencias="minhas";
+let ocorrenciaEmEdicao=null;
+
+function normalizarBusca(valor=""){
+ return String(valor).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+}
+function esc(v=""){return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+function dataBR(v){if(!v)return"-";const d=v.toDate?v.toDate():new Date(v);return d.toLocaleString("pt-BR");}
+function toast(msg){$("#toast").textContent=msg;$("#toast").classList.remove("hidden");setTimeout(()=>$("#toast").classList.add("hidden"),3000);}
+async function carregarPerfil(uid){const s=await getDoc(doc(db,"usuariosSistema",uid));return s.exists()?s.data():null;}
+
+$("#formLogin").addEventListener("submit",async e=>{
+ e.preventDefault();$("#erroLogin").classList.add("hidden");
+ try{await signInWithEmailAndPassword(auth,$("#email").value.trim(),$("#senha").value);}
+ catch(err){
+   console.error("Erro de login:",err);
+   const mensagens={
+     "auth/invalid-credential":"E-mail ou senha incorretos.",
+     "auth/user-disabled":"Este usuário foi desativado.",
+     "auth/too-many-requests":"Muitas tentativas. Aguarde um pouco e tente novamente.",
+     "auth/network-request-failed":"Falha de internet ao acessar o Firebase."
+   };
+   $("#erroLogin").textContent=mensagens[err.code]||("Não foi possível entrar: "+(err.code||err.message));
+   $("#erroLogin").classList.remove("hidden");
+ }
+});
+$("#sair").onclick=()=>signOut(auth);
+$("#fecharModal").onclick=()=>$("#modal").classList.add("hidden");
+
+onAuthStateChanged(auth,async user=>{
+ try{
+   if(!user){
+     $("#loginArea").classList.remove("hidden");
+     $("#app").classList.add("hidden");
+     return;
+   }
+
+   const perfil=await carregarPerfil(user.uid);
+
+   if(!perfil){
+     await signOut(auth);
+     $("#erroLogin").textContent="Não existe perfil em usuariosSistema para este UID.";
+     $("#erroLogin").classList.remove("hidden");
+     return;
+   }
+
+   if(perfil.ativo!==true){
+     await signOut(auth);
+     $("#erroLogin").textContent="Este usuário está inativo no Firestore.";
+     $("#erroLogin").classList.remove("hidden");
+     return;
+   }
+
+   if(perfil.perfil!=="professor"){
+     await signOut(auth);
+     $("#erroLogin").textContent='O campo perfil deve ser exatamente "professor".';
+     $("#erroLogin").classList.remove("hidden");
+     return;
+   }
+
+   usuarioAtual={uid:user.uid,email:user.email,...perfil};
+   $("#nomeUsuario").textContent=perfil.nome||"Professor";
+   $("#emailUsuario").textContent=user.email;
+   $("#erroLogin").classList.add("hidden");
+   $("#loginArea").classList.add("hidden");
+   $("#app").classList.remove("hidden");
+   iniciarTempoReal();
+ }catch(erro){
+   console.error("Erro ao abrir o painel do professor:",erro);
+   $("#app").classList.add("hidden");
+   $("#loginArea").classList.remove("hidden");
+   $("#erroLogin").textContent="Não foi possível abrir o painel: "+(erro.code||erro.message||"erro desconhecido");
+   $("#erroLogin").classList.remove("hidden");
+ }
+});
+
+function iniciarTempoReal(){
+ onSnapshot(query(collection(db,"estudantes")),snap=>{
+   estudantes=snap.docs.map(d=>({id:d.id,...d.data()})).filter(a=>a.ativo!==false).sort((a,b)=>(a.nome||"").localeCompare(b.nome||""));
+   atualizarSalasOcorrencia();
+   atualizarListaEstudantes();
+   render();
+ },erro=>{
+   console.error("Erro ao carregar estudantes:",erro);
+   toast("Erro ao carregar estudantes: "+(erro.code||erro.message));
+ });
+ onSnapshot(query(collection(db,"ocorrencias")),snap=>{
+   ocorrencias=snap.docs.map(d=>({id:d.id,...d.data()})).filter(o=>o.excluida!==true).sort((a,b)=>{
+     const da=a.criadaEm?.toMillis?.()||0,dbb=b.criadaEm?.toMillis?.()||0;return dbb-da;
+   });
+   render();
+ },erro=>{
+   console.error("Erro ao carregar ocorrências:",erro);
+   toast("Erro ao carregar ocorrências: "+(erro.code||erro.message));
+ });
+}
+
+$("#formOcorrencia").addEventListener("submit",async e=>{
+ e.preventDefault();
+ const sala=$("#turmaOcorrencia").value;
+ const aluno=estudantes.find(a=>a.id===$("#aluno").value && String(a.turma||"").trim()===sala);
+ if(!sala){toast("Selecione a sala.");return;}
+ if(!aluno){toast("Selecione um estudante da sala escolhida.");return;}
+ const dadosFormulario={
+   alunoId:aluno.id,alunoNome:aluno.nome,alunoTurma:aluno.turma||"",
+   responsavelNome:aluno.responsavel||"",responsavelTelefone:aluno.contato||"",
+   tipo:$("#tipo").value,descricao:$("#descricao").value.trim(),
+   providenciaProfessor:$("#providenciaProfessor").value.trim(),
+   providencia:$("#providenciaProfessor").value.trim()
+ };
+ try{
+   if(ocorrenciaEmEdicao){
+     const atual=ocorrencias.find(o=>o.id===ocorrenciaEmEdicao);
+     if(!atual || atual.professorId!==usuarioAtual.uid || atual.abertaPelaDirecao===true){
+       toast("A direção já abriu esta ocorrência. A edição não é mais permitida.");
+       ocorrenciaEmEdicao=null;
+       render();
+       return;
+     }
+     await updateDoc(doc(db,"ocorrencias",ocorrenciaEmEdicao),{...dadosFormulario,editadaEm:serverTimestamp()});
+     toast("Ocorrência atualizada com sucesso.");
+   }else{
+     await addDoc(collection(db,"ocorrencias"),{
+       ...dadosFormulario,
+       professorId:usuarioAtual.uid,professorNome:usuarioAtual.nome||usuarioAtual.email,
+       professor:usuarioAtual.nome||usuarioAtual.email,
+       status:"Pendente",parecerGestor:"",respostaDiretor:"",providenciaDirecao:"",
+       abertaPelaDirecao:false,criadaEm:serverTimestamp()
+     });
+     toast("Ocorrência registrada. Ela já está disponível para a direção e para consulta dos professores.");
+   }
+   ocorrenciaEmEdicao=null;
+   e.target.reset();
+   $("#aluno").disabled=true;
+   $("#aluno").innerHTML='<option value="">Selecione primeiro a sala...</option>';
+   $("#areaFormularioOcorrencia").classList.add("hidden");
+   $("#alternarFormularioOcorrencia").textContent="+ Fazer ocorrência";
+   $("#alternarFormularioOcorrencia").setAttribute("aria-expanded","false");
+ }catch(erro){
+   console.error("Erro ao salvar ocorrência:",erro);
+   toast("Não foi possível salvar: "+(erro.code||erro.message));
+ }
+});
+
+
+function atualizarSalasOcorrencia(){
+ const salaAtual=$("#turmaOcorrencia").value;
+ const salas=[...new Set(estudantes.map(a=>String(a.turma||"").trim()).filter(Boolean))]
+   .sort((a,b)=>a.localeCompare(b, "pt-BR", {numeric:true}));
+ $("#turmaOcorrencia").innerHTML='<option value="">Selecione a sala...</option>'+
+   salas.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join("");
+ $("#turmaOcorrencia").value=salas.includes(salaAtual)?salaAtual:"";
+}
+
+function atualizarListaEstudantes(){
+ const sala=$("#turmaOcorrencia").value;
+ const termo=normalizarBusca(filtroEstudante);
+ let lista=sala ? estudantes.filter(a=>String(a.turma||"").trim()===sala) : [];
+
+ if(termo){
+   lista=lista.filter(a=>
+     normalizarBusca(a.nome).includes(termo) ||
+     normalizarBusca(`${a.ra||""}-${a.digito||""}`).includes(termo)
+   );
+ }
+
+ $("#aluno").disabled=!sala;
+ $("#aluno").innerHTML=!sala
+   ? '<option value="">Selecione primeiro a sala...</option>'
+   : '<option value="">Selecione o estudante...</option>'+lista.map(a=>`<option value="${a.id}">${esc(a.nome)} — RA ${esc(a.ra||"")}${a.digito?`-${esc(a.digito)}`:""}</option>`).join("");
+ $("#statusBuscaEstudante").textContent=!sala
+   ? "Escolha uma sala para carregar os estudantes."
+   : (termo ? `${lista.length} estudante(s) localizado(s) nessa sala.` : `${lista.length} estudante(s) nessa sala.`);
+}
+
+$("#turmaOcorrencia").addEventListener("change",()=>{
+ filtroEstudante="";
+ $("#buscaEstudante").value="";
+ $("#limparBuscaEstudante").classList.add("hidden");
+ atualizarListaEstudantes();
+});
+
+$("#alternarFormularioOcorrencia").addEventListener("click",()=>{
+ const area=$("#areaFormularioOcorrencia");
+ const abrir=area.classList.contains("hidden");
+ area.classList.toggle("hidden",!abrir);
+ if(!abrir && ocorrenciaEmEdicao){
+   ocorrenciaEmEdicao=null;
+   $("#formOcorrencia").reset();
+   $("#aluno").disabled=true;
+   $("#aluno").innerHTML='<option value="">Selecione primeiro a sala...</option>';
+ }
+ $("#alternarFormularioOcorrencia").textContent=abrir?"Fechar formulário":"+ Fazer ocorrência";
+ $("#alternarFormularioOcorrencia").setAttribute("aria-expanded",String(abrir));
+ if(abrir){
+   atualizarSalasOcorrencia();
+   atualizarListaEstudantes();
+   area.scrollIntoView({behavior:"smooth",block:"start"});
+ }
+});
+
+function executarBuscaEstudante(){
+ filtroEstudante=$("#buscaEstudante").value;
+ $("#limparBuscaEstudante").classList.toggle("hidden",!filtroEstudante.trim());
+ atualizarListaEstudantes();
+}
+$("#localizarEstudante").addEventListener("click",executarBuscaEstudante);
+$("#buscaEstudante").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();executarBuscaEstudante();}});
+$("#limparBuscaEstudante").addEventListener("click",()=>{
+ $("#buscaEstudante").value="";
+ filtroEstudante="";
+ $("#limparBuscaEstudante").classList.add("hidden");
+ atualizarListaEstudantes();
+});
+
+function definirModoOcorrencias(modo){
+ modoOcorrencias=modo;
+ const minhas=modo==="minhas";
+ $("#btnMinhasOcorrencias").classList.toggle("ativa",minhas);
+ $("#btnOcorrenciasAluno").classList.toggle("ativa",!minhas);
+ $("#tituloListaOcorrencias").textContent=minhas?"Minhas ocorrências":"Ocorrências por aluno";
+ if(minhas){
+   $("#filtroAlunoOcorrencia").value="";
+   filtroAlunoOcorrencia="";
+ }
+ render();
+}
+$("#btnMinhasOcorrencias").addEventListener("click",()=>definirModoOcorrencias("minhas"));
+$("#btnOcorrenciasAluno").addEventListener("click",()=>definirModoOcorrencias("aluno"));
+
+function atualizarOpcoesFiltrosOcorrencia(){
+ const alunoAtual=$("#filtroAlunoOcorrencia").value;
+ const serieAtual=$("#filtroSerieOcorrencia").value;
+ const alunos=[...new Set(ocorrencias.map(o=>o.alunoNome).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+ const series=[...new Set(ocorrencias.map(o=>o.alunoTurma).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+ $("#filtroAlunoOcorrencia").innerHTML='<option value="">Todos os alunos</option>'+alunos.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
+ $("#filtroSerieOcorrencia").innerHTML='<option value="">Todas as séries</option>'+series.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
+ $("#filtroAlunoOcorrencia").value=alunos.includes(alunoAtual)?alunoAtual:"";
+ $("#filtroSerieOcorrencia").value=series.includes(serieAtual)?serieAtual:"";
+}
+function aplicarFiltrosOcorrencia(){
+ filtroAlunoOcorrencia=$("#filtroAlunoOcorrencia").value;
+ filtroSerieOcorrencia=$("#filtroSerieOcorrencia").value;
+ filtroDataOcorrencia=$("#filtroDataOcorrencia").value;
+ render();
+}
+["#filtroAlunoOcorrencia","#filtroSerieOcorrencia","#filtroDataOcorrencia"].forEach(id=>$(id).addEventListener("change",aplicarFiltrosOcorrencia));
+$("#limparFiltrosOcorrencia").addEventListener("click",()=>{
+ $("#filtroAlunoOcorrencia").value="";
+ $("#filtroSerieOcorrencia").value="";
+ $("#filtroDataOcorrencia").value="";
+ filtroAlunoOcorrencia=filtroSerieOcorrencia=filtroDataOcorrencia="";
+ render();
+});
+function dataISO(v){
+ if(!v)return "";
+ const d=v.toDate?v.toDate():new Date(v);
+ if(Number.isNaN(d.getTime()))return "";
+ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+function classeStatus(status){
+ if(status==="Finalizada") return "finalizada";
+ if(status==="Em análise") return "em-analise";
+ if(status==="Aguardando responsável") return "aguardando-responsavel";
+ return "pendente";
+}
+function formatarProvidenciaDirecao(o){
+ const providencia=o.providenciaDirecao||"";
+ if(providencia==="Suspensão" && Number(o.diasSuspensao)>0){
+   const dias=Number(o.diasSuspensao);
+   return `Suspensão (${dias} ${dias===1?"dia":"dias"})`;
+ }
+ return providencia;
+}
+function formatarContatoResponsavel(o){
+ const situacao=o.responsavelComunicado||"Não informado";
+ if(situacao!=="Sim") return situacao;
+ const partes=["Sim"];
+ if(o.formaContato) partes.push(o.formaContato);
+ if(o.dataContato){
+   const [a,m,d]=String(o.dataContato).split("-");
+   partes.push(a&&m&&d?`${d}/${m}/${a}`:o.dataContato);
+ }
+ return partes.join(" — ");
+}
+
+function render(){
+ atualizarOpcoesFiltrosOcorrencia();
+ const minhasOcorrencias=ocorrencias.filter(o=>o.professorId===usuarioAtual?.uid);
+ const baseOcorrencias=modoOcorrencias==="minhas" ? minhasOcorrencias : ocorrencias;
+ const ocorrenciasFiltradas=baseOcorrencias.filter(o=>
+   (!filtroAlunoOcorrencia || o.alunoNome===filtroAlunoOcorrencia) &&
+   (!filtroSerieOcorrencia || o.alunoTurma===filtroSerieOcorrencia) &&
+   (!filtroDataOcorrencia || dataISO(o.criadaEm)===filtroDataOcorrencia)
+ );
+ const pendMinhas=minhasOcorrencias.filter(o=>o.status!=="Finalizada"),finMinhas=minhasOcorrencias.filter(o=>o.status==="Finalizada");
+ $("#qtdTotal").textContent=minhasOcorrencias.length;$("#qtdPendentes").textContent=pendMinhas.length;
+ $("#qtdFinalizadas").textContent=finMinhas.length;$("#qtdEstudantes").textContent=estudantes.length;
+ const ocorrenciasExibidas=(modoOcorrencias==="aluno" && !filtroAlunoOcorrencia)?[]:ocorrenciasFiltradas;
+ $("#listaOcorrencias").innerHTML=ocorrenciasExibidas.length?`<div class="tabela-wrap"><table><thead><tr><th>Aluno</th><th>Professor</th><th>Tipo</th><th>Enviada</th><th>Status</th><th></th></tr></thead><tbody>${ocorrenciasExibidas.map(o=>`<tr>
+ <td><strong>${esc(o.alunoNome)}</strong><br><small>${esc(o.alunoTurma||"")}</small></td>
+ <td>${esc(o.professorNome||o.professor||"Não informado")}</td>
+ <td>${esc(o.tipo||"")}</td><td>${dataBR(o.criadaEm)}</td>
+ <td><span class="badge ${classeStatus(o.status)}">${esc(o.status||"Pendente")}</span></td>
+ <td><div class="acoes"><button class="btn btn-secundario" data-ver="${o.id}">Ver detalhes</button><button class="btn btn-secundario" data-imprimir="${o.id}">Imprimir</button>${modoOcorrencias==="minhas" && o.professorId===usuarioAtual?.uid && o.abertaPelaDirecao!==true ? `<button class="btn btn-secundario" data-editar="${o.id}">Editar</button><button class="btn btn-perigo" data-excluir="${o.id}">Excluir</button>` : ""}</div></td></tr>`).join("")}</tbody></table></div>`:(modoOcorrencias==="aluno"&&!filtroAlunoOcorrencia?'<div class="vazio">Selecione um aluno acima para visualizar o histórico completo.</div>':'<div class="vazio">Nenhuma ocorrência encontrada.</div>');
+ const filtrosAtivos=[filtroAlunoOcorrencia,filtroSerieOcorrencia,filtroDataOcorrencia].filter(Boolean).length;
+ if(modoOcorrencias==="minhas"){
+   $("#statusBuscaOcorrencia").textContent=filtrosAtivos ? `${ocorrenciasFiltradas.length} ocorrência(s) sua(s) encontrada(s).` : `${minhasOcorrencias.length} ocorrência(s) registrada(s) por você.`;
+ }else if(!filtroAlunoOcorrencia){
+   $("#statusBuscaOcorrencia").textContent="Selecione um aluno para consultar todas as ocorrências registradas pelos professores.";
+ }else{
+   $("#statusBuscaOcorrencia").textContent=`${ocorrenciasFiltradas.length} ocorrência(s) encontrada(s) para o aluno selecionado.`;
+ }
+ document.querySelectorAll("[data-ver]").forEach(b=>b.onclick=()=>abrir(b.dataset.ver));
+ document.querySelectorAll("[data-imprimir]").forEach(b=>b.onclick=()=>imprimirOcorrencia(b.dataset.imprimir));
+ document.querySelectorAll("[data-editar]").forEach(b=>b.onclick=()=>editarOcorrencia(b.dataset.editar));
+ document.querySelectorAll("[data-excluir]").forEach(b=>b.onclick=()=>excluirOcorrenciaProfessor(b.dataset.excluir));
+}
+
+
+function editarOcorrencia(id){
+ const o=ocorrencias.find(x=>x.id===id);
+ if(!o || o.professorId!==usuarioAtual?.uid)return;
+ if(o.abertaPelaDirecao===true){toast("A direção já abriu esta ocorrência. Ela não pode mais ser editada.");return;}
+ ocorrenciaEmEdicao=id;
+ $("#areaFormularioOcorrencia").classList.remove("hidden");
+ $("#alternarFormularioOcorrencia").textContent="Cancelar edição";
+ $("#alternarFormularioOcorrencia").setAttribute("aria-expanded","true");
+ $("#turmaOcorrencia").value=String(o.alunoTurma||"").trim();
+ atualizarListaEstudantes();
+ $("#aluno").value=o.alunoId||"";
+ $("#tipo").value=o.tipo||"";
+ $("#descricao").value=o.descricao||"";
+ $("#providenciaProfessor").value=o.providenciaProfessor||o.providencia||"";
+ $("#areaFormularioOcorrencia").scrollIntoView({behavior:"smooth",block:"start"});
+ toast("Edite os dados e clique em salvar.");
+}
+
+async function excluirOcorrenciaProfessor(id){
+ const o=ocorrencias.find(x=>x.id===id);
+ if(!o || o.professorId!==usuarioAtual?.uid)return;
+ if(o.abertaPelaDirecao===true){toast("A direção já abriu esta ocorrência. Ela não pode mais ser excluída.");return;}
+ if(!confirm(`Excluir a ocorrência de ${o.alunoNome}? Esta ação a removerá da sua lista.`))return;
+ try{
+   await updateDoc(doc(db,"ocorrencias",id),{
+     excluida:true,
+     excluidaEm:serverTimestamp(),
+     excluidaPor:usuarioAtual.uid,
+     excluidaPorNome:usuarioAtual.nome||usuarioAtual.email||"Professor",
+     excluidaPorPerfil:"professor"
+   });
+   // Remove imediatamente da tela; o onSnapshot confirmará a alteração em seguida.
+   ocorrencias=ocorrencias.filter(item=>item.id!==id);
+   render();
+   toast("Ocorrência enviada para a lixeira.");
+ }catch(erro){
+   console.error("Erro ao excluir ocorrência:",erro);
+   toast("Não foi possível excluir: "+(erro.code||erro.message));
+ }
+}
+
+
+function dadosResponsavelDaOcorrencia(o){
+  const aluno=estudantes.find(a=>a.id===o.alunoId);
+  return {
+    nome: aluno?.responsavel || o.responsavelNome || o.nomeResponsavel || "Não informado",
+    telefone: aluno?.contato || o.responsavelTelefone || o.telefoneResponsavel || o.contatoResponsavel || "Não informado"
+  };
+}
+
+function imprimirOcorrencia(id){
+ const o=ocorrencias.find(x=>x.id===id);
+ if(!o)return;
+
+ const finalizada=o.status==="Finalizada";
+ const responsavel=dadosResponsavelDaOcorrencia(o);
+ const janela=window.open("","_blank","width=900,height=700");
+ janela.document.write(`
+   <!DOCTYPE html>
+   <html lang="pt-BR">
+   <head>
+     <meta charset="UTF-8">
+     <title>Ocorrência Escolar</title>
+     <style>
+       body{font-family:Arial,sans-serif;color:#111;padding:30px;line-height:1.45}
+       h1{text-align:center;font-size:22px;margin-bottom:5px}
+       .sub{text-align:center;color:#555;margin-bottom:28px}
+       .linha{border-bottom:1px solid #bbb;padding:9px 0}
+       .linha strong{display:inline-block;min-width:190px}
+       .bloco{border:1px solid #bbb;border-radius:8px;padding:14px;margin-top:16px}
+       .bloco strong{display:block;margin-bottom:8px}
+       .status{font-weight:bold}
+       .assinaturas{display:flex;gap:50px;margin-top:70px}
+       .assinatura{flex:1;text-align:center;border-top:1px solid #222;padding-top:7px}
+       @media print{button{display:none}}
+     </style>
+   </head>
+   <body>
+     <h1>REGISTRO DE OCORRÊNCIA ESCOLAR</h1>
+     <div class="sub">E. E. Prof. Dr. Moacyr Miranda Pinto<br>Sistema de Ocorrências Escolares</div>
+     <div class="linha"><strong>Aluno:</strong>${esc(o.alunoNome)}</div>
+     <div class="linha"><strong>Turma:</strong>${esc(o.alunoTurma||"")}</div>
+     <div class="linha"><strong>Responsável:</strong>${esc(responsavel.nome)}</div>
+     <div class="linha"><strong>Telefone do responsável:</strong>${esc(responsavel.telefone)}</div>
+     <div class="linha"><strong>Professor:</strong>${esc(o.professorNome||o.professor||"")}</div>
+     <div class="linha"><strong>Tipo:</strong>${esc(o.tipo||"")}</div>
+     <div class="linha"><strong>Registrada em:</strong>${dataBR(o.criadaEm)}</div>
+     <div class="linha"><strong>Status:</strong><span class="status">${esc(o.status||"Pendente")}</span></div>
+     <div class="bloco"><strong>Descrição do ocorrido</strong>${esc(o.descricao||"")}</div>
+     <div class="bloco"><strong>Providência inicial do professor</strong>${esc(o.providenciaProfessor||o.providencia||"")}</div>
+     ${o.providenciaDirecao?`<div class="bloco"><strong>Providência da direção</strong>${esc(formatarProvidenciaDirecao(o))}</div>`:""}
+     ${o.devolutivaDirecao?`<div class="bloco"><strong>Devolutiva da direção</strong>${esc(o.devolutivaDirecao)}</div>`:""}
+     ${o.responsavelComunicado?`<div class="linha"><strong>Responsável comunicado:</strong>${esc(formatarContatoResponsavel(o))}</div>`:""}
+     ${finalizada?`<div class="linha"><strong>Finalizada em:</strong>${dataBR(o.finalizadaEm)}</div>`:""}
+     <div class="assinaturas">
+       <div class="assinatura">Professor responsável</div>
+       <div class="assinatura">Direção escolar</div>
+     </div>
+     <script>window.onload=()=>window.print();<\/script>
+   </body>
+   </html>
+ `);
+ janela.document.close();
+}
+
+function abrir(id){
+ const o=ocorrencias.find(x=>x.id===id);
+ const responsavel=dadosResponsavelDaOcorrencia(o);
+ $("#detalhesOcorrencia").innerHTML=`
+ <div class="detalhe"><strong>Aluno</strong>${esc(o.alunoNome)} — ${esc(o.alunoTurma||"")}</div>
+ <div class="detalhe"><strong>Responsável</strong>${esc(responsavel.nome)}</div>
+ <div class="detalhe"><strong>Telefone do responsável</strong>${esc(responsavel.telefone)}</div>
+ <div class="detalhe"><strong>Tipo</strong>${esc(o.tipo||"")}</div>
+ <div class="detalhe"><strong>Descrição</strong>${esc(o.descricao||"")}</div>
+ <div class="detalhe"><strong>Sua providência inicial</strong>${esc(o.providenciaProfessor||o.providencia||"")}</div>
+ <div class="detalhe"><strong>Status</strong>${esc(o.status||"Pendente")}</div>
+ ${o.providenciaDirecao?`<div class="detalhe"><strong>Providência da direção</strong>${esc(formatarProvidenciaDirecao(o))}</div>`:""}
+ ${o.devolutivaDirecao?`<div class="detalhe"><strong>Devolutiva da direção</strong>${esc(o.devolutivaDirecao)}</div>`:""}
+ ${o.responsavelComunicado?`<div class="detalhe"><strong>Responsável comunicado</strong>${esc(formatarContatoResponsavel(o))}</div>`:""}
+ ${o.status==="Finalizada"?`<div class="detalhe"><strong>Finalizada em</strong>${dataBR(o.finalizadaEm)}</div>`:`<div class="detalhe"><strong>Acompanhamento</strong>Etapa atual: ${esc(o.status||"Pendente")}.</div>`}
+ `;
+ $("#modal").classList.remove("hidden");
+}
+</script>
 </body>
 </html>
