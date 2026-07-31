@@ -630,6 +630,7 @@ function imprimirOcorrencia(id){
      ${o.providenciaDirecao?`<div class="bloco"><strong>Providência da direção</strong>${esc(formatarProvidenciaDirecao(o))}</div>`:""}
      ${o.devolutivaDirecao?`<div class="bloco"><strong>Devolutiva da direção</strong>${esc(o.devolutivaDirecao)}</div>`:""}
      ${o.responsavelComunicado?`<div class="linha"><strong>Responsável comunicado:</strong>${esc(formatarContatoResponsavel(o))}</div>`:""}
+     ${finalizada?`<div class="linha"><strong>Resolvida por:</strong>${esc(o.resolvidoPorNome||o.diretorNome||o.gestorNome||"Gestor não identificado")}</div>`:""}
      ${finalizada?`<div class="linha"><strong>Finalizada em:</strong>${dataBR(o.finalizadaEm)}</div>`:""}
      <div class="assinaturas">
        <div class="assinatura">Professor responsável</div>
@@ -656,6 +657,7 @@ function abrir(id){
  ${o.providenciaDirecao?`<div class="detalhe"><strong>Providência da direção</strong>${esc(formatarProvidenciaDirecao(o))}</div>`:""}
  ${o.devolutivaDirecao?`<div class="detalhe"><strong>Devolutiva da direção</strong>${esc(o.devolutivaDirecao)}</div>`:""}
  ${o.responsavelComunicado?`<div class="detalhe"><strong>Responsável comunicado</strong>${esc(formatarContatoResponsavel(o))}</div>`:""}
+ ${o.status==="Finalizada"?`<div class="detalhe"><strong>Resolvida por</strong>${esc(o.resolvidoPorNome||o.diretorNome||o.gestorNome||"Gestor não identificado")}</div>`:""}
  ${o.status==="Finalizada"?`<div class="detalhe"><strong>Finalizada em</strong>${dataBR(o.finalizadaEm)}</div>`:`<div class="detalhe"><strong>Acompanhamento</strong>Etapa atual: ${esc(o.status||"Pendente")}.</div>`}
  `;
  $("#modal").classList.remove("hidden");
